@@ -1,6 +1,6 @@
 module SymEngine
 export
-    Basic, basic_symbol, basic_diff
+    Basic, basic_symbol, basic_diff, basic_expand
 
 import
     Base.show,
@@ -94,6 +94,9 @@ function -(b::Basic)
     ccall((:basic_neg, :libsymengine), Void, (Ptr{Basic}, Ptr{Basic}), &a, &b)
     return a
 end
+
++(b::Basic) = b
+\(b1::Basic, b2::Basic) = b2 / b1
 
 function abs(b::Basic)
     a = Basic()
