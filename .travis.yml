@@ -1,0 +1,20 @@
+language: julia
+julia:
+    - release
+    - nightly
+notifications:
+    email: false
+before_install:
+    - sudo apt-get update
+    - sudo apt-get install cmake libgmp-dev libmpfr-dev
+script:
+    - git clone https://github.com/sympy/symengine
+    - cd symengine
+    - cmake -DBUILD_SHARED_LIBS=yes .
+    - sudo make -j4 install
+    - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib/
+    - cd ..
+    - julia -e 'Pkg.clone(pwd())'
+    - julia -e 'Pkg.build("SymEngine")'
+    - julia-e 'Pkg.test("SymEngine")'
+
