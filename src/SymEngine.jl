@@ -4,7 +4,8 @@ export
 
 import
     Base.show,
-    Base.convert
+    Base.convert,
+    Base.abs
 
 type Basic
     ptr::Ptr{Void}
@@ -88,6 +89,18 @@ function -(b1::Basic, b2::Basic)
     return a
 end
 
+function -(b::Basic)
+    a = Basic()
+    ccall((:basic_neg, :libsymengine), Void, (Ptr{Basic}, Ptr{Basic}), &a, &b)
+    return a
+end
+
+function abs(b::Basic)
+    a = Basic()
+    ccall((:basic_abs, :libsymengine), Void, (Ptr{Basic}, Ptr{Basic}), &a, &b)
+    return a
+end
+
 function ==(b1::Basic, b2::Basic)
     ccall((:basic_eq, :libsymengine), Int, (Ptr{Basic}, Ptr{Basic}), &b1, &b2) == 1
 end
@@ -108,8 +121,14 @@ function basic_diff(b1::Basic, b2::Basic)
     a = Basic()
     ret = ccall((:basic_diff, :libsymengine), Int, (Ptr{Basic}, Ptr{Basic}, Ptr{Basic}), &a, &b1, &b2)
     if (ret == 0)
-        error("b2 must be a symbol.")
+        error("Second argument must be a symbol.")
     end
+    return a
+end
+
+function basic_expand(b::Basic)
+    a = Basic()
+    ccall((:basic_expand, :libsymengine), Void, (Ptr{Basic}, Ptr{Basic}), &a, &b)
     return a
 end
 
