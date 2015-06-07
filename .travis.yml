@@ -10,14 +10,15 @@ before_install:
     - git config --global user.name "Isuru Fernando"
     - git config --global user.email "isuruf@gmail.com"
 script:
-    - git clone git@github.com:sympy/symengine.git
+    - git clone https://github.com/sympy/symengine
     - cd symengine
-    - cmake .
-    - sudo make install
+    - cmake -DBUILD_SHARED_LIBS=yes .
+    - sudo make -j4 install
     - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib/
     - cd ..
     - julia -e 'Pkg.clone(pwd())'
     - julia -e 'Pkg.build("SymEngine")'
     - if [ -f test/runtests.jl ]; then
-        julia --check-bounds=yes -e 'Pkg.test("SymEngine")'
+        julia --check-bounds=yes -e 'Pkg.test("SymEngine")';
       fi
+
