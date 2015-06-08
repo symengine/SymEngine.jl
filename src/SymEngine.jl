@@ -58,6 +58,7 @@ else
     convert(::Type{Basic}, x::Union(Uint8, Uint16, Uint32, Uint64)) = Basic(convert(Culong, x))
 end
 convert(::Type{Basic}, x::Integer) = Basic(BigInt(x))
+convert(::Type{Basic}, x::Rational) = Basic(num(x)) / Basic(den(x))
 
 function +(b1::Basic, b2::Basic)
     a = Basic()
@@ -108,17 +109,22 @@ function ==(b1::Basic, b2::Basic)
     ccall((:basic_eq, :libsymengine), Int, (Ptr{Basic}, Ptr{Basic}), &b1, &b2) == 1
 end
 
-+(b1::Basic, b2::Integer) = b1 + convert(Basic, b2)
-+(b1::Integer, b2::Basic) = convert(Basic, b1) + b2
--(b1::Basic, b2::Integer) = b1 - convert(Basic, b2)
--(b1::Integer, b2::Basic) = convert(Basic, b1) - b2
-*(b1::Basic, b2::Integer) = b1 * convert(Basic, b2)
-*(b1::Integer, b2::Basic) = convert(Basic, b1) * b2
-/(b1::Basic, b2::Integer) = b1 / convert(Basic, b2)
-/(b1::Integer, b2::Basic) = convert(Basic, b1) / b2
+types=Union(Integer, Rational)
+
++(b1::Basic, b2::types) = b1 + convert(Basic, b2)
++(b1::types, b2::Basic) = convert(Basic, b1) + b2
+-(b1::Basic, b2::types) = b1 - convert(Basic, b2)
+-(b1::types, b2::Basic) = convert(Basic, b1) - b2
+*(b1::Basic, b2::types) = b1 * convert(Basic, b2)
+*(b1::types, b2::Basic) = convert(Basic, b1) * b2
+/(b1::Basic, b2::types) = b1 / convert(Basic, b2)
+/(b1::types, b2::Basic) = convert(Basic, b1) / b2
 ^(b1::Basic, b2::Integer) = b1 ^ convert(Basic, b2)
 ^(b1::Integer, b2::Basic) = convert(Basic, b1) ^ b2
-
+^(b1::Basic, b2::types) = b1 ^ convert(Basic, b2)
+^(b1::types, b2::Basic) = convert(Basic, b1) ^ b2
+\(b1::Basic, b2::types) = b1 \ convert(Basic, b2)
+\(b1::types, b2::Basic) = convert(Basic, b1) \ b2
 
 function basic_diff(b1::Basic, b2::Basic)
     a = Basic()
