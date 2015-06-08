@@ -16,5 +16,5 @@ script:
     - cd ..
     - julia -e 'Pkg.clone(pwd())'
     - julia -e 'Pkg.build("SymEngine")'
-    - julia-e 'Pkg.test("SymEngine")'
+    - julia -e 'Pkg.test("SymEngine")'
 
