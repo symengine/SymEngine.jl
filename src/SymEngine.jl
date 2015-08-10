@@ -9,13 +9,13 @@ type Basic
     ptr::Ptr{Void}
     function Basic()
         z = new(C_NULL)
-        ccall((:basic_init, :libsymengine), Void, (Ptr{Basic}, ), &z)
+        ccall((:basic_new_stack, :libsymengine), Void, (Ptr{Basic}, ), &z)
         finalizer(z, basic_free)
         return z
     end
 end
 
-basic_free(b::Basic) = ccall((:basic_free, :libsymengine), Void, (Ptr{Basic}, ), &b)
+basic_free(b::Basic) = ccall((:basic_free_stack, :libsymengine), Void, (Ptr{Basic}, ), &b)
 
 function symbol(s::ASCIIString)
     a = Basic()
