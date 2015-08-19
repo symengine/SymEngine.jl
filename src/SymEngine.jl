@@ -5,6 +5,8 @@ import
     Base.convert,
     Base.abs
 
+include("../deps/deps.jl")
+
 type Basic
     ptr::Ptr{Void}
     function Basic()
