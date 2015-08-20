@@ -24,10 +24,11 @@ provides(Yum,
 
 @osx_only begin
     if Pkg.installed("Homebrew") === nothing
-        error("Homebrew package not installed, please run Pkg.add(\"Homebrew\")")
+        print("Homebrew package not installed, please run Pkg.add(\"Homebrew\") to use it to download dependencies")
+    else
+        using Homebrew
+        provides(Homebrew.HB, "gmp", [libgmp, libgmpxx], os = :Darwin)
     end
-    using Homebrew
-    provides(Homebrew.HB, "gmp", [libgmp, libgmpxx], os = :Darwin)
 end
 
 provides(Sources,
@@ -41,6 +42,8 @@ provides(BuildProcess,
         Autotools(libtarget = "libgmpxx.la", configure_options=["--enable-cxx"]) => [libgmp, libgmpxx]
     ))
 
+xx(t...) = (OS_NAME == :Windows ? t[1] : (OS_NAME == :Linux || length(t) == 2) ? t[2] : t[3])
+
 symenginesrcdir = joinpath(BinDeps.depsdir(libsymengine),"src","symengine-master")
 symenginebuilddir = joinpath(BinDeps.depsdir(libsymengine),"builds","symengine")
 provides(BuildProcess,
@@ -49,7 +52,7 @@ provides(BuildProcess,
         CreateDirectory(symenginebuilddir)
         @build_steps begin
             ChangeDirectory(symenginebuilddir)
-            FileRule(joinpath(prefix,"lib","libsymengine.so"),@build_steps begin
+            FileRule(joinpath(prefix, "lib", xx("libsymengine.dll", "libsymengine.so", "libsymengine.dylib")),@build_steps begin
                 `cmake -DCMAKE_INSTALL_PREFIX="$prefix" -DCOMMON_DIR="$prefix" -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=yes -DBUILD_SHARED_LIBS=on $symenginesrcdir -DBUILD_TESTS=no -DBUILD_BENCHMARKS=no`
                 `make`
                 `make install`
