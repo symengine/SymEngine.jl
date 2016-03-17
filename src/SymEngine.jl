@@ -51,11 +51,11 @@ function Basic(x::BigInt)
 end
 
 if Clong == Int32
-    convert(::Type{Basic}, x::Union(Int8, Int16, Int32)) = Basic(convert(Clong, x))
-    convert(::Type{Basic}, x::Union(Uint8, Uint16, Uint32)) = Basic(convert(Culong, x))
+    convert(::Type{Basic}, x::Union{Int8, Int16, Int32}) = Basic(convert(Clong, x))
+    convert(::Type{Basic}, x::Union{UInt8, UInt16, UInt32}) = Basic(convert(Culong, x))
 else
-    convert(::Type{Basic}, x::Union(Int8, Int16, Int32, Int64)) = Basic(convert(Clong, x))
-    convert(::Type{Basic}, x::Union(Uint8, Uint16, Uint32, Uint64)) = Basic(convert(Culong, x))
+    convert(::Type{Basic}, x::Union{Int8, Int16, Int32, Int64}) = Basic(convert(Clong, x))
+    convert(::Type{Basic}, x::Union{UInt8, UInt16, UInt32, UInt64}) = Basic(convert(Culong, x))
 end
 convert(::Type{Basic}, x::Integer) = Basic(BigInt(x))
 convert(::Type{Basic}, x::Rational) = Basic(num(x)) / Basic(den(x))
@@ -109,7 +109,7 @@ function ==(b1::Basic, b2::Basic)
     ccall((:basic_eq, :libsymengine), Int, (Ptr{Basic}, Ptr{Basic}), &b1, &b2) == 1
 end
 
-types=Union(Integer, Rational)
+types=Union{Integer, Rational}
 
 +(b1::Basic, b2::types) = b1 + convert(Basic, b2)
 +(b1::types, b2::Basic) = convert(Basic, b1) + b2
