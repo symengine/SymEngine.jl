@@ -5,7 +5,7 @@ import
     Base.convert,
     Base.abs
 
-import Base.Operators: +, -, ^, /, \, *, ==
+import Base.Operators: +, -, ^, /, \, *, ==, !=
 
 include("../deps/deps.jl")
 
@@ -111,6 +111,10 @@ function ==(b1::Basic, b2::Basic)
     ccall((:basic_eq, :libsymengine), Int, (Ptr{Basic}, Ptr{Basic}), &b1, &b2) == 1
 end
 
+function !=(b1::Basic, b2::Basic)
+    ccall((:basic_neq, :libsymengine), Int, (Ptr{Basic}, Ptr{Basic}), &b1, &b2) == 1
+end
+
 types=Union{Integer, Rational}
 
 +(b1::Basic, b2::types) = b1 + convert(Basic, b2)
@@ -129,6 +133,8 @@ types=Union{Integer, Rational}
 \(b1::types, b2::Basic) = convert(Basic, b1) \ b2
 ==(b1::Basic, b2::types) = b1 == convert(Basic, b2)
 ==(b1::types, b2::Basic) = convert(Basic, b1) == b2
+!=(b1::Basic, b2::types) = b1 != convert(Basic, b2)
+!=(b1::types, b2::Basic) = convert(Basic, b1) != b2
 
 function diff(b1::Basic, b2::Basic)
     a = Basic()
