@@ -149,3 +149,14 @@ show(io::IO, b::Basic) = print(io, toString(b))
 
 end
 
+abstract Basic
+
+type Number <: Basic
+    ptr::Ptr{Void}
+    function Number()
+        z = new(C_NULL)
+        ccall((:basic_new_stack, :libsymengine), Void, (Ptr{Basic}, ), &z)
+        finalizer(z, basic_free)
+        return z
+    end
+end
