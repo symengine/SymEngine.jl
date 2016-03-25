@@ -9,8 +9,8 @@ import Base.Operators: +, -, ^, /, \, *, ==
 
 include("../deps/deps.jl")
 
-Abstract BASIC
-Abstract NUMBER <: BASIC
+abstract BASIC
+abstract NUMBER <: BASIC
 
 type Basic
     ptr::Ptr{Void}
