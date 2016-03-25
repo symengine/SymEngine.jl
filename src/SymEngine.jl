@@ -22,21 +22,21 @@ type Basic
     end
 end
 
-type Number <: BASIC
+type number <: BASIC
     ptr::Ptr{Void}
-    function Number()
+    function number()
         z = new(C_NULL)
-        ccall((:basic_new_stack, :libsymengine), Void, (Ptr{Number}, ), &z)
+        ccall((:basic_new_stack, :libsymengine), Void, (Ptr{number}, ), &z)
         finalizer(z, basic_free)
         return z
     end
 end
 
-type Integer <: NUMBER
+type integer <: NUMBER
     ptr::Ptr{Void}
-    function Integer()
+    function integer()
         z = new(C_NULL)
-        ccall((:basic_new_stack, :libsymengine), Void, (Ptr{Integer}, ), &z)
+        ccall((:basic_new_stack, :libsymengine), Void, (Ptr{integer}, ), &z)
         finalizer(z, basic_free)
         return z
     end
@@ -44,8 +44,8 @@ end
 
 
 basic_free(b::Basic) = ccall((:basic_free_stack, :libsymengine), Void, (Ptr{Basic}, ), &b)
-basic_free(b::Number) = ccall((:basic_free_stack, :libsymengine), Void, (Ptr{Number}, ), &b)
-basic_free(b::Integer) = ccall((:basic_free_stack, :libsymengine), Void, (Ptr{Integer}, ), &b)
+basic_free(b::number) = ccall((:basic_free_stack, :libsymengine), Void, (Ptr{number}, ), &b)
+basic_free(b::integer) = ccall((:basic_free_stack, :libsymengine), Void, (Ptr{integer}, ), &b)
 
 function symbol(s::ASCIIString)
     a = Basic()
