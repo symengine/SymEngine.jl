@@ -9,6 +9,7 @@ import
 include("../deps/deps.jl")
 
 include("types.jl")
+include("subs.jl")
 include("display.jl")
 include("mathops.jl")
 include("mathfuns.jl")

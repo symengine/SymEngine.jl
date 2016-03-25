@@ -1,3 +1,4 @@
+
 function toString(b::Basic)
     a = ccall((:basic_str, :libsymengine), Ptr{Int8}, (Ptr{Basic}, ), &b)
     string = bytestring(a)
@@ -6,5 +7,7 @@ function toString(b::Basic)
     return string
 end
 
+toString(b::BasicType) = toString(Basic(b))
 
-show(io::IO, b::Basic) = print(io, toString(b))
+
+show(io::IO, b::BasicType) = print(io, toString(b))

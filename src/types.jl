@@ -12,7 +12,6 @@ type Basic <: SymbolicNumber
 end
 export Basic
 
-Base.promote_rule{T<:SymbolicNumber, S<:Number}(::Type{T}, ::Type{S} ) = T
 
 basic_free(b::Basic) = ccall((:basic_free_stack, :libsymengine), Void, (Ptr{Basic}, ), &b)
 
@@ -44,7 +43,72 @@ else
     convert(::Type{Basic}, x::Union{UInt8, UInt16, UInt32, UInt64}) = Basic(convert(Culong, x))
 end
 convert(::Type{Basic}, x::Integer) = Basic(BigInt(x))
-convert(::Type{Basic}, x::Rational) = Basic(num(x)) / Basic(den(x))
+convert(::Type{Basic}, x::Rational) = Basic(BasicInteger(num(x)) / BasicInteger(den(x)))
+
+
+
+## Wrapper type
+## this allows SymEngine.jl to keep track of the class of the C++ object
+## XXX This needs to be generated from symengine on startup
+## XXX This might be tedious with precompilation!
+abstract BasicType <: Number
+const SYMENGINE_ENUM = Dict{Int, Symbol}(0 => :Integer,
+                                         1 => :Rational,
+                                         2 => :Complex,
+                                         3 => :ComplexDouble,
+                                         11 => :Symbol,
+                                         12 => :EmptySet,
+                                         13 => :Interval,
+                                         14 => :Mul,
+                                         15 => :Add,
+                                         16 => :Pow,
+                                         19 => :Constant)
+
+_basic_types = Dict()
+for (k,v) in SYMENGINE_ENUM
+    tname = symbol("Basic$v")
+    fname = symbol("basic_free_$v")
+    @eval begin
+        type $tname <: BasicType
+            x::Basic
+        end
+        _basic_types[$k] = $tname
+    end
+end
+##
+type BasicValue <: BasicType
+    x::Basic
+end
+
+Basic(x::BasicType) = x.x
+
+function get_type(s::Basic)
+    ccall((:basic_get_type, :libsymengine), Int, (Ptr{Basic},), &s)
+end
+
+function Base.convert(::Type{BasicType}, val::Basic)
+    id = get_type(val)
+    if haskey(SYMENGINE_ENUM, id)
+        _basic_types[id](val)
+    else
+        BasicValue(val)
+    end
+end
+
+
+
+Base.promote_rule{T<:SymbolicNumber, S<:Number}(::Type{T}, ::Type{S} ) = T
+Base.promote_rule{T<:BasicType, S<:Number}(::Type{T}, ::Type{S} ) = T
+
+Base.convert{T<:BasicType}(::Type{Basic}, val::T) = val.x
+Base.convert{T<:BasicType}(::Type{T}, val::Integer) = T(Basic(val))
+Base.convert{T<:BasicType}(::Type{T}, val::Rational) = T(Basic(val))
+
+
+
+
+
+
 
 
 ## Construct symbolic objects
@@ -52,7 +116,7 @@ convert(::Type{Basic}, x::Rational) = Basic(num(x)) / Basic(den(x))
 function _symbol(s::ASCIIString)
     a = Basic()
     ccall((:symbol_set, :libsymengine), Void, (Ptr{Basic}, Ptr{Int8}), &a, s)
-    return a
+    return BasicValue(a)
 end
 _symbol(s::Symbol) = _symbol(string(s))
 
@@ -83,28 +147,17 @@ end
 export @syms
 
 
-## subs
+## We have a bit of a mess with Basic and BasicType
+## Basic is not what we want to use externally. Create a Sym function for that
 """
-Substitute values into a symbolic expression.
 
-Examples
-```
-@syms x y
-ex = x^2 + y^2
-subs(ex, x, 1) # 1 + y^2
-subs(ex, (x, 1)) # 1 + y^2
-subs(ex, (x, 1), (y,x)) # 1 + x^2, values are substituted left to right.
-subs(ex, x=>1)  # alternate to subs(x, (x,1))
-subs(ex, x=>1, y=>1) # ditto
-```
+Create a symbolic object
+
 """
-function subs(ex::Basic, var::Basic, val)
-    s = Basic()
-    val = Basic(val)
-    ccall((:basic_subs2, :libsymengine), Void, (Ptr{Basic}, Ptr{Basic}, Ptr{Basic}, Ptr{Basic}), &s, &ex, &var, &val)
-    return s
-end
-subs{T <: Basic}(ex::T, y::Tuple{Basic, Any}) = subs(ex, y[1], y[2])
-subs{T <: Basic}(ex::T, y::Tuple{Basic, Any}, args...) = subs(subs(ex, y), args...)
-subs{T <: Basic}(ex::T, d::Pair...) = subs(ex, [(p.first, p.second) for p in d]...)
-export subs
+Sym(x::AbstractString) = _symbol(x)
+Sym(x::Symbol) = _symbol(x)
+Sym(x::Any) = convert(BasicType, Basic(x))
+export Sym
+
+
+

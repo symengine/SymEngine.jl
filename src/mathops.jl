@@ -1,7 +1,8 @@
 import Base.Operators: +, -, ^, /, \, *, ==
 
 ## equality
-function ==(b1::Basic, b2::Basic)
+function ==(b1::BasicType, b2::BasicType)
+    b1 = b1.x; b2 = b2.x
     ccall((:basic_eq, :libsymengine), Int, (Ptr{Basic}, Ptr{Basic}), &b1, &b2) == 1
 end
 
@@ -10,26 +11,27 @@ end
 for (op, libnm) in ((:+, :add), (:-, :sub), (:*, :mul), (:/, :div), (:^, :pow))
     tup = (Base.symbol("basic_$libnm"), :libsymengine)
     @eval begin
-        function ($op)(b1::Basic, b2::Basic)
+        function ($op)(b1::BasicType, b2::BasicType)
             a = Basic()
+            b1,b2 = b1.x, b2.x
             ccall($tup, Void, (Ptr{Basic}, Ptr{Basic}, Ptr{Basic}), &a, &b1, &b2)
-            return a
+            return Sym(a)
         end
     end
 end
     
-^{T <: Integer}(a::Basic, b::T) = a^Basic(b)
-^{T <: Rational}(a::Basic, b::T) = a^Basic(b)
-+(b::Basic) = b
--(b::Basic) = 0 - b
-\(b1::Basic, b2::Basic) = b2 / b1
+^{T <: Integer}(a::BasicType, b::T) = a^BasicType(b)
+^{T <: Rational}(a::BasicType, b::T) = a^BasicType(b)
++(b::BasicType) = b
+-(b::BasicType) = 0 - b
+\(b1::BasicType, b2::BasicType) = b2 / b1
 
 
-## constants
-Base.zero(x::Basic) = Basic(0)
-Base.zero(::Type{Basic}) = Basic(0)
-Base.one(x::Basic) = Basic(1)
-Base.one(::Type{Basic}) = Basic(1)
+## ## constants
+Base.zero(x::BasicType) = BasicInteger(Basic(0))
+Base.zero{T<:BasicType}(::Type{T}) = BasicInteger(Basic(0))
+Base.one(x::Basic) = BasicInteger(Basic(1))
+Base.one{T<:BasicType}(::Type{T}) = BasicInteger(Basic(1))
 
 
 ## Math constants 
@@ -44,16 +46,16 @@ for (op, libnm) in [(:IM, :I),
         ($op) = begin
             a = Basic()
             ccall($tup, Void, (Ptr{Basic}, ), &a)
-            a
+            Sym(a)
         end
     end
     eval(Expr(:export, op)) 
 end
     
-## Conversions
-Base.convert(::Type{Basic}, x::Irrational{:π}) = PI
-Base.convert(::Type{Basic}, x::Irrational{:e}) = E
-Base.convert(::Type{Basic}, x::Irrational{:γ}) = EulerGamma
-Base.convert(::Type{Basic}, x::Irrational{:catalan}) = sympy[:Catalan]
-Base.convert(::Type{Basic}, x::Irrational{:φ}) = (1 + Basic(5)^Basic(1//2))/2
-
+## ## Conversions
+Base.convert{T<:BasicType}(::Type{T}, x::Irrational{:π}) = PI
+Base.convert{T<:BasicType}(::Type{T}, x::Irrational{:e}) = E
+Base.convert{T<:BasicType}(::Type{T}, x::Irrational{:γ}) = EulerGamma
+Base.convert{T<:BasicType}(::Type{T}, x::Irrational{:catalan}) = sympy[:Catalan]
+Base.convert{T<:BasicType}(::Type{T}, x::Irrational{:φ}) = (1 + Sym(5)^Sym(1//2))/2
+Base.convert(::Type{Basic}, x::Irrational) = Basic(convert(BasicType, x))

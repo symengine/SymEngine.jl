@@ -1,8 +1,8 @@
 using Base.Test
 using SymEngine
 
-x = SymEngine._symbol("x")
-y = SymEngine._symbol("y")
+x = Sym("x")
+y = Sym(:y)
 @syms z
 
 a = x^2 + x/2 - x*y*5
@@ -19,7 +19,7 @@ c = x ^ 5
 c = x ^ y
 @test c != y^x
 
-c = SymEngine.Basic(-5)
+c = Sym(-5)
 @test abs(c) == 5
 @test abs(c) != 4
 
@@ -30,11 +30,11 @@ println()
 
 
 ## mathfuns
-@test abs(Basic(-1)) == 1
-@test sin(Basic(1)) == subs(sin(x), x, 1)
+@test abs(Sym(-1)) == 1
+@test sin(Sym(1)) == subs(sin(x), x, 1)
 @test sin(PI) == 0
 @test subs(sin(x), x, pi) == 0
-@test sind(Basic(30)) == 1 // 2
+@test sind(Sym(30)) == 1 // 2
 
 ## subs
 ex = x^2 + y^2
@@ -43,3 +43,10 @@ ex = x^2 + y^2
 @test subs(ex, x => 1) == 1 + y^2
 @test subs(ex, (x,1), (y,2)) == 1 + 2^2
 @test subs(ex, x => 1, y => 2) == 1 + 2^2
+
+
+## type information
+a = Sym(1)
+b = Sym(1//2)
+@test isa(a+a, SymEngine.BasicInteger)
+@test isa(a+b, SymEngine.BasicRational)

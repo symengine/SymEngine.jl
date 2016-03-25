@@ -1,6 +1,7 @@
 
-function expand(b::Basic)
+function expand(b::BasicType)
     a = Basic()
+    b = Basic(b)
     ccall((:basic_expand, :libsymengine), Void, (Ptr{Basic}, Ptr{Basic}), &a, &b)
-    return a
+    return Sym(a)
 end
