@@ -9,6 +9,9 @@ import Base.Operators: +, -, ^, /, \, *, ==
 
 include("../deps/deps.jl")
 
+Abstract BASIC
+Abstract NUMBER <: BASIC
+
 type Basic
     ptr::Ptr{Void}
     function Basic()
@@ -19,7 +22,30 @@ type Basic
     end
 end
 
+type Number <: BASIC
+    ptr::Ptr{Void}
+    function Number()
+        z = new(C_NULL)
+        ccall((:basic_new_stack, :libsymengine), Void, (Ptr{Number}, ), &z)
+        finalizer(z, basic_free)
+        return z
+    end
+end
+
+type Integer <: NUMBER
+    ptr::Ptr{Void}
+    function Integer()
+        z = new(C_NULL)
+        ccall((:basic_new_stack, :libsymengine), Void, (Ptr{Integer}, ), &z)
+        finalizer(z, basic_free)
+        return z
+    end
+end
+
+
 basic_free(b::Basic) = ccall((:basic_free_stack, :libsymengine), Void, (Ptr{Basic}, ), &b)
+basic_free(b::Number) = ccall((:basic_free_stack, :libsymengine), Void, (Ptr{Number}, ), &b)
+basic_free(b::Integer) = ccall((:basic_free_stack, :libsymengine), Void, (Ptr{Integer}, ), &b)
 
 function symbol(s::ASCIIString)
     a = Basic()
@@ -149,14 +175,3 @@ show(io::IO, b::Basic) = print(io, toString(b))
 
 end
 
-abstract Basic
-
-type Number <: Basic
-    ptr::Ptr{Void}
-    function Number()
-        z = new(C_NULL)
-        ccall((:basic_new_stack, :libsymengine), Void, (Ptr{Basic}, ), &z)
-        finalizer(z, basic_free)
-        return z
-    end
-end
