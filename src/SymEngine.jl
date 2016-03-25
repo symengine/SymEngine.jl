@@ -9,6 +9,9 @@ import Base.Operators: +, -, ^, /, \, *, ==
 
 include("../deps/deps.jl")
 
+abstract BASIC
+abstract NUMBER <: BASIC
+
 type Basic
     ptr::Ptr{Void}
     function Basic()
@@ -19,7 +22,30 @@ type Basic
     end
 end
 
+type number <: BASIC
+    ptr::Ptr{Void}
+    function number()
+        z = new(C_NULL)
+        ccall((:basic_new_stack, :libsymengine), Void, (Ptr{number}, ), &z)
+        finalizer(z, basic_free)
+        return z
+    end
+end
+
+type integer <: NUMBER
+    ptr::Ptr{Void}
+    function integer()
+        z = new(C_NULL)
+        ccall((:basic_new_stack, :libsymengine), Void, (Ptr{integer}, ), &z)
+        finalizer(z, basic_free)
+        return z
+    end
+end
+
+
 basic_free(b::Basic) = ccall((:basic_free_stack, :libsymengine), Void, (Ptr{Basic}, ), &b)
+basic_free(b::number) = ccall((:basic_free_stack, :libsymengine), Void, (Ptr{number}, ), &b)
+basic_free(b::integer) = ccall((:basic_free_stack, :libsymengine), Void, (Ptr{integer}, ), &b)
 
 function symbol(s::ASCIIString)
     a = Basic()
