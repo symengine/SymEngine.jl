@@ -1,4 +1,4 @@
-import Base.Operators: +, -, ^, /, \, *, ==
+import Base.Operators: +, -, ^, /, //, \, *, ==
 
 ## equality
 function ==(b1::BasicType, b2::BasicType)
@@ -8,7 +8,7 @@ end
 
 
 ## main ops
-for (op, libnm) in ((:+, :add), (:-, :sub), (:*, :mul), (:/, :div), (:^, :pow))
+for (op, libnm) in ((:+, :add), (:-, :sub), (:*, :mul), (:/, :div), (://, :div), (:^, :pow))
     tup = (Base.symbol("basic_$libnm"), :libsymengine)
     @eval begin
         function ($op)(b1::BasicType, b2::BasicType)

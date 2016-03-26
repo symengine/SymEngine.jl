@@ -65,16 +65,17 @@ const SYMENGINE_ENUM = Dict{Int, Symbol}(0 => :Integer,
                                          19 => :Constant)
 
 _basic_types = Dict()
-for (k,v) in SYMENGINE_ENUM
-    tname = symbol("Basic$v")
-    fname = symbol("basic_free_$v")
-    @eval begin
-        type $tname <: BasicType
-            x::Basic
-        end
-        _basic_types[$k] = $tname
-    end
-end
+
+## for (k,v) in SYMENGINE_ENUM
+##     tname = symbol("Basic$v")
+##     fname = symbol("basic_free_$v")
+##     @eval begin
+##         type $tname <: BasicType
+##             x::Basic
+##         end
+##         _basic_types[$k] = $tname
+##     end
+## end
 ##
 type BasicValue <: BasicType
     x::Basic
@@ -86,13 +87,31 @@ function get_type(s::Basic)
     ccall((:basic_get_type, :libsymengine), Int, (Ptr{Basic},), &s)
 end
 
+function get_class_id(id)
+    id = string(id)
+    ccall((:basic_get_class_id, :libsymengine), AbstractString, (Ptr{AbstractString},), &s)
+end
+
 function Base.convert(::Type{BasicType}, val::Basic)
     id = get_type(val)
-    if haskey(SYMENGINE_ENUM, id)
-        _basic_types[id](val)
-    else
-        BasicValue(val)
+    if !haskey(_basic_types, id)
+        ## need to create a new type
+        # nm = get_class_id(id)
+        nm = haskey(SYMENGINE_ENUM, id) ? "Basic" * string(SYMENGINE_ENUM[id]) : "BasicValue"
+        # create new type
+        if nm == "BasicValue"
+            return BasicValue(val)
+        else
+            nm = symbol(nm)
+            @eval begin
+                type $nm <: BasicType
+                    x::Basic
+                end
+                _basic_types[$id] = $nm
+            end
+        end
     end
+    _basic_types[id](val)
 end
 
 
