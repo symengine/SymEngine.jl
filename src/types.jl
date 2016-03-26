@@ -1,7 +1,6 @@
 
-abstract SymbolicNumber <: Number
-
-type Basic <: SymbolicNumber
+## Hold a reference to a SymEngine object
+type Basic 
     ptr::Ptr{Void}
     function Basic()
         z = new(C_NULL)
@@ -43,7 +42,7 @@ else
     convert(::Type{Basic}, x::Union{UInt8, UInt16, UInt32, UInt64}) = Basic(convert(Culong, x))
 end
 convert(::Type{Basic}, x::Integer) = Basic(BigInt(x))
-convert(::Type{Basic}, x::Rational) = Basic(BasicInteger(num(x)) / BasicInteger(den(x)))
+convert(::Type{Basic}, x::Rational) = Basic(BasicType{Val{:Integer}}(num(x)) / BasicType{Val{:Integer}}(den(x)))
 
 
 
@@ -51,7 +50,6 @@ convert(::Type{Basic}, x::Rational) = Basic(BasicInteger(num(x)) / BasicInteger(
 ## this allows SymEngine.jl to keep track of the class of the C++ object
 ## XXX This needs to be generated from symengine on startup
 ## XXX This might be tedious with precompilation!
-abstract BasicType <: Number
 const SYMENGINE_ENUM = Dict{Int, Symbol}(0 => :Integer,
                                          1 => :Rational,
                                          2 => :Complex,
@@ -62,12 +60,14 @@ const SYMENGINE_ENUM = Dict{Int, Symbol}(0 => :Integer,
                                          14 => :Mul,
                                          15 => :Add,
                                          16 => :Pow,
-                                         19 => :Constant)
+                                         19 => :Constant,
+                                         20 => :Sin,
+                                         21 => :Cos
+                                         )
 
-## a dictionary to hold our dynamically generated subtypes of BasicType
-_basic_types = Dict()
-
-type BasicValue <: BasicType
+## Parameterized type allowing or dispatch on Julia side by type of objecton SymEngine side
+## Use as BasicType{Val{:Integer}}(...)
+type BasicType{T} <: Number
     x::Basic
 end
 
@@ -82,34 +82,18 @@ function get_class_id(id)
     ccall((:basic_get_class_id, :libsymengine), AbstractString, (Ptr{AbstractString},), &s)
 end
 
-## Convert a Basic value inton one of the BasicType values
-## These types are generated dynamically using an id and typename gathered from the Basic object
+## Convert a Basic value into one of the BasicType values
 ## XXX this needs hooking up with get_class_id XXX
 function Base.convert(::Type{BasicType}, val::Basic)
     id = get_type(val)
-    if !haskey(_basic_types, id)
-        ## need to create a new type
-        # nm = get_class_id(id)
-        nm = haskey(SYMENGINE_ENUM, id) ? "Basic" * string(SYMENGINE_ENUM[id]) : "BasicValue"
-        # create new type
-        if nm == "BasicValue"
-            return BasicValue(val)
-        else
-            nm = symbol(nm)
-            @eval begin
-                type $nm <: BasicType
-                    x::Basic
-                end
-                _basic_types[$id] = $nm
-            end
-        end
-    end
-    _basic_types[id](val)
+    # nm = get_class_id(id)
+    nm = haskey(SYMENGINE_ENUM, id) ? SYMENGINE_ENUM[id] : :Value  # work around until get_class_id is exposed
+    BasicType{Val{nm}}(val)
 end
 
 
 
-Base.promote_rule{T<:SymbolicNumber, S<:Number}(::Type{T}, ::Type{S} ) = T
+Base.promote_rule{S<:Number}(::Type{Basic}, ::Type{S} ) = T
 Base.promote_rule{T<:BasicType, S<:Number}(::Type{T}, ::Type{S} ) = T
 
 Base.convert{T<:BasicType}(::Type{Basic}, val::T) = val.x
@@ -128,7 +112,7 @@ Base.convert{T<:BasicType}(::Type{T}, val::Rational) = T(Basic(val))
 function _symbol(s::ASCIIString)
     a = Basic()
     ccall((:symbol_set, :libsymengine), Void, (Ptr{Basic}, Ptr{Int8}), &a, s)
-    return BasicValue(a)
+    return BasicType{Val{:Symbol}}(a)
 end
 _symbol(s::Symbol) = _symbol(string(s))
 

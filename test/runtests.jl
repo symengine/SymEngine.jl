@@ -48,5 +48,5 @@ ex = x^2 + y^2
 ## type information
 a = Sym(1)
 b = Sym(1//2)
-@test isa(a+a, SymEngine.BasicInteger)
-@test isa(a+b, SymEngine.BasicRational)
+@test isa(a+a, SymEngine.BasicType{Val{:Integer}})
+@test isa(a+b, SymEngine.BasicType{Val{:Rational}})
