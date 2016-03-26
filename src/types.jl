@@ -74,12 +74,12 @@ end
 Basic(x::BasicType) = x.x
 
 function get_type(s::Basic)
-    ccall((:basic_get_type, :libsymengine), Int, (Ptr{Basic},), &s)
+    ccall((:basic_get_type, :libsymengine), UInt, (Ptr{Basic},), &s)
 end
 
 function get_class_id(id)
     id = string(id)
-    ccall((:basic_get_class_id, :libsymengine), AbstractString, (Ptr{AbstractString},), &s)
+    ccall((:basic_get_class_id, :libsymengine), AbstractString, (Ptr{AbstractString},), &id)
 end
 
 ## Convert a Basic value into one of the BasicType values
@@ -90,6 +90,18 @@ function Base.convert(::Type{BasicType}, val::Basic)
     nm = haskey(SYMENGINE_ENUM, id) ? SYMENGINE_ENUM[id] : :Value  # work around until get_class_id is exposed
     BasicType{Val{nm}}(val)
 end
+
+## some type unions used for dispatch
+number_types = [:Integer, :Rational, :Complex]
+BasicNumber = Union{[SymEngine.BasicType{Val{i}} for i in number_types]...}
+
+op_types = [:Mul, :Add, :Pow, :Symbol, :Const]
+BasicOp = Union{[SymEngine.BasicType{Val{i}} for i in op_types]...}
+
+trig_types = [:Sin, :Cos, :Tan, :Csc, :Sec, :Cot, :ASin, :ACos, :ATan, :ACsc, :ASec, :ACot]
+BasicTrigFunction =  Union{[SymEngine.BasicType{Val{i}} for i in trig_types]...}
+
+
 
 
 
