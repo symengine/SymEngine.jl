@@ -2,7 +2,7 @@ import Base.Operators: +, -, ^, /, //, \, *, ==
 
 ## equality
 function ==(b1::BasicType, b2::BasicType)
-    b1 = b1.x; b2 = b2.x
+    b1,b2 = map(Basic, (b1, b2))
     ccall((:basic_eq, :libsymengine), Int, (Ptr{Basic}, Ptr{Basic}), &b1, &b2) == 1
 end
 
@@ -13,7 +13,7 @@ for (op, libnm) in ((:+, :add), (:-, :sub), (:*, :mul), (:/, :div), (://, :div),
     @eval begin
         function ($op)(b1::BasicType, b2::BasicType)
             a = Basic()
-            b1,b2 = b1.x, b2.x
+            b1,b2 = map(Basic, (b1, b2))
             ccall($tup, Void, (Ptr{Basic}, Ptr{Basic}, Ptr{Basic}), &a, &b1, &b2)
             return Sym(a)
         end
@@ -28,10 +28,10 @@ end
 
 
 ## ## constants
-Base.zero(x::BasicType) = BasicInteger(Basic(0))
-Base.zero{T<:BasicType}(::Type{T}) = BasicInteger(Basic(0))
-Base.one(x::Basic) = BasicInteger(Basic(1))
-Base.one{T<:BasicType}(::Type{T}) = BasicInteger(Basic(1))
+Base.zero(x::BasicType) = Sym(Basic(0))
+Base.zero{T<:BasicType}(::Type{T}) = Sym(Basic(0))
+Base.one(x::BasicType) = Sym(Basic(1))
+Base.one{T<:BasicType}(::Type{T}) = Sym(Basic(1))
 
 
 ## Math constants 

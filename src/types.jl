@@ -64,19 +64,9 @@ const SYMENGINE_ENUM = Dict{Int, Symbol}(0 => :Integer,
                                          16 => :Pow,
                                          19 => :Constant)
 
+## a dictionary to hold our dynamically generated subtypes of BasicType
 _basic_types = Dict()
 
-## for (k,v) in SYMENGINE_ENUM
-##     tname = symbol("Basic$v")
-##     fname = symbol("basic_free_$v")
-##     @eval begin
-##         type $tname <: BasicType
-##             x::Basic
-##         end
-##         _basic_types[$k] = $tname
-##     end
-## end
-##
 type BasicValue <: BasicType
     x::Basic
 end
@@ -92,6 +82,9 @@ function get_class_id(id)
     ccall((:basic_get_class_id, :libsymengine), AbstractString, (Ptr{AbstractString},), &s)
 end
 
+## Convert a Basic value inton one of the BasicType values
+## These types are generated dynamically using an id and typename gathered from the Basic object
+## XXX this needs hooking up with get_class_id XXX
 function Base.convert(::Type{BasicType}, val::Basic)
     id = get_type(val)
     if !haskey(_basic_types, id)

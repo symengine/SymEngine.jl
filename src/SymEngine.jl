@@ -4,7 +4,6 @@ import
     Base.show,
     Base.convert
 
-
 include("../deps/deps.jl")
 
 include("types.jl")
