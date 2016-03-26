@@ -2,8 +2,7 @@ module SymEngine
 
 import
     Base.show,
-    Base.convert,
-    Base.abs
+    Base.convert
 
 
 include("../deps/deps.jl")
