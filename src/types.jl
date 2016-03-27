@@ -173,9 +173,8 @@ BasicTrigFunction =  Union{[SymEngine.BasicType{Val{i}} for i in trig_types]...}
 
 Base.promote_rule{S<:Number}(::Type{Basic}, ::Type{S} ) = Basic
 Base.promote_rule{T<:BasicType, S<:Number}(::Type{T}, ::Type{S} ) = T
-
-Base.promote_type{T}(::Type{BasicType{Val{T}}}, ::Type{Basic}) = BasicType{Val{T}}
-Base.promote_type{T}(::Type{Basic}, ::Type{BasicType{Val{T}}}) = BasicType{Val{T}}
+Base.promote_rule{T<:BasicType}(::Type{T}, ::Type{Basic} ) = T
+Base.promote_rule{T<:BasicType}( ::Type{Basic}, ::Type{T} ) = T
 
 
 
