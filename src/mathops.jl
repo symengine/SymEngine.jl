@@ -1,7 +1,7 @@
 import Base.Operators: +, -, ^, /, //, \, *, ==
 
 ## equality
-function ==(b1::BasicType, b2::BasicType)
+function ==(b1::SymbolicType, b2::SymbolicType)
     b1,b2 = map(Basic, (b1, b2))
     ccall((:basic_eq, :libsymengine), Int, (Ptr{Basic}, Ptr{Basic}), &b1, &b2) == 1
 end
@@ -11,27 +11,33 @@ end
 for (op, libnm) in ((:+, :add), (:-, :sub), (:*, :mul), (:/, :div), (://, :div), (:^, :pow))
     tup = (Base.symbol("basic_$libnm"), :libsymengine)
     @eval begin
-        function ($op)(b1::BasicType, b2::BasicType)
+        function ($op)(b1::Basic, b2::Basic)
             a = Basic()
-            b1,b2 = map(Basic, (b1, b2))
+            b1, b2 = map(Basic, (b1, b2))
             ccall($tup, Void, (Ptr{Basic}, Ptr{Basic}, Ptr{Basic}), &a, &b1, &b2)
-            return Sym(a)
+            return a
         end
+        ($op){T,S}(b1::BasicType{T},b2::BasicType{S}) = ($op)(Basic(b1),  Basic(b2))
     end
 end
-    
-^{T <: Integer}(a::BasicType, b::T) = a^BasicType(b)
-^{T <: Rational}(a::BasicType, b::T) = a^BasicType(b)
-+(b::BasicType) = b
--(b::BasicType) = 0 - b
-\(b1::BasicType, b2::BasicType) = b2 / b1
+
+^{T<:SymbolicType, S <: Integer}(a::T, b::S) = Basic(a)^Basic(b)
+^{T<:SymbolicType, S <: Rational}(a::T, b::S) = Basic(a)^Basic(b)
++(b::SymbolicType) = b
+-(b::SymbolicType) = 0 - b
+\(b1::SymbolicType, b2::SymbolicType) = b2 / b1
 
 
 ## ## constants
-Base.zero(x::BasicType) = Sym(Basic(0))
-Base.zero{T<:BasicType}(::Type{T}) = Sym(Basic(0))
-Base.one(x::BasicType) = Sym(Basic(1))
-Base.one{T<:BasicType}(::Type{T}) = Sym(Basic(1))
+Base.zero(x::Basic) = Basic(0)
+Base.zero{T<:Basic}(::Type{T}) = Basic(0)
+Base.one(x::Basic) = Basic(1)
+Base.one{T<:Basic}(::Type{T}) = Basic(1)
+
+Base.zero(x::BasicType) = _Sym(Basic(0))
+Base.zero{T<:BasicType}(::Type{T}) = _Sym(Basic(0))
+Base.one(x::BasicType) = _Sym(Basic(1))
+Base.one{T<:BasicType}(::Type{T}) = _Sym(Basic(1))
 
 
 ## Math constants 
@@ -46,16 +52,16 @@ for (op, libnm) in [(:IM, :I),
         ($op) = begin
             a = Basic()
             ccall($tup, Void, (Ptr{Basic}, ), &a)
-            Sym(a)
+            a
         end
     end
     eval(Expr(:export, op)) 
 end
     
 ## ## Conversions
-Base.convert{T<:BasicType}(::Type{T}, x::Irrational{:π}) = PI
-Base.convert{T<:BasicType}(::Type{T}, x::Irrational{:e}) = E
-Base.convert{T<:BasicType}(::Type{T}, x::Irrational{:γ}) = EulerGamma
-Base.convert{T<:BasicType}(::Type{T}, x::Irrational{:catalan}) = sympy[:Catalan]
-Base.convert{T<:BasicType}(::Type{T}, x::Irrational{:φ}) = (1 + Sym(5)^Sym(1//2))/2
-Base.convert(::Type{Basic}, x::Irrational) = Basic(convert(BasicType, x))
+Base.convert(::Type{Basic}, x::Irrational{:π}) = PI
+Base.convert(::Type{Basic}, x::Irrational{:e}) = E
+Base.convert(::Type{Basic}, x::Irrational{:γ}) = EulerGamma
+Base.convert(::Type{Basic}, x::Irrational{:catalan}) = sympy[:Catalan]
+Base.convert(::Type{Basic}, x::Irrational{:φ}) = (1 + Sym(5)^Sym(1//2))/2
+Base.convert(::Type{BasicType}, x::Irrational) = _Sym(convert(Basic, x))

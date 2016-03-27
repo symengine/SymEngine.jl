@@ -34,11 +34,11 @@ for (meth, libnm) in [
     eval(Expr(:import, :Base, meth))
     tup = (Base.symbol("basic_$libnm"), :libsymengine)
     @eval begin
-        function ($meth)(b::BasicType)
+        function ($meth)(b::SymbolicType)
             a = Basic()
             b = Basic(b)
             ccall($tup, Void, (Ptr{Basic}, Ptr{Basic}), &a, &b)
-            return Sym(a)
+            return a
         end
     end
 end
@@ -49,23 +49,23 @@ for  (meth, libnm) in [
                        ]
     tup = (Base.symbol("basic_$libnm"), :libsymengine)
     @eval begin
-        function ($meth)(b::BasicType)
+        function ($meth)(b::SymbolicType)
             a = Basic()
             b = Basic(b)
             ccall($tup, Void, (Ptr{Basic}, Ptr{Basic}), &a, &b)
-            return Sym(a)
+            return a
         end
     end
     eval(Expr(:export, meth))
 end
 
 ## add
-Base.sqrt(a::BasicType) = a^(1//2)
-Base.cbrt(a::BasicType) = a^(1//3)
+Base.sqrt(a::SymbolicType) = a^(1//2)
+Base.cbrt(a::SymbolicType) = a^(1//3)
 for (meth, fn) in [(:sind, :sin), (:cosd, :cos), (:tand, :tan), (:secd, :sec), (:cscd, :csc), (:cotd, :cot)]
     eval(Expr(:import, :Base, meth))
     @eval begin
-        $(meth)(a::BasicType) = $(fn)(a*PI/180)
+        $(meth)(a::SymbolicType) = $(fn)(a*PI/180)
     end
 end
 
@@ -80,27 +80,27 @@ for (meth, libnm) in [(:gcd, :gcd),
     eval(Expr(:import, :Base, meth))
     tup = (Base.symbol("ntheory_$libnm"), :libsymengine)
     @eval begin
-        function ($meth)(a::BasicType, b::BasicType)
+        function ($meth)(a::SymbolicType, b::SymbolicType)
             s = Basic()
-            a,b = map(Basic, (a, b))
+            a,b = map(Basic, (a,b))
             ccall($tup, Void, (Ptr{Basic}, Ptr{Basic}, Ptr{Basic}), &s, &a, &b)
-            return Sym(s)
+            return s
         end
     end
 end
 
-Base.rem(a::BasicType, b::BasicType) = a - (a ÷ b) * b
+Base.rem(a::SymbolicType, b::SymbolicType) = a - (a ÷ b) * b
 
 ## but not (:fibonacci,:fibonacci), (:lucas, :lucas) (Basic type is not the signature)
 for (meth, libnm) in [(:nextprime,:nextprime)
                       ]
     tup = (Base.symbol("ntheory_$libnm"), :libsymengine)
     @eval begin
-        function ($meth)(a::BasicType)
+        function ($meth)(a::SymbolicType)
             s = Basic()
             a = Basic(a)
             ccall($tup, Void, (Ptr{Basic}, Ptr{Basic}), &s, &a)
-            return Sym(s)
+            return s
         end
     end
     eval(Expr(:export, meth))

@@ -1,5 +1,6 @@
 
-function toString(b::Basic)
+function toString(b::SymbolicType)
+    b = Basic(b)
     a = ccall((:basic_str, :libsymengine), Ptr{Int8}, (Ptr{Basic}, ), &b)
     string = bytestring(a)
     ccall((:basic_str_free, :libsymengine), Void, (Ptr{Int8}, ), a)
@@ -7,7 +8,4 @@ function toString(b::Basic)
     return string
 end
 
-toString(b::BasicType) = toString(Basic(b))
-
-
-show(io::IO, b::BasicType) = print(io, toString(b))
+show(io::IO, b::SymbolicType) = print(io, toString(b))

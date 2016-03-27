@@ -30,11 +30,11 @@ println()
 
 
 ## mathfuns
-@test abs(Sym(-1)) == 1
-@test sin(Sym(1)) == subs(sin(x), x, 1)
+@test abs(Basic(-1)) == 1
+@test sin(Basic(1)) == subs(sin(x), x, 1)
 @test sin(PI) == 0
 @test subs(sin(x), x, pi) == 0
-@test sind(Sym(30)) == 1 // 2
+@test sind(Basic(30)) == 1 // 2
 
 ## subs
 ex = x^2 + y^2
@@ -46,7 +46,14 @@ ex = x^2 + y^2
 
 
 ## type information
-a = Sym(1)
-b = Sym(1//2)
-@test isa(a+a, SymEngine.BasicType{Val{:Integer}})
-@test isa(a+b, SymEngine.BasicType{Val{:Rational}})
+a = Basic(1)
+b = Basic(1//2)
+@test isa(SymEngine._Sym(a+a), SymEngine.BasicType{Val{:Integer}})
+@test isa(SymEngine._Sym(a+b), SymEngine.BasicType{Val{:Rational}})
+
+## can we do math with items of BasicType?
+a1 = SymEngine._Sym(a)
+tot = a1
+for i in 1:100  tot = tot + a1 end
+@test tot == 101
+sin(a1)
