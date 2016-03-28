@@ -6,15 +6,15 @@ y = Sym(:y)
 @syms z
 
 a = x^2 + x/2 - x*y*5
-b = SymEngine.diff(a, x)
+b = diff(a, x)
 @test b == 2*x + 1//2 - 5*y
 
 c = x + Rational(1, 5)
-c = SymEngine.expand(c * 5)
+c = expand(c * 5)
 @test c == 5*x + 1
 
 c = x ^ 5
-@test SymEngine.diff(c, x) == 5 * x ^ 4
+@test diff(c, x) == 5 * x ^ 4
 
 c = x ^ y
 @test c != y^x
@@ -48,12 +48,18 @@ ex = x^2 + y^2
 ## type information
 a = Basic(1)
 b = Basic(1//2)
-@test isa(SymEngine._Sym(a+a), SymEngine.BasicType{Val{:Integer}})
-@test isa(SymEngine._Sym(a+b), SymEngine.BasicType{Val{:Rational}})
+@test isa(SymEngine.BasicType(a+a), SymEngine.BasicType{Val{:Integer}})
+@test isa(SymEngine.BasicType(a+b), SymEngine.BasicType{Val{:Rational}})
 
 ## can we do math with items of BasicType?
-a1 = SymEngine._Sym(a)
+a1 = SymEngine.BasicType(a)
 tot = a1
 for i in 1:100  tot = tot + a1 end
 @test tot == 101
 sin(a1)
+
+## N, not exported. Just a test for now
+a = Basic(1)
+@test SymEngine.N(a) == 1
+@test SymEngine.N(Basic(1//2)) == 1//2
+@test SymEngine.N(Basic(12345678901234567890)) == 12345678901234567890

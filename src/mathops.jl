@@ -34,10 +34,10 @@ Base.zero{T<:Basic}(::Type{T}) = Basic(0)
 Base.one(x::Basic) = Basic(1)
 Base.one{T<:Basic}(::Type{T}) = Basic(1)
 
-Base.zero(x::BasicType) = _Sym(Basic(0))
-Base.zero{T<:BasicType}(::Type{T}) = _Sym(Basic(0))
-Base.one(x::BasicType) = _Sym(Basic(1))
-Base.one{T<:BasicType}(::Type{T}) = _Sym(Basic(1))
+Base.zero(x::BasicType) = BasicType(Basic(0))
+Base.zero{T<:BasicType}(::Type{T}) = BasicType(Basic(0))
+Base.one(x::BasicType) = BasicType(Basic(1))
+Base.one{T<:BasicType}(::Type{T}) = BasicType(Basic(1))
 
 
 ## Math constants 
@@ -63,5 +63,5 @@ Base.convert(::Type{Basic}, x::Irrational{:π}) = PI
 Base.convert(::Type{Basic}, x::Irrational{:e}) = E
 Base.convert(::Type{Basic}, x::Irrational{:γ}) = EulerGamma
 Base.convert(::Type{Basic}, x::Irrational{:catalan}) = sympy[:Catalan]
-Base.convert(::Type{Basic}, x::Irrational{:φ}) = (1 + Sym(5)^Sym(1//2))/2
-Base.convert(::Type{BasicType}, x::Irrational) = _Sym(convert(Basic, x))
+Base.convert(::Type{Basic}, x::Irrational{:φ}) = (1 + Basic(5)^Basic(1//2))/2
+Base.convert(::Type{BasicType}, x::Irrational) = BasicType(convert(Basic, x))

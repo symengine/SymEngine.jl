@@ -7,5 +7,5 @@ function diff{T<:SymbolicType}(b1::T, b2::BasicType{Val{:Symbol}})
     return a
 end
 diff{T<:SymbolicType}(b1::T, b2::BasicType) = throw(ArgumentError("Second argument must be of symbol type"))
-diff{T<:SymbolicType, S<:SymbolicType}(b1::T, b2::S) = diff(b1, _Sym(b2))
+diff{T<:SymbolicType, S<:SymbolicType}(b1::T, b2::S) = diff(b1, BasicType(b2))
 

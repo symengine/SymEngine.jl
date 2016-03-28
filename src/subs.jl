@@ -33,6 +33,6 @@ export subs
 Convert a SymEngine numeric value into a number
 
 """
-N(b::Basic) = N(_Sym(b))
-N(b::BasicType{Val{:Integer}}) = parse(BigInt, toString(b))
-N(b::BasicType{Val{:Rational}}) = parse(Float64, toString(b))
+N(b::Basic) = N(BasicType(b))
+N(b::BasicType{Val{:Integer}}) = eval(parse(toString(b)))
+N(b::BasicType{Val{:Rational}}) = eval(parse(replace(toString(b), "/", "//")))
