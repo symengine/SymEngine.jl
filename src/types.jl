@@ -126,7 +126,7 @@ type BasicType{T} <: Number
 end
 
 SymbolicType = Union{Basic, BasicType}
-
+convert(::Type{Basic}, x::BasicType) = x.x
 Basic(x::BasicType) = x.x
 
 function get_type(s::Basic)

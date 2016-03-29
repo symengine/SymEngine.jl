@@ -13,11 +13,10 @@ for (op, libnm) in ((:+, :add), (:-, :sub), (:*, :mul), (:/, :div), (://, :div),
     @eval begin
         function ($op)(b1::Basic, b2::Basic)
             a = Basic()
-            b1, b2 = map(Basic, (b1, b2))
             ccall($tup, Void, (Ptr{Basic}, Ptr{Basic}, Ptr{Basic}), &a, &b1, &b2)
             return a
         end
-        ($op){T,S}(b1::BasicType{T},b2::BasicType{S}) = ($op)(Basic(b1),  Basic(b2))
+        ($op)(b1::BasicType, b2::BasicType) = ($op)(Basic(b1), Basic(b2))
     end
 end
 

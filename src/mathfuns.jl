@@ -36,7 +36,6 @@ for (meth, libnm) in [
     @eval begin
         function ($meth)(b::SymbolicType)
             a = Basic()
-            b = Basic(b)
             ccall($tup, Void, (Ptr{Basic}, Ptr{Basic}), &a, &b)
             return a
         end
@@ -50,7 +49,6 @@ for  (meth, libnm) in [
     tup = (Base.symbol("basic_$libnm"), :libsymengine)
     @eval begin
         function ($meth)(b::SymbolicType)
-            a = Basic()
             b = Basic(b)
             ccall($tup, Void, (Ptr{Basic}, Ptr{Basic}), &a, &b)
             return a
@@ -82,7 +80,6 @@ for (meth, libnm) in [(:gcd, :gcd),
     @eval begin
         function ($meth)(a::SymbolicType, b::SymbolicType)
             s = Basic()
-            a,b = map(Basic, (a,b))
             ccall($tup, Void, (Ptr{Basic}, Ptr{Basic}, Ptr{Basic}), &s, &a, &b)
             return s
         end
@@ -98,7 +95,6 @@ for (meth, libnm) in [(:nextprime,:nextprime)
     @eval begin
         function ($meth)(a::SymbolicType)
             s = Basic()
-            a = Basic(a)
             ccall($tup, Void, (Ptr{Basic}, Ptr{Basic}), &s, &a)
             return s
         end
