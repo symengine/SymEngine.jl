@@ -1,9 +1,9 @@
 using Base.Test
 using SymEngine
 
-x = Sym("x")
-y = Sym(:y)
-@syms z
+x = symbols("x")
+y = symbols(:y)
+@vars z
 
 a = x^2 + x/2 - x*y*5
 b = diff(a, x)
@@ -19,7 +19,7 @@ c = x ^ 5
 c = x ^ y
 @test c != y^x
 
-c = Sym(-5)
+c = Basic(-5)
 @test abs(c) == 5
 @test abs(c) != 4
 
@@ -63,3 +63,11 @@ a = Basic(1)
 @test SymEngine.N(a) == 1
 @test SymEngine.N(Basic(1//2)) == 1//2
 @test SymEngine.N(Basic(12345678901234567890)) == 12345678901234567890
+
+
+## generic linear algebra
+x = symbols("x")
+A = [x 2; x 1]
+@test det(A) == -x
+@test det(inv(A)) == - 1/x
+(A \ [1,2])[1] == 3/x

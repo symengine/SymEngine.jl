@@ -67,15 +67,15 @@ function _symbol(s::ASCIIString)
 end
 _symbol(s::Symbol) = _symbol(string(s))
 
-"""
+"`symbols(::Symbol)` construct symbolic value"
+symbols(s::Symbol) = _symbol(s)
+symbols(s::ASCIIString) = [_symbol(symbol(o)) for o in split(replace(s, ",", " "), r"\s+")]
+export symbols
 
-Convenience for construction of symbolic values
 
-"""
-Sym(s::ASCIIString) = _symbol(s)
-Sym(s::Symbol) = Sym(string(s))
-Sym(s::Any) = Basic(s)
-export Sym
+
+
+## Follow, somewhat, the python names: symbols to construct symbols, @vars
 
 
 """
@@ -85,10 +85,10 @@ Symbolic values are defined with `_symbol`. This is a convenience
 
 Example
 ```
-@syms x y z
+@vars x y z
 ```
 """
-macro syms(x...)
+macro vars(x...)
     q=Expr(:block)
     if length(x) == 1 && isa(x[1],Expr)
         @assert x[1].head === :tuple "@syms expected a list of symbols"
@@ -101,7 +101,7 @@ macro syms(x...)
     push!(q.args, Expr(:tuple, x...))
     eval(Main, q)
 end
-export @syms
+export @vars
 
 
 ## We also have a wrapper type that can be used to control dispatch
