@@ -67,14 +67,14 @@ get_symengine_class(s::Basic) = symbol(get_class_from_id(get_type(s)))
 " Return free symbols in an expression as a `Set`"
 function free_symbols(ex::Basic)
     syms = CSetBasic()
-    ccall((:basic_free_symbols, :libsymengine), Void, (Ptr{Basic}, Ptr{SymEngine.CSetBasic}), &ex, &syms)
+    ccall((:basic_free_symbols, :libsymengine), Void, (Ptr{Basic}, Ptr{Void}), &ex, syms.ptr)
     convert(Set, syms)
 end
 
 "Return arguments of a function call as a vector of `Basic` objects"
 function get_args(ex::Basic)
     args = CVecBasic()
-    ccall((:basic_get_args, :libsymengine), Void, (Ptr{Basic}, Ptr{CVecBasic}), &ex, &args)
+    ccall((:basic_get_args, :libsymengine), Void, (Ptr{Basic}, Ptr{Void}), &ex, args.ptr)
     convert(Vector, args)
 end
 
@@ -101,12 +101,13 @@ x,y,z = symbols("x,y,z")
 ```
 
 """
+
 symbols(s::Symbol) = _symbol(s)
 function symbols(s::ASCIIString)
     ## handle space or comma sparation
     s = replace(s, ",", " ")
     by_space = split(s, r"\s+")
-    length(by_space) == 1 && return symbols(symbol(s))
+    Base.length(by_space) == 1 && return symbols(symbol(s))
     tuple([_symbol(symbol(o)) for o in by_space]...)
 end
 export symbols
