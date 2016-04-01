@@ -36,6 +36,14 @@ println()
 @test subs(sin(x), x, pi) == 0
 @test sind(Basic(30)) == 1 // 2
 
+## ntheory
+@test mod(Basic(10), Basic(4)) == 2
+@test mod(Basic(10), 4) == 2               # mod(::Basic, ::Number)
+@test_throws MethodError mod(10, Basic(4)) # no mod(::Number, ::Basic)
+@test gcd(Basic(10), Basic(4)) == 2
+@test lcm(Basic(10), Basic(4)) == 20
+@test binomial(Basic(5), 2) == 10
+
 ## subs
 ex = x^2 + y^2
 @test subs(ex, x, 1) == 1 + y^2

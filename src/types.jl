@@ -26,6 +26,7 @@ export Basic
 basic_free(b::Basic) = ccall((:basic_free_stack, :libsymengine), Void, (Ptr{Basic}, ), &b)
 
 
+
 function Basic(x::Clong)
     a = Basic()
     ccall((:integer_set_si, :libsymengine), Void, (Ptr{Basic}, Clong), &a, x)
@@ -57,9 +58,28 @@ convert(::Type{Basic}, x::Rational) = Basic(num(x)) / Basic(den(x))
 
 Base.promote_rule{S<:Number}(::Type{Basic}, ::Type{S} ) = Basic
 
+## Class ID
+get_type(s::Basic) = convert(Int, ccall((:basic_get_type, :libsymengine), UInt, (Ptr{Basic},), &s))
+get_class_from_id(id::Int) = ccall((:basic_get_class_from_id, :libsymengine), Ptr{UInt8}, (Int,), id) |> bytestring
+"Get SymEngine class of an object (e.g. 1=>:Integer, 1//2 =:Rational, sin(x) => :Sin, ..."
+get_symengine_class(s::Basic) = symbol(get_class_from_id(get_type(s)))
+
+" Return free symbols in an expression as a `Set`"
+function free_symbols(ex::Basic)
+    syms = CSetBasic()
+    ccall((:basic_free_symbols, :libsymengine), Void, (Ptr{Basic}, Ptr{SymEngine.CSetBasic}), &ex, &syms)
+    convert(Set, syms)
+end
+
+"Return arguments of a function call as a vector of `Basic` objects"
+function get_args(ex::Basic)
+    args = CVecBasic()
+    ccall((:basic_get_args, :libsymengine), Void, (Ptr{Basic}, Ptr{CVecBasic}), &ex, &args)
+    convert(Vector, args)
+end
 
 ## Construct symbolic objects
-## rename? This conflicts with Base.symbol
+## renamed, as `symbol` conflicts with Base.symbol
 function _symbol(s::ASCIIString)
     a = Basic()
     ccall((:symbol_set, :libsymengine), Void, (Ptr{Basic}, Ptr{Int8}), &a, s)
@@ -67,9 +87,28 @@ function _symbol(s::ASCIIString)
 end
 _symbol(s::Symbol) = _symbol(string(s))
 
-"`symbols(::Symbol)` construct symbolic value"
+## use SymPy name here, but no assumptions
+"""
+
+`symbols(::Symbol)` construct symbolic value
+
+Examples:
+```
+a = symbols(:a)
+x = symbols("x")
+x,y = symbols("x y")
+x,y,z = symbols("x,y,z")
+```
+
+"""
 symbols(s::Symbol) = _symbol(s)
-symbols(s::ASCIIString) = [_symbol(symbol(o)) for o in split(replace(s, ",", " "), r"\s+")]
+function symbols(s::ASCIIString)
+    ## handle space or comma sparation
+    s = replace(s, ",", " ")
+    by_space = split(s, r"\s+")
+    length(by_space) == 1 && return symbols(symbol(s))
+    tuple([_symbol(symbol(o)) for o in by_space]...)
+end
 export symbols
 
 
@@ -109,12 +148,9 @@ export @vars
 ## cons: have to write methods meth(x::Basic, ...) = meth(BasicType(x),...)
 
 
-## Wrapper type
-## this allows SymEngine.jl to keep track of the class of the C++ object
 
 
-
-## Parameterized type allowing or dispatch on Julia side by type of objecton SymEngine side
+## Parameterized type allowing for dispatch on Julia side by type of objecton SymEngine side
 ## Use as BasicType{Val{:Integer}}(...)
 ## To take advantage of this, define
 ## meth(x::Basic) = meth(BasicType(x))
@@ -129,27 +165,8 @@ SymbolicType = Union{Basic, BasicType}
 convert(::Type{Basic}, x::BasicType) = x.x
 Basic(x::BasicType) = x.x
 
-function get_type(s::Basic)
-    id = ccall((:basic_get_type, :libsymengine), UInt, (Ptr{Basic},), &s)
-    convert(Int, id)
-end
-
-function get_class_from_id(id::Int)
-    out = ccall((:basic_get_class_from_id, :libsymengine), Ptr{UInt8}, (Int,), id)
-    bytestring(out)
-end
-
-"
-Get SymEngine class of an object (e.g. 1=>:Integer, 1//2 =:Rational, sin(x) => :Sin, ...
-"
-get_symengine_class(s::Basic) = symbol(get_class_from_id(get_type(s)))
-
-## Convert a Basic value into one of the BasicType values
-function Base.convert(::Type{BasicType}, val::Basic)
-    nm = get_symengine_class(val)
-    BasicType{Val{nm}}(val)
-end
-Base.convert{T}(::Type{BasicType{T}}, val::Basic) = convert(BasicType, val)
+BasicType(val::Basic) =  BasicType{Val{get_symengine_class(val)}}(val)
+Base.convert{T}(::Type{BasicType{T}}, val::Basic) = BasicType{Val{get_symengine_class(val)}}(val)
 
 
 
@@ -163,14 +180,11 @@ Base.promote_rule{T<:BasicType, S<:Number}(::Type{T}, ::Type{S} ) = T
 Base.promote_rule{T<:BasicType}(::Type{T}, ::Type{Basic} ) = T
 Base.promote_rule{T<:BasicType}( ::Type{Basic}, ::Type{T} ) = T
 
-# is this not needed?
-#Base.convert{T<:BasicType}(::Type{Basic}, val::T) = val.x
-
 ## needed for mathops
 Base.convert{T<:BasicType}(::Type{T}, val::Number) = T(Basic(val))
 
 
-## some type unions used for dispatch
+## some type unions possibly useful for dispatch
 ## Names here match those returned by get_symengine_class()
 number_types = [:Integer, :Rational, :Complex]
 BasicNumber = Union{[SymEngine.BasicType{Val{i}} for i in number_types]...}

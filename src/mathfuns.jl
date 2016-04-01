@@ -1,4 +1,25 @@
+function IMPLEMENT_ONE_ARG_FUNC(meth, symnm; lib=:basic_)
+     @eval begin
+        function ($meth)(b::SymbolicType)
+            a = Basic()
+            ccall(($(string(lib,symnm)), :libsymengine), Void, (Ptr{Basic}, Ptr{Basic}), &a, &b)
+            return a
+        end
+    end
+end
 
+function IMPLEMENT_TWO_ARG_FUNC(meth, symnm; lib=:basic_)
+     @eval begin
+        function ($meth)(b1::SymbolicType, b2::Number)
+            a = Basic()
+            b1, b2 = promote(b1, b2)
+            ccall(($(string(lib,symnm)), :libsymengine), Void, (Ptr{Basic}, Ptr{Basic}, Ptr{Basic}), &a, &b1, &b2)
+            return a
+        end
+    end
+end
+
+## import from base one argument functions
 ## these are from cwrapper.cpp, one arg func
 ## Where are exp? log?, sqrt?
 for (meth, libnm) in [
@@ -32,28 +53,14 @@ for (meth, libnm) in [
                       (:eta,:dirichlet_eta),
                       ]
     eval(Expr(:import, :Base, meth))
-    tup = (Base.symbol("basic_$libnm"), :libsymengine)
-    @eval begin
-        function ($meth)(b::SymbolicType)
-            a = Basic()
-            ccall($tup, Void, (Ptr{Basic}, Ptr{Basic}), &a, &b)
-            return a
-        end
-    end
+    IMPLEMENT_ONE_ARG_FUNC(meth, libnm)
 end
 
-# functions not in 
+# export not import
 for  (meth, libnm) in [
                        (:lambertw,:lambertw)   # in add-on packages, not base
                        ]
-    tup = (Base.symbol("basic_$libnm"), :libsymengine)
-    @eval begin
-        function ($meth)(b::SymbolicType)
-            b = Basic(b)
-            ccall($tup, Void, (Ptr{Basic}, Ptr{Basic}), &a, &b)
-            return a
-        end
-    end
+    IMPLEMENT_ONE_ARG_FUNC(meth, libnm)    
     eval(Expr(:export, meth))
 end
 
@@ -73,32 +80,20 @@ for (meth, libnm) in [(:gcd, :gcd),
                       (:lcm, :lcm),
                       (:mod, :mod),
                       (:div, :quotient),
-                      (:binomial, :binomial)
                       ]
     eval(Expr(:import, :Base, meth))
-    tup = (Base.symbol("ntheory_$libnm"), :libsymengine)
-    @eval begin
-        function ($meth)(a::SymbolicType, b::SymbolicType)
-            s = Basic()
-            ccall($tup, Void, (Ptr{Basic}, Ptr{Basic}, Ptr{Basic}), &s, &a, &b)
-            return s
-        end
-    end
+    IMPLEMENT_TWO_ARG_FUNC(meth, libnm, lib=:ntheory_)    
 end
 
+Base.binomial(n::Basic, k::Number) = binomial(N(n), N(k))  #ntheory_binomial seems wrong
 Base.rem(a::SymbolicType, b::SymbolicType) = a - (a ÷ b) * b
+Base.factorial(n::SymbolicType, k) = factorial(N(n), N(k))
+
+
 
 ## but not (:fibonacci,:fibonacci), (:lucas, :lucas) (Basic type is not the signature)
 for (meth, libnm) in [(:nextprime,:nextprime)
                       ]
-    tup = (Base.symbol("ntheory_$libnm"), :libsymengine)
-    @eval begin
-        function ($meth)(a::SymbolicType)
-            s = Basic()
-            ccall($tup, Void, (Ptr{Basic}, Ptr{Basic}), &s, &a)
-            return s
-        end
-    end
+    IMPLEMENT_ONE_ARG_FUNC(meth, libnm, lib=:ntheory_)    
     eval(Expr(:export, meth))
-    
 end
