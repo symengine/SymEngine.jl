@@ -23,10 +23,8 @@ end
 subs{T <: SymbolicType, S<:SymbolicType}(ex::T, y::Tuple{S, Any}) = subs(ex, y[1], y[2])
 subs{T <: SymbolicType, S<:SymbolicType}(ex::T, y::Tuple{S, Any}, args...) = subs(subs(ex, y), args...)
 subs{T <: SymbolicType}(ex::T, d::Pair...) = subs(ex, [(p.first, p.second) for p in d]...)
-export subs
 
-
-## Lamdify
+## Lambdify
 
 ## Mapping of SymEngine Constants into julia values
 constant_map = Dict("pi" => :pi, "E" => :e, "EulerGamma" => :γ)
@@ -61,12 +59,13 @@ function walk_expression(ex)
     Expr(:call, map_fn(fn, fn_map), [walk_expression(a) for a in as]...)
 end
 
+## evaluate symbolless expression or return afunction
 function lambdify(ex::Basic)
     vars = free_symbols(ex)
     if length(vars) == 0
         _lambdify(ex)
     else
-        _lambidfy(ex, vars)
+        _lambdify(ex, vars)
     end
 end
 
@@ -75,9 +74,10 @@ function _lambdify(ex)
     body = walk_expression(ex)
     eval(body)
 end
+
 ## return a function
-function _lambdify(ex::Basic, vars=free_symbols(ex))
-    body = walk_expression(ex, fns=fns, values=values)
+function _lambdify(ex::Basic, vars)
+    body = walk_expression(ex)
 
     try
         eval(Expr(:function,
@@ -100,11 +100,12 @@ N(b::BasicType{Val{:Integer}}) = eval(parse(toString(b)))
 N(b::BasicType{Val{:Rational}}) = eval(parse(replace(toString(b), "/", "//")))
 ## need to test for free_symbols, if none then we need to evaluate
 function N(b::BasicType)
+    b = convert(Basic, b)
     fs = free_symbols(b)
     if length(fs) > 0
         throw(ArgumentError("Object can have no free symbols"))
     end
-    eval(lamdify(b))
+    eval(lambdify(b))
 end
         
 

@@ -17,6 +17,6 @@ function ascii_art()
     out = ccall((:ascii_art_str, :libsymengine),  Ptr{UInt8},  ())
     AsciiArt(bytestring(out))
 end
-export ascii_art
+
 Base.show(io::IO, x::AsciiArt) = print(io, x.x)
 

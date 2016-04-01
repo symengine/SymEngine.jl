@@ -27,10 +27,11 @@ function Base.getindex(s::CSetBasic, n::UInt)
     result
 end
 
-function Base.convert(::Type{Set}, x::CSetBasic)
+function Base.convert(::Type{Vector}, x::CSetBasic)
     n = Base.length(x)
-    Set([x[i-1] for i in 1:n])
+    [x[i-1] for i in 1:n]
 end
+Base.convert(::Type{Set}, x::CSetBasic) = Set(convert(Vector, x))
 
 ## VecBasic Need this for get_args...
 

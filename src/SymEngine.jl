@@ -2,6 +2,11 @@ module SymEngine
 
 import Base: show, convert
 
+export Basic, symbols, @vars
+export free_symbols, get_args
+export ascii_art
+export subs, lambdify, N
+
 include("../deps/deps.jl")
 
 include("ctypes.jl")

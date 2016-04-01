@@ -44,14 +44,6 @@ println()
 @test lcm(Basic(10), Basic(4)) == 20
 @test binomial(Basic(5), 2) == 10
 
-## subs
-ex = x^2 + y^2
-@test subs(ex, x, 1) == 1 + y^2
-@test subs(ex, (x, 1)) == 1 + y^2
-@test subs(ex, x => 1) == 1 + y^2
-@test subs(ex, (x,1), (y,2)) == 1 + 2^2
-@test subs(ex, x => 1, y => 2) == 1 + 2^2
-
 
 ## type information
 a = Basic(1)
@@ -66,11 +58,24 @@ for i in 1:100  tot = tot + a1 end
 @test tot == 101
 sin(a1)
 
-## N, not exported. Just a test for now
+## subs
+ex = x^2 + y^2
+@test subs(ex, x, 1) == 1 + y^2
+@test subs(ex, (x, 1)) == 1 + y^2
+@test subs(ex, x => 1) == 1 + y^2
+@test subs(ex, (x,1), (y,2)) == 1 + 2^2
+@test subs(ex, x => 1, y => 2) == 1 + 2^2
+
+## lambidfy
+@test_approx_eq lambdify(sin(Basic(1))) sin(1)
+ex = sin(x)
+@test_approx_eq lambdify(ex)(1) sin(1)
+
+## N
 a = Basic(1)
-@test SymEngine.N(a) == 1
-@test SymEngine.N(Basic(1//2)) == 1//2
-@test SymEngine.N(Basic(12345678901234567890)) == 12345678901234567890
+@test N(a) == 1
+@test N(Basic(1//2)) == 1//2
+@test N(Basic(12345678901234567890)) == 12345678901234567890
 
 
 ## generic linear algebra

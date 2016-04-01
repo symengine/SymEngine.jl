@@ -20,7 +20,6 @@ type Basic  <: Number
         return z
     end
 end
-export Basic
 
 
 basic_free(b::Basic) = ccall((:basic_free_stack, :libsymengine), Void, (Ptr{Basic}, ), &b)
@@ -59,8 +58,8 @@ convert(::Type{Basic}, x::Rational) = Basic(num(x)) / Basic(den(x))
 Base.promote_rule{S<:Number}(::Type{Basic}, ::Type{S} ) = Basic
 
 ## Class ID
-get_type(s::Basic) = convert(Int, ccall((:basic_get_type, :libsymengine), UInt, (Ptr{Basic},), &s))
-get_class_from_id(id::Int) = ccall((:basic_get_class_from_id, :libsymengine), Ptr{UInt8}, (Int,), id) |> bytestring
+get_type(s::Basic) = ccall((:basic_get_type, :libsymengine), UInt, (Ptr{Basic},), &s)
+get_class_from_id(id::UInt) = ccall((:basic_get_class_from_id, :libsymengine), Ptr{UInt8}, (UInt,), id) |> bytestring
 "Get SymEngine class of an object (e.g. 1=>:Integer, 1//2 =:Rational, sin(x) => :Sin, ..."
 get_symengine_class(s::Basic) = symbol(get_class_from_id(get_type(s)))
 
@@ -68,7 +67,7 @@ get_symengine_class(s::Basic) = symbol(get_class_from_id(get_type(s)))
 function free_symbols(ex::Basic)
     syms = CSetBasic()
     ccall((:basic_free_symbols, :libsymengine), Void, (Ptr{Basic}, Ptr{Void}), &ex, syms.ptr)
-    convert(Set, syms)
+    convert(Vector, syms)
 end
 
 "Return arguments of a function call as a vector of `Basic` objects"
@@ -110,7 +109,6 @@ function symbols(s::ASCIIString)
     Base.length(by_space) == 1 && return symbols(symbol(s))
     tuple([_symbol(symbol(o)) for o in by_space]...)
 end
-export symbols
 
 
 
@@ -141,7 +139,6 @@ macro vars(x...)
     push!(q.args, Expr(:tuple, x...))
     eval(Main, q)
 end
-export @vars
 
 
 ## We also have a wrapper type that can be used to control dispatch
