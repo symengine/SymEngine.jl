@@ -54,12 +54,19 @@ else
 end
 convert(::Type{Basic}, x::Integer) = Basic(BigInt(x))
 convert(::Type{Basic}, x::Rational) = Basic(num(x)) / Basic(den(x))
+convert(::Type{Basic}, x::Complex) = Basic(real(x)) + Basic(imag(x)) * IM
 
 Base.promote_rule{S<:Number}(::Type{Basic}, ::Type{S} ) = Basic
 
 ## Class ID
 get_type(s::Basic) = ccall((:basic_get_type, :libsymengine), UInt, (Ptr{Basic},), &s)
-get_class_from_id(id::UInt) = ccall((:basic_get_class_from_id, :libsymengine), Ptr{UInt8}, (UInt,), id) |> bytestring
+function get_class_from_id(id::UInt)
+    a = ccall((:basic_get_class_from_id, :libsymengine), Ptr{UInt8}, (Int,), id)
+    str = bytestring(a)
+    ccall((:basic_str_free, :libsymengine), Void, (Ptr{UInt8}, ), a)
+    str
+end
+
 "Get SymEngine class of an object (e.g. 1=>:Integer, 1//2 =:Rational, sin(x) => :Sin, ..."
 get_symengine_class(s::Basic) = symbol(get_class_from_id(get_type(s)))
 

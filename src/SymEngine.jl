@@ -6,6 +6,7 @@ export Basic, symbols, @vars
 export free_symbols, get_args
 export ascii_art
 export subs, lambdify, N
+export series
 
 include("../deps/deps.jl")
 

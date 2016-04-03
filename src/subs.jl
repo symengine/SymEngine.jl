@@ -50,6 +50,10 @@ function walk_expression(ex)
         return symbol(toString(ex))
     elseif fn in [:Integer , :Rational]
         return N(ex)
+    elseif fn == :Complex
+        ## hacky
+        x = eval(parse(replace(toString(ex), "I", "im")))
+        return Expr(:call, :complex, real(x), imag(x))
     elseif fn == :Constant
         return constant_map(toString(ex))
     end
@@ -96,8 +100,13 @@ Convert a SymEngine numeric value into a number
 
 """
 N(b::Basic) = N(BasicType(b))
-N(b::BasicType{Val{:Integer}}) = eval(parse(toString(b)))
+N(b::BasicType{Val{:Integer}}) = eval(parse(toString(b)))  ## HACKY
 N(b::BasicType{Val{:Rational}}) = eval(parse(replace(toString(b), "/", "//")))
+N(b::BasicType{Val{:Complex}}) =  eval(parse(replace(toString(b), "I", "im")))
+
+## function N(b::BasicType{Val{:Rational}})
+##     println("XXX")
+## end
 ## need to test for free_symbols, if none then we need to evaluate
 function N(b::BasicType)
     b = convert(Basic, b)
@@ -111,3 +120,4 @@ end
 
 N(a::Integer) = a
 N(a::Rational) = a
+N(a::Complex) = a

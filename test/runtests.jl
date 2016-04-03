@@ -36,6 +36,21 @@ println()
 @test subs(sin(x), x, pi) == 0
 @test sind(Basic(30)) == 1 // 2
 
+## calculus
+x,y = symbols("x y")
+n = Basic(2)
+ex = sin(x*y)
+@test diff(log(x),x) == 1/x
+@test diff(ex, x) == y * cos(x*y)
+@test diff(ex, x, 2) == diff(diff(ex,x), x)
+@test diff(ex, x, n) == diff(diff(ex,x), x)
+@test diff(ex, x, y) == diff(diff(ex,x), y)
+@test diff(ex, x, y,x) == diff(diff(diff(ex,x), y), x)
+@test series(sin(x), x, 0, 2) == x
+@test series(sin(x), x, 0, 3) == x - x^3/6
+   
+
+
 ## ntheory
 @test mod(Basic(10), Basic(4)) == 2
 @test mod(Basic(10), 4) == 2               # mod(::Basic, ::Number)

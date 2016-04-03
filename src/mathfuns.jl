@@ -64,9 +64,16 @@ for  (meth, libnm) in [
     eval(Expr(:export, meth))
 end
 
-## add
+## add these in until they are wrapped
+Base.exp(a::SymbolicType) = E^a
+function Base.log(a::SymbolicType) # super hacky
+    u = symbols(gensym())
+    v = a^u
+    diff(v, u) / v
+end
 Base.sqrt(a::SymbolicType) = a^(1//2)
 Base.cbrt(a::SymbolicType) = a^(1//3)
+                  
 for (meth, fn) in [(:sind, :sin), (:cosd, :cos), (:tand, :tan), (:secd, :sec), (:cscd, :csc), (:cotd, :cot)]
     eval(Expr(:import, :Base, meth))
     @eval begin
