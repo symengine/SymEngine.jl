@@ -5,7 +5,7 @@ type CSetBasic
 end
 
 function CSetBasic()
-    z = CSetBasic(ccall((:vecbasic_new, :libsymengine), Ptr{Void}, ()))
+    z = CSetBasic(ccall((:setbasic_new, :libsymengine), Ptr{Void}, ()))
     finalizer(z, CSetBasic_free)
     z
 end
