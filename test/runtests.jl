@@ -99,3 +99,7 @@ A = [x 2; x 1]
 @test det(A) == -x
 @test det(inv(A)) == - 1/x
 (A \ [1,2])[1] == 3/x
+
+## check that unique work (hash)
+x,y,z = symbols("x y z")
+@test length(SymEngine.free_symbols([x*y, y,z])) == 3
