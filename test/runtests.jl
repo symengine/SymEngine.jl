@@ -86,7 +86,7 @@ ex = x^2 + y^2
 ex = sin(x)
 @test_approx_eq lambdify(ex)(1) sin(1)
 ex = exp(PI/2*x)
-@test_approx_eq lambdify(ex)(1) exp(pi/1)
+@test_approx_eq lambdify(ex)(1) exp(pi/2)
 
 ## N
 a = Basic(1)
