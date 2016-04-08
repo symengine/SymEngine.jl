@@ -85,6 +85,8 @@ ex = x^2 + y^2
 @test_approx_eq lambdify(sin(Basic(1))) sin(1)
 ex = sin(x)
 @test_approx_eq lambdify(ex)(1) sin(1)
+ex = exp(PI/2*x)
+@test_approx_eq lambdify(ex)(1) exp(pi/2)
 
 ## N
 a = Basic(1)
@@ -99,3 +101,7 @@ A = [x 2; x 1]
 @test det(A) == -x
 @test det(inv(A)) == - 1/x
 (A \ [1,2])[1] == 3/x
+
+## check that unique work (hash)
+x,y,z = symbols("x y z")
+@test length(SymEngine.free_symbols([x*y, y,z])) == 3
