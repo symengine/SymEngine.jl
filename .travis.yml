@@ -18,7 +18,7 @@ addons:
     - g++-4.7
     
 install:
-    - export CXX=g++-4.7
+    - if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then export CXX=g++-4.7; fi
 script:
     - julia -e 'Pkg.clone(pwd())'
     - julia -e 'Pkg.build("SymEngine")'
