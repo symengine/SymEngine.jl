@@ -3,6 +3,10 @@ sudo: false
 julia:
     - release
     - nightly
+os:
+    - linux
+    - osx
+
 notifications:
     email: false
 addons:
