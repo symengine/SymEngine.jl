@@ -52,7 +52,7 @@ provides(BuildProcess,
         @build_steps begin
             ChangeDirectory(symenginebuilddir)
             FileRule(joinpath(prefix, "lib", xx("libsymengine.dll.a", "libsymengine.so", "libsymengine.dylib")),@build_steps begin
-                `cmake -DCMAKE_INSTALL_PREFIX="$prefix" -DCMAKE_PREFIX_PATH="$prefix" -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=yes -DBUILD_SHARED_LIBS=on $symenginesrcdir -DBUILD_TESTS=no -DBUILD_BENCHMARKS=no -DINTEGER_CLASS=no`
+                `cmake -DCMAKE_INSTALL_PREFIX="$prefix" -DCMAKE_PREFIX_PATH="$prefix" -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=yes -DBUILD_SHARED_LIBS=on $symenginesrcdir -DBUILD_TESTS=no -DBUILD_BENCHMARKS=no -DINTEGER_CLASS=gmp`
                 `make`
                 `make install`
             end)
