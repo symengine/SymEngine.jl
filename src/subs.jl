@@ -41,13 +41,13 @@ fn_map = Dict(
               :Abs => :abs # not really needed as default in map_fn covers this
               )
 
-map_fn(key, fn_map) = haskey(fn_map, key) ? fn_map[key] : symbol(lowercase(string(key)))
+map_fn(key, fn_map) = haskey(fn_map, key) ? fn_map[key] : Symbol(lowercase(string(key)))
 
 function walk_expression(ex)
     fn = get_symengine_class(ex)
     
     if fn == :Symbol
-        return symbol(toString(ex))
+        return Symbol(toString(ex))
     elseif fn in [:Integer , :Rational]
         return N(ex)
     elseif fn == :Complex
@@ -87,7 +87,7 @@ function _lambdify(ex::Basic, vars)
 
     try
         eval(Expr(:function,
-                  Expr(:call, gensym(), map(symbol,vars)...),
+                  Expr(:call, gensym(), map(Symbol,vars)...),
                   body))
     catch err
         throw(ArgumentError("Expression does not lambdify"))

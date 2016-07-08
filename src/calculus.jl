@@ -13,7 +13,7 @@ function diff{T<:SymbolicType}(b1::T, b2::BasicType{Val{:Symbol}})
     return a
 end
 
-diff{T<:SymbolicType}(b1::T, b2::BasicType) = throw(ArgumentError("Second argument must be of symbol type"))
+diff{T<:SymbolicType}(b1::T, b2::BasicType) = throw(ArgumentError("Second argument must be of Symbol type"))
 
 function diff{T<:SymbolicType, S<:SymbolicType}(b1::T, b2::S, n::Integer=1)
     n < 0 && throw(DomainError("n must be non-negative integer"))
