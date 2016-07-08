@@ -128,10 +128,10 @@ macro vars(x...)
     end
     for s in x
         @assert isa(s,Symbol) "@syms expected a list of symbols"
-        push!(q.args, Expr(:(=), s, Expr(:call, :(SymEngine._symbol), Expr(:quote, s))))
+        push!(q.args, Expr(:(=), esc(s), Expr(:call, :(SymEngine._symbol), Expr(:quote, s))))
     end
-    push!(q.args, Expr(:tuple, x...))
-    eval(Main, q)
+    push!(q.args, Expr(:tuple, map(esc, x)...))
+    q
 end
 
 
