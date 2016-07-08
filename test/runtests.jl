@@ -5,6 +5,13 @@ x = symbols("x")
 y = symbols(:y)
 @vars z
 
+
+# make sure @vars defines in a local scope
+let
+    @vars w
+end
+@test_throws UndefVarError isdefined(w)
+
 a = x^2 + x/2 - x*y*5
 b = diff(a, x)
 @test b == 2*x + 1//2 - 5*y
@@ -48,8 +55,6 @@ ex = sin(x*y)
 @test diff(ex, x, y,x) == diff(diff(diff(ex,x), y), x)
 @test series(sin(x), x, 0, 2) == x
 @test series(sin(x), x, 0, 3) == x - x^3/6
-   
-
 
 ## ntheory
 @test mod(Basic(10), Basic(4)) == 2
