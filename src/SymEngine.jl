@@ -18,7 +18,7 @@ include("mathfuns.jl")
 include("subs.jl")
 include("simplify.jl")
 include("calculus.jl")
-
+include("recipes.jl")
 
 end
 
