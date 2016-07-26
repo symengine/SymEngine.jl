@@ -1,4 +1,4 @@
 julia 0.4
+Compat 0.8.5
 RecipesBase 0.0.6
-Compat 0.3.5
 BinDeps

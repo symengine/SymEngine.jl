@@ -9,7 +9,7 @@ end
 
 ## main ops
 for (op, libnm) in ((:+, :add), (:-, :sub), (:*, :mul), (:/, :div), (://, :div), (:^, :pow))
-    tup = (Base.symbol("basic_$libnm"), :libsymengine)
+    tup = (Base.Symbol("basic_$libnm"), :libsymengine)
     @eval begin
         function ($op)(b1::Basic, b2::Basic)
             a = Basic()
@@ -39,14 +39,14 @@ Base.one(x::BasicType) = BasicType(Basic(1))
 Base.one{T<:BasicType}(::Type{T}) = BasicType(Basic(1))
 
 
-## Math constants 
+## Math constants
 ## no oo!
 for (op, libnm) in [(:IM, :I),
                  (:PI, :pi),
                  (:E, :E),
                  (:EulerGamma, :EulerGamma)
                  ]
-    tup = (Base.symbol("basic_const_$libnm"), :libsymengine)
+    tup = (Base.Symbol("basic_const_$libnm"), :libsymengine)
     @eval begin
         ($op) = begin
             a = Basic()
@@ -54,9 +54,9 @@ for (op, libnm) in [(:IM, :I),
             a
         end
     end
-    eval(Expr(:export, op)) 
+    eval(Expr(:export, op))
 end
-    
+
 ## ## Conversions
 Base.convert(::Type{Basic}, x::Irrational{:π}) = PI
 Base.convert(::Type{Basic}, x::Irrational{:e}) = E
@@ -68,6 +68,6 @@ Base.convert(::Type{BasicType}, x::Irrational) = BasicType(convert(Basic, x))
 
 
 ## Logical operators
-Base.(:<)(x::SymbolicType, y::SymbolicType) = N(x) < N(y)
-Base.(:<)(x::SymbolicType, y) = <(promote(x,y)...)
-Base.(:<)(x, y::SymbolicType) = <(promote(x,y)...)
+@compat Base.:<(x::SymbolicType, y::SymbolicType) = N(x) < N(y)
+@compat Base.:<(x::SymbolicType, y) = <(promote(x,y)...)
+@compat Base.:<(x, y::SymbolicType) = <(promote(x,y)...)

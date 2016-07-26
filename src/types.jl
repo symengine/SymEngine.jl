@@ -21,10 +21,7 @@ type Basic  <: Number
     end
 end
 
-
 basic_free(b::Basic) = ccall((:basic_free_stack, :libsymengine), Void, (Ptr{Basic}, ), &b)
-
-
 
 function Basic(x::Clong)
     a = Basic()
@@ -44,6 +41,14 @@ function Basic(x::BigInt)
     return a
 end
 
+function Basic(s::String)
+    a = Basic()
+    ccall((:basic_parse, :libsymengine), Void, (Ptr{Basic}, Ptr{Int8}), &a, s)
+    return a
+end
+
+Basic(ex::Expr) = Basic(string(ex))
+
 
 if Clong == Int32
     convert(::Type{Basic}, x::Union{Int8, Int16, Int32}) = Basic(convert(Clong, x))
@@ -62,18 +67,18 @@ Base.promote_rule{S<:Number}(::Type{Basic}, ::Type{S} ) = Basic
 get_type(s::Basic) = ccall((:basic_get_type, :libsymengine), UInt, (Ptr{Basic},), &s)
 function get_class_from_id(id::UInt)
     a = ccall((:basic_get_class_from_id, :libsymengine), Ptr{UInt8}, (Int,), id)
-    str = bytestring(a)
+    str = unsafe_string(a)
     ccall((:basic_str_free, :libsymengine), Void, (Ptr{UInt8}, ), a)
     str
 end
 
 "Get SymEngine class of an object (e.g. 1=>:Integer, 1//2 =:Rational, sin(x) => :Sin, ..."
-get_symengine_class(s::Basic) = symbol(get_class_from_id(get_type(s)))
+get_symengine_class(s::Basic) = Symbol(get_class_from_id(get_type(s)))
 
 
 ## Construct symbolic objects
-## renamed, as `symbol` conflicts with Base.symbol
-function _symbol(s::ASCIIString)
+## renamed, as `Symbol` conflicts with Base.Symbol
+function _symbol(s::String)
     a = Basic()
     ccall((:symbol_set, :libsymengine), Void, (Ptr{Basic}, Ptr{Int8}), &a, s)
     return a
@@ -96,12 +101,12 @@ x,y,z = symbols("x,y,z")
 """
 
 symbols(s::Symbol) = _symbol(s)
-function symbols(s::ASCIIString)
+function symbols(s::String)
     ## handle space or comma sparation
     s = replace(s, ",", " ")
     by_space = split(s, r"\s+")
-    Base.length(by_space) == 1 && return symbols(symbol(s))
-    tuple([_symbol(symbol(o)) for o in by_space]...)
+    Base.length(by_space) == 1 && return symbols(Symbol(s))
+    tuple([_symbol(Symbol(o)) for o in by_space]...)
 end
 
 

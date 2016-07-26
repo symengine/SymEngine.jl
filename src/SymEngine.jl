@@ -2,6 +2,8 @@ module SymEngine
 
 import Base: show, convert
 
+using Compat: String, unsafe_string, @compat
+
 export Basic, symbols, @vars
 export free_symbols, get_args
 export ascii_art
@@ -21,4 +23,3 @@ include("calculus.jl")
 include("recipes.jl")
 
 end
-
