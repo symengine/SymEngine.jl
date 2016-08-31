@@ -23,31 +23,37 @@ end
 
 basic_free(b::Basic) = ccall((:basic_free_stack, :libsymengine), Void, (Ptr{Basic}, ), &b)
 
-function Basic(x::Clong)
+function Base.convert(::Type{Basic}, x::Clong)
     a = Basic()
     ccall((:integer_set_si, :libsymengine), Void, (Ptr{Basic}, Clong), &a, x)
     return a
 end
 
-function Basic(x::Culong)
+function Base.convert(::Type{Basic}, x::Culong)
     a = Basic()
     ccall((:integer_set_ui, :libsymengine), Void, (Ptr{Basic}, Culong), &a, x)
     return a
 end
 
-function Basic(x::BigInt)
+function Base.convert(::Type{Basic}, x::BigInt)
     a = Basic()
     ccall((:integer_set_mpz, :libsymengine), Void, (Ptr{Basic}, Ptr{BigInt}), &a, &x)
     return a
 end
 
-function Basic(s::String)
+function Base.convert(::Type{Basic}, s::String)
     a = Basic()
     ccall((:basic_parse, :libsymengine), Void, (Ptr{Basic}, Ptr{Int8}), &a, s)
     return a
 end
 
-Basic(ex::Expr) = Basic(string(ex))
+Base.convert(::Type{Basic}, ex::Union{Symbol,Expr}) = Basic(string(ex))
+function Base.convert(::Type{Basic}, x::Real)
+    a = Basic()
+    _x = convert(Cdouble, x)
+    ccall((:real_double_set_d, :libsymengine), Void, (Ptr{Basic}, Cdouble), &a, _x)
+    return a
+end
 
 
 if Clong == Int32
@@ -109,11 +115,7 @@ function symbols(s::String)
     tuple([_symbol(Symbol(o)) for o in by_space]...)
 end
 
-
-
-
 ## Follow, somewhat, the python names: symbols to construct symbols, @vars
-
 
 """
 Macro to define 1 or more variables in the main workspace.
@@ -143,9 +145,6 @@ end
 ## We also have a wrapper type that can be used to control dispatch
 ## pros: wrapping adds overhead, so if possible best to use Basic
 ## cons: have to write methods meth(x::Basic, ...) = meth(BasicType(x),...)
-
-
-
 
 ## Parameterized type allowing for dispatch on Julia side by type of objecton SymEngine side
 ## Use as BasicType{Val{:Integer}}(...)
