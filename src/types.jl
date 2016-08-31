@@ -48,7 +48,7 @@ function Base.convert(::Type{Basic}, s::String)
 end
 
 Base.convert(::Type{Basic}, ex::Union{Symbol,Expr}) = Basic(string(ex))
-function Base.convert(::Type{Basic}, x::Real)
+function Base.convert(::Type{Basic}, x::Float64)
     a = Basic()
     _x = convert(Cdouble, x)
     ccall((:real_double_set_d, :libsymengine), Void, (Ptr{Basic}, Cdouble), &a, _x)
