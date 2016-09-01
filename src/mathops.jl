@@ -3,13 +3,13 @@ import Base.Operators: +, -, ^, /, //, \, *, ==
 ## equality
 function ==(b1::SymbolicType, b2::SymbolicType)
     b1,b2 = map(Basic, (b1, b2))
-    ccall((:basic_eq, :libsymengine), Int, (Ptr{Basic}, Ptr{Basic}), &b1, &b2) == 1
+    ccall((:basic_eq, libsymengine), Int, (Ptr{Basic}, Ptr{Basic}), &b1, &b2) == 1
 end
 
 
 ## main ops
 for (op, libnm) in ((:+, :add), (:-, :sub), (:*, :mul), (:/, :div), (://, :div), (:^, :pow))
-    tup = (Base.Symbol("basic_$libnm"), :libsymengine)
+    tup = (Base.Symbol("basic_$libnm"), libsymengine)
     @eval begin
         function ($op)(b1::Basic, b2::Basic)
             a = Basic()
@@ -46,7 +46,7 @@ for (op, libnm) in [(:IM, :I),
                  (:E, :E),
                  (:EulerGamma, :EulerGamma)
                  ]
-    tup = (Base.Symbol("basic_const_$libnm"), :libsymengine)
+    tup = (Base.Symbol("basic_const_$libnm"), libsymengine)
     @eval begin
         ($op) = begin
             a = Basic()

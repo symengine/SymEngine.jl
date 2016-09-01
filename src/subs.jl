@@ -17,7 +17,7 @@ subs(ex, x=>1, y=>1) # ditto
 """
 function subs{T<:SymbolicType, S<:SymbolicType}(ex::T, var::S, val)
     s = Basic()
-    ccall((:basic_subs2, :libsymengine), Void, (Ptr{Basic}, Ptr{Basic}, Ptr{Basic}, Ptr{Basic}), &s, &ex, &var, &val)
+    ccall((:basic_subs2, libsymengine), Void, (Ptr{Basic}, Ptr{Basic}, Ptr{Basic}, Ptr{Basic}), &s, &ex, &var, &val)
     return s
 end
 subs{T <: SymbolicType, S<:SymbolicType}(ex::T, y::Tuple{S, Any}) = subs(ex, y[1], y[2])
