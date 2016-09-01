@@ -25,13 +25,17 @@ provides(Conda.Manager, "mpc", [mpc])
 # Make this work for OS X and Linux
 provides(Conda.Manager, "symengine==0.2.0", [symengine], os = :Linux)
 
+symengine_version = "v0.2.0"
+symengine_dir = (symengine_version[1] == 'v' ? symengine_version[2:end] : symengine_version)
+
 provides(Sources,
-        URI("https://github.com/symengine/symengine/archive/master.zip"), symengine, unpacked_dir="symengine-master")
+        URI("https://github.com/symengine/symengine/archive/$symengine_version.zip"),
+            symengine, unpacked_dir="symengine-$symengine_dir")
 
 
 generator = (is_windows() ? "MSYS Makefiles" : "Unix Makefiles")
 
-symenginesrcdir = joinpath(BinDeps.depsdir(symengine),"src","symengine-master")
+symenginesrcdir = joinpath(BinDeps.depsdir(symengine),"src","symengine-$symengine_dir")
 symenginebuilddir = joinpath(BinDeps.depsdir(symengine),"builds","symengine")
 provides(BuildProcess,
     (@build_steps begin
