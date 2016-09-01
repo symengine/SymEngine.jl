@@ -30,8 +30,12 @@ provides(Yum,
     end
 end
 
+symengine_version = "v0.2.0"
+symengine_dir = (symengine_version[1] == 'v' ? symengine_version[2:end] : symengine_version)
+
 provides(Sources,
-        URI("https://github.com/symengine/symengine/archive/master.zip"), libsymengine, unpacked_dir="symengine-master")
+        URI("https://github.com/symengine/symengine/archive/$symengine_version.zip"),
+            libsymengine, unpacked_dir="symengine-$symengine_dir")
 
 provides(Sources,
         URI("https://ftp.gnu.org/gnu/gmp/gmp-6.0.0a.tar.bz2"), [libgmp], unpacked_dir="gmp-6.0.0")
@@ -43,7 +47,7 @@ provides(BuildProcess,
 
 xx(t...) = (OS_NAME == :Windows ? t[1] : (OS_NAME == :Linux || length(t) == 2) ? t[2] : t[3])
 
-symenginesrcdir = joinpath(BinDeps.depsdir(libsymengine),"src","symengine-master")
+symenginesrcdir = joinpath(BinDeps.depsdir(libsymengine),"src","symengine-$symengine_dir")
 symenginebuilddir = joinpath(BinDeps.depsdir(libsymengine),"builds","symengine")
 provides(BuildProcess,
     (@build_steps begin
