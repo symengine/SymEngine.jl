@@ -52,7 +52,7 @@ provides(BuildProcess,
         CreateDirectory(symenginebuilddir)
         @build_steps begin
             ChangeDirectory(symenginebuilddir)
-            FileRule(joinpath(prefix, "lib", xx("libsymengine.dll", "libsymengine.so", "libsymengine.dylib")),@build_steps begin
+            FileRule(joinpath(prefix, "lib", xx("libsymengine.dll.a", "libsymengine.so", "libsymengine.dylib")),@build_steps begin
                 `cmake -G"$generator" -DCMAKE_INSTALL_PREFIX="$prefix" -DCMAKE_PREFIX_PATH="$prefix" -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=yes -DBUILD_SHARED_LIBS=on -DBUILD_TESTS=no -DBUILD_BENCHMARKS=no -DINTEGER_CLASS=gmp -DWITH_MPC=yes $symenginesrcdir`
                 `cmake --build .`
                 `cmake --build . --target install`
