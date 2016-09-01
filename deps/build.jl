@@ -1,6 +1,5 @@
 using BinDeps
 using Compat
-using Conda
 @BinDeps.setup
 
 group = library_group("symengine")
@@ -14,16 +13,26 @@ deps = [
 
 prefix=joinpath(BinDeps.depsdir(symengine), "usr")
 
-Conda.add_channel("conda-forge")
-Conda.add_channel("symengine")
-
 xx(t...) = (OS_NAME == :Windows ? t[1] : (OS_NAME == :Linux || length(t) == 2) ? t[2] : t[3])
 
-provides(Conda.Manager, xx("mpir", "gmp"), [gmp])
-provides(Conda.Manager, "mpfr", [mpfr])
-provides(Conda.Manager, "mpc", [mpc])
-# Make this work for OS X and Linux
-provides(Conda.Manager, "symengine==0.2.0", [symengine], os = :Linux)
+if is_unix()
+    using Conda
+    Conda.add_channel("conda-forge")
+    Conda.add_channel("symengine")
+
+    provides(Conda.Manager, "gmp", [gmp])
+    provides(Conda.Manager, "mpfr", [mpfr])
+    provides(Conda.Manager, "mpc", [mpc])
+    # TODO: Make this work for OS X
+    provides(Conda.Manager, "symengine==0.2.0", [symengine], os = :Linux)
+end
+
+if is_windows()
+    using WinRPM
+    provides(WinRPM.RPM, "gmp-devel", [gmp])
+    provides(WinRPM.RPM, "mpfr-devel", [mpfr])
+    provides(WinRPM.RPM, "mpc-devel", [mpc])
+end
 
 symengine_version = "v0.2.0"
 symengine_dir = (symengine_version[1] == 'v' ? symengine_version[2:end] : symengine_version)
