@@ -5,25 +5,25 @@ type CSetBasic
 end
 
 function CSetBasic()
-    z = CSetBasic(ccall((:setbasic_new, :libsymengine), Ptr{Void}, ()))
+    z = CSetBasic(ccall((:setbasic_new, libsymengine), Ptr{Void}, ()))
     finalizer(z, CSetBasic_free)
     z
 end
 
 function CSetBasic_free(x::CSetBasic)
     if x.ptr != C_NULL
-        ccall((:setbasic_free, :libsymengine), Void, (Ptr{Void},), x.ptr)
+        ccall((:setbasic_free, libsymengine), Void, (Ptr{Void},), x.ptr)
         x.ptr = C_NULL
     end
 end
 
 function Base.length(s::CSetBasic)
-    ccall((:setbasic_size, :libsymengine), UInt, (Ptr{Void},), s.ptr)
+    ccall((:setbasic_size, libsymengine), UInt, (Ptr{Void},), s.ptr)
 end
 
 function Base.getindex(s::CSetBasic, n::UInt)
     result = Basic()
-    ccall((:setbasic_get, :libsymengine), Void, (Ptr{Void}, UInt, Ptr{Basic}), s.ptr, n, &result)
+    ccall((:setbasic_get, libsymengine), Void, (Ptr{Void}, UInt, Ptr{Basic}), s.ptr, n, &result)
     result
 end
 
@@ -40,25 +40,25 @@ type CVecBasic
 end
 
 function CVecBasic()
-    z = CVecBasic(ccall((:vecbasic_new, :libsymengine), Ptr{Void}, ()))
+    z = CVecBasic(ccall((:vecbasic_new, libsymengine), Ptr{Void}, ()))
     finalizer(z, CVecBasic_free)
     z
 end
 
 function CVecBasic_free(x::CVecBasic)
     if x.ptr != C_NULL
-        ccall((:vecbasic_free, :libsymengine), Void, (Ptr{Void},), x.ptr)
+        ccall((:vecbasic_free, libsymengine), Void, (Ptr{Void},), x.ptr)
         x.ptr = C_NULL
     end
 end
 
 function Base.length(s::CVecBasic)
-    ccall((:vecbasic_size, :libsymengine), UInt, (Ptr{Void},), s.ptr)
+    ccall((:vecbasic_size, libsymengine), UInt, (Ptr{Void},), s.ptr)
 end
 
 function Base.getindex(s::CVecBasic, n::UInt)
     result = Basic()
-    ccall((:vecbasic_get, :libsymengine), Void, (Ptr{Void}, UInt, Ptr{Basic}), s.ptr, n, &result)
+    ccall((:vecbasic_get, libsymengine), Void, (Ptr{Void}, UInt, Ptr{Basic}), s.ptr, n, &result)
     result
 end
 
