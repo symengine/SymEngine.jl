@@ -5,6 +5,8 @@ x = symbols("x")
 y = symbols(:y)
 @vars z
 
+# Check Basic conversions
+@test eltype([Basic(u) for u in [1, 1/2, 1//2, pi, e]]) == Basic
 
 # make sure @vars defines in a local scope
 let

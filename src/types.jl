@@ -51,7 +51,7 @@ convert(::Type{Basic}, ex::Union{Symbol,Expr}) = Basic(string(ex))
 function convert(::Type{Basic}, x::Float64)
     a = Basic()
     _x = convert(Cdouble, x)
-    ccall((:real_double_set_d, :libsymengine), Void, (Ptr{Basic}, Cdouble), &a, _x)
+    ccall((:real_double_set_d, libsymengine), Void, (Ptr{Basic}, Cdouble), &a, _x)
     return a
 end
 
