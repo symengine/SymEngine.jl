@@ -13,17 +13,4 @@ matrix:
 
 notifications:
     email: false
-addons:
-  apt:
-    sources:
-    - ubuntu-toolchain-r-test
-    packages:
-    - libgmp-dev
-    - g++-4.7
-    
-install:
-    - if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then export CXX=g++-4.7; fi
-script:
-    - julia -e 'Pkg.clone(pwd())'
-    - julia -e 'Pkg.build("SymEngine")'
-    - julia -e 'Pkg.test("SymEngine")'
+
