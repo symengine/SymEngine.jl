@@ -1,6 +1,8 @@
 using Base.Test
 using SymEngine
 
+include("test-dense-matrix.jl")
+
 x = symbols("x")
 y = symbols(:y)
 @vars z

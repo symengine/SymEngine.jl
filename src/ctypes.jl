@@ -66,3 +66,67 @@ function Base.convert(::Type{Vector}, x::CVecBasic)
     n = Base.length(x)
     [x[i-1] for i in 1:n]
 end
+
+
+## Dense matrix
+
+type CDenseMatrix <: DenseArray{Basic, 2}
+    ptr::Ptr{Void}
+end
+
+Base.promote_rule{T <: Basic}(::Type{CDenseMatrix}, ::Type{Matrix{T}} ) = CDenseMatrix
+
+function CDenseMatrix_free(x::CDenseMatrix)
+    if x.ptr != C_NULL
+        ccall((:dense_matrix_free, libsymengine), Void, (Ptr{Void},), x.ptr)
+        x.ptr = C_NULL
+    end
+end
+
+function CDenseMatrix()
+    z = CDenseMatrix(ccall((:dense_matrix_new, libsymengine), Ptr{Void}, ()))
+    finalizer(z, CDenseMatrix_free)
+    z
+end
+
+function CDenseMatrix(m::Int, n::Int)
+    z = CDenseMatrix(ccall((:dense_matrix_new_rows_cols, libsymengine), Ptr{Void}, (Int, Int), m, n))
+    finalizer(z, CDenseMatrix_free)
+    z
+end
+
+
+function CDenseMatrix{T}(x::Array{T, 2})
+    r,c = size(x)
+    M = CDenseMatrix(r, c)
+    for j in 1:c
+        for i in 1:r ## fill column by column
+            M[i,j] = x[i,j]
+        end
+    end
+    M
+end
+
+
+function Base.convert(::Type{Matrix}, x::CDenseMatrix) 
+    m,n = Base.size(x)
+    [x[i,j] for i in 1:m, j in 1:n]
+end
+
+Base.convert{T}(::Type{CDenseMatrix}, x::Array{T, 2}) = CDenseMatrix(x)
+Base.convert{T}(::Type{CDenseMatrix}, x::Array{T, 1}) = convert(CDenseMatrix, reshape(x, length(x), 1))
+
+
+function toString(b::CDenseMatrix)
+    a = ccall((:dense_matrix_str, libsymengine), Cstring, (Ptr{Void}, ), b.ptr)
+    string = unsafe_string(a)
+    ccall((:basic_str_free, libsymengine), Void, (Cstring, ), a)
+    string = replace(string, "**", "^") # de pythonify
+    return string
+end
+
+function Base.show(io::IO, m::CDenseMatrix)
+    r, c = size(m)
+    println(io, "CDenseMatrix: $r x $c")
+    println(io, toString(m))
+end
