@@ -41,7 +41,12 @@ function dense_matrix_transpose(s::CDenseMatrix)
     result
 end
 
-## dense_matrix_submatrix...
+function dense_matrix_submatrix(mat::CDenseMatrix, r1::Int, c1::Int, r2::Int, c2::Int, r::Int, c::Int)
+    s = CDenseMatrix()
+    ccall((:dense_matrix_inv, libsymengine), Void, (Ptr{Void}, Ptr{Void}, UInt, UInt, UInt, UInt, UInt, UInt),
+          s.ptr, mat.ptr, UInt(r1), UInt(c1), UInt(r2), UInt(c2), UInt(r), UInt(c))
+    s
+end
 
 
 ## some matrix arithmetic methods
@@ -128,7 +133,7 @@ function dense_matrix_ones(r::Int, c::Int)
     result
 end
 
-## dense_matrix_diag
+## dense_matrix_diag XXX don't have CVecBasic constructor
 
 function dense_matrix_eye(N::Int, M::Int, k::Int=0)
     s = CDenseMatrix()
