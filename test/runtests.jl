@@ -62,6 +62,9 @@ ex = sin(x*y)
 
 ## ntheory
 @test mod(Basic(10), Basic(4)) == 2
+for j in [-3, 3], p in [-5,5]
+    @test mod(Basic(j), Basic(p)) == mod(j, p)
+end
 @test mod(Basic(10), 4) == 2               # mod(::Basic, ::Number)
 @test_throws MethodError mod(10, Basic(4)) # no mod(::Number, ::Basic)
 @test gcd(Basic(10), Basic(4)) == 2

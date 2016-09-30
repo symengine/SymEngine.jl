@@ -85,11 +85,19 @@ end
 ## Number theory module from cppwrapper
 for (meth, libnm) in [(:gcd, :gcd),
                       (:lcm, :lcm),
-                      (:mod, :mod),
                       (:div, :quotient),
                       ]
     eval(Expr(:import, :Base, meth))
     IMPLEMENT_TWO_ARG_FUNC(meth, libnm, lib=:ntheory_)    
+end
+
+## SymEngine mod can have different sign than Julia. Here we ensure that p > 0 ans \in [0, p) and p < 0 ans in (p, 0]
+IMPLEMENT_TWO_ARG_FUNC(:ntheory_mod, :mod, lib=:ntheory_)
+function Base.mod(k::SymbolicType, p::Number)
+    m =  ntheory_mod(k, p)
+    (m < 0 && p > 0) && return p + m
+    (m > 0 && p < 0) && return p + m
+    m
 end
 
 Base.binomial(n::Basic, k::Number) = binomial(N(n), N(k))  #ntheory_binomial seems wrong
