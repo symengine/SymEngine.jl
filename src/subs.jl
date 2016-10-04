@@ -102,7 +102,7 @@ Convert a SymEngine numeric value into a number
 
 """
 N(b::Basic) = N(BasicType(b))
-N(b::BasicType{Val{:Integer}}) = eval(parse(toString(b)))  ## HACKY
+N(b::BasicNumber) = eval(parse(toString(b)))  ## HACKY
 N(b::BasicType{Val{:Rational}}) = eval(parse(replace(toString(b), "/", "//")))
 N(b::BasicType{Val{:Complex}}) =  eval(parse(replace(toString(b), "I", "im")))
 
