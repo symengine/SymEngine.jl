@@ -48,10 +48,9 @@ function convert(::Type{Basic}, s::String)
 end
 
 convert(::Type{Basic}, ex::Union{Symbol,Expr}) = Basic(string(ex))
-function convert(::Type{Basic}, x::Float64)
+function convert(::Type{Basic}, x::Cdouble)
     a = Basic()
-    _x = convert(Cdouble, x)
-    ccall((:real_double_set_d, libsymengine), Void, (Ptr{Basic}, Cdouble), &a, _x)
+    ccall((:real_double_set_d, libsymengine), Void, (Ptr{Basic}, Cdouble), &a, x)
     return a
 end
 
@@ -63,6 +62,7 @@ else
     convert(::Type{Basic}, x::Union{Int8, Int16, Int32, Int64}) = Basic(convert(Clong, x))
     convert(::Type{Basic}, x::Union{UInt8, UInt16, UInt32, UInt64}) = Basic(convert(Culong, x))
 end
+convert(::Type{Basic}, x::Union{Float16, Float32, Float64}) = Basic(convert(Cdouble, x))
 convert(::Type{Basic}, x::Integer) = Basic(BigInt(x))
 convert(::Type{Basic}, x::Rational) = Basic(num(x)) / Basic(den(x))
 convert(::Type{Basic}, x::Complex) = Basic(real(x)) + Basic(imag(x)) * IM
