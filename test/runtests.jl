@@ -75,8 +75,12 @@ end
 ## type information
 a = Basic(1)
 b = Basic(1//2)
+c = Basic(0.125)
 @test isa(SymEngine.BasicType(a+a), SymEngine.BasicType{Val{:Integer}})
 @test isa(SymEngine.BasicType(a+b), SymEngine.BasicType{Val{:Rational}})
+@test isa(SymEngine.BasicType(a+c), SymEngine.BasicType{Val{:RealDouble}})
+@test isa(SymEngine.BasicType(b+c), SymEngine.BasicType{Val{:RealDouble}})
+@test isa(SymEngine.BasicType(c+c), SymEngine.BasicType{Val{:RealDouble}})
 
 ## can we do math with items of BasicType?
 a1 = SymEngine.BasicType(a)
@@ -92,6 +96,8 @@ ex = x^2 + y^2
 @test subs(ex, x => 1) == 1 + y^2
 @test subs(ex, (x,1), (y,2)) == 1 + 2^2
 @test subs(ex, x => 1, y => 2) == 1 + 2^2
+@test subs(ex, (x,0.5), (y,0.25)) == 0.5^2 + 0.25^2
+@test subs(ex, x => 0.5, y => 0.25) == 0.5^2 + 0.25^2
 
 ## lambidfy
 @test_approx_eq lambdify(sin(Basic(1))) sin(1)
@@ -105,7 +111,7 @@ a = Basic(1)
 @test N(a) == 1
 @test N(Basic(1//2)) == 1//2
 @test N(Basic(12345678901234567890)) == 12345678901234567890
-
+@test N(Basic(0.125)) == 0.125
 
 ## generic linear algebra
 x = symbols("x")
