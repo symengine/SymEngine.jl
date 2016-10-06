@@ -182,8 +182,9 @@ convert{T<:BasicType}(::Type{T}, val::Number) = T(Basic(val))
 
 ## some type unions possibly useful for dispatch
 ## Names here match those returned by get_symengine_class()
-number_types = [:Integer, :RealDouble, :Rational, :Complex]
+number_types = [:Integer, :RealDouble, :Rational, :Complex, :ComplexDouble]
 BasicNumber = Union{[SymEngine.BasicType{Val{i}} for i in number_types]...}
+ComplexNumber = Union{[SymEngine.BasicType{Val{i}} for i in [:Complex, :ComplexDouble]]...}
 
 op_types = [:Mul, :Add, :Pow, :Symbol, :Const]
 BasicOp = Union{[SymEngine.BasicType{Val{i}} for i in op_types]...}
