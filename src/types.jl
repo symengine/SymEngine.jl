@@ -185,7 +185,6 @@ convert{T<:BasicType}(::Type{T}, val::Number) = T(Basic(val))
 real_number_types = [:Integer, :RealDouble, :Rational, :RealMPFR]
 complex_number_types = [:ComplexDouble, :ComplexMPC]
 number_types = vcat(real_number_types, complex_number_types)
-
 BasicNumber = Union{[SymEngine.BasicType{Val{i}} for i in number_types]...}
 BasicRealNumber = Union{[SymEngine.BasicType{Val{i}} for i in real_number_types]...}
 BasicComplexNumber = Union{[SymEngine.BasicType{Val{i}} for i in complex_number_types]...}
