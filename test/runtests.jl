@@ -107,10 +107,11 @@ end
 
 ## lambidfy
 @test_approx_eq lambdify(sin(Basic(1))) sin(1)
-ex = sin(x)
-@test_approx_eq lambdify(ex)(1) sin(1)
-ex = exp(PI/2*x)
-@test_approx_eq lambdify(ex)(1) exp(pi/2)
+@test_approx_eq lambdify(exp(PI/2*x))(1) exp(pi/2)
+for val in samples
+    ex = sin(x + val)
+    @test_approx_eq lambdify(ex)(val) sin(2*val)
+end
 
 ## N
 for val in samples
