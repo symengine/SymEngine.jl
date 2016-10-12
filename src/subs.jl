@@ -48,12 +48,8 @@ function walk_expression(ex)
     
     if fn == :Symbol
         return Symbol(toString(ex))
-    elseif fn in [:Integer, :Rational, :RealDouble]
+    elseif fn in number_types
         return N(ex)
-    elseif fn in [:Complex, :ComplexDouble]
-        ## hacky
-        x = eval(parse(replace(toString(ex), "I", "im")))
-        return Expr(:call, :complex, real(x), imag(x))
     elseif fn == :Constant
         return constant_map[toString(ex)]
                             
