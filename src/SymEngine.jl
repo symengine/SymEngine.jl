@@ -1,6 +1,6 @@
 module SymEngine
 
-import Base: show, convert
+import Base: show, convert, real, imag
 
 using Compat: String, unsafe_string, @compat
 
@@ -18,6 +18,7 @@ include("display.jl")
 include("mathops.jl")
 include("mathfuns.jl")
 include("subs.jl")
+include("numerics.jl")
 include("simplify.jl")
 include("calculus.jl")
 include("recipes.jl")

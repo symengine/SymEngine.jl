@@ -48,12 +48,8 @@ function walk_expression(ex)
     
     if fn == :Symbol
         return Symbol(toString(ex))
-    elseif fn in [:Integer , :Rational]
+    elseif fn in number_types
         return N(ex)
-    elseif fn == :Complex
-        ## hacky
-        x = eval(parse(replace(toString(ex), "I", "im")))
-        return Expr(:call, :complex, real(x), imag(x))
     elseif fn == :Constant
         return constant_map[toString(ex)]
                             
@@ -94,32 +90,3 @@ function _lambdify(ex::Basic, vars)
     end
 end
 
-
-# N
-"""
-
-Convert a SymEngine numeric value into a number
-
-"""
-N(b::Basic) = N(BasicType(b))
-N(b::BasicType{Val{:Integer}}) = eval(parse(toString(b)))  ## HACKY
-N(b::BasicType{Val{:Rational}}) = eval(parse(replace(toString(b), "/", "//")))
-N(b::BasicType{Val{:Complex}}) =  eval(parse(replace(toString(b), "I", "im")))
-
-## function N(b::BasicType{Val{:Rational}})
-##     println("XXX")
-## end
-## need to test for free_symbols, if none then we need to evaluate
-function N(b::BasicType)
-    b = convert(Basic, b)
-    fs = free_symbols(b)
-    if length(fs) > 0
-        throw(ArgumentError("Object can have no free symbols"))
-    end
-    eval(lambdify(b))
-end
-        
-
-N(a::Integer) = a
-N(a::Rational) = a
-N(a::Complex) = a

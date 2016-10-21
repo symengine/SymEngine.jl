@@ -75,8 +75,12 @@ end
 ## type information
 a = Basic(1)
 b = Basic(1//2)
+c = Basic(0.125)
 @test isa(SymEngine.BasicType(a+a), SymEngine.BasicType{Val{:Integer}})
 @test isa(SymEngine.BasicType(a+b), SymEngine.BasicType{Val{:Rational}})
+@test isa(SymEngine.BasicType(a+c), SymEngine.BasicType{Val{:RealDouble}})
+@test isa(SymEngine.BasicType(b+c), SymEngine.BasicType{Val{:RealDouble}})
+@test isa(SymEngine.BasicType(c+c), SymEngine.BasicType{Val{:RealDouble}})
 
 ## can we do math with items of BasicType?
 a1 = SymEngine.BasicType(a)
@@ -85,27 +89,34 @@ for i in 1:100  tot = tot + a1 end
 @test tot == 101
 sin(a1)
 
-## subs
+# samples of different types:
+# (Int, Rational{Int}, Complex{Int}, Float64, Complex{Float64})
+samples = (1, 1//2, (1 + 2im), 1.0, (1.0 + 0im))
+## subs - check all different syntaxes and types
 ex = x^2 + y^2
-@test subs(ex, x, 1) == 1 + y^2
-@test subs(ex, (x, 1)) == 1 + y^2
-@test subs(ex, x => 1) == 1 + y^2
-@test subs(ex, (x,1), (y,2)) == 1 + 2^2
-@test subs(ex, x => 1, y => 2) == 1 + 2^2
+for val in samples
+    @test subs(ex, x, val) == val^2 + y^2
+    @test subs(ex, (x, val)) == val^2 + y^2
+    @test subs(ex, x => val) == val^2 + y^2
+end
+# This probably results in a number of redundant tests (operator order).
+for val1 in samples, val2 in samples
+    @test subs(ex, (x, val1), (y, val2)) == val1^2 + val2^2
+    @test subs(ex, x => val1, y => val2) == val1^2 + val2^2
+end
 
 ## lambidfy
 @test_approx_eq lambdify(sin(Basic(1))) sin(1)
-ex = sin(x)
-@test_approx_eq lambdify(ex)(1) sin(1)
-ex = exp(PI/2*x)
-@test_approx_eq lambdify(ex)(1) exp(pi/2)
+@test_approx_eq lambdify(exp(PI/2*x))(1) exp(pi/2)
+for val in samples
+    ex = sin(x + val)
+    @test_approx_eq lambdify(ex)(val) sin(2*val)
+end
 
 ## N
-a = Basic(1)
-@test N(a) == 1
-@test N(Basic(1//2)) == 1//2
-@test N(Basic(12345678901234567890)) == 12345678901234567890
-
+for val in samples
+    @test N(Basic(val)) == val
+end
 
 ## generic linear algebra
 x = symbols("x")
