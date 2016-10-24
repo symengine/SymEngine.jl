@@ -27,7 +27,6 @@ install:
 build_script:
 # Need to convert from shallow to complete for Pkg.clone to work
   - IF EXIST .git\shallow (git fetch --unshallow)
-  - C:\projects\julia\bin\julia -F -e "Pkg.add(\"Conda\"); Pkg.checkout(\"Conda\"); Pkg.build(\"Conda\");"
   - C:\projects\julia\bin\julia -F -e "versioninfo();
       Pkg.clone(pwd(), \"SymEngine\"); Pkg.build(\"SymEngine\")"
 

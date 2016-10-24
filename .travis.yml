@@ -15,5 +15,3 @@ matrix:
 notifications:
     email: false
 
-before_install:
-    - julia -e 'Pkg.add("Conda"); Pkg.checkout("Conda"); Pkg.build("Conda");'
