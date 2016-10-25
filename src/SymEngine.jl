@@ -10,7 +10,14 @@ export ascii_art
 export subs, lambdify, N
 export series
 
-include("../deps/deps.jl")
+
+const deps_file = joinpath(dirname(@__FILE__), "..", "deps", "deps.jl")
+
+if isfile(deps_file)
+    include(deps_file)
+else
+    error("SymEngine is not properly configured. Run Pkg.build(\"SymEngine\") before importing the SymEngine module.")
+end
 
 include("types.jl")
 include("ctypes.jl")
