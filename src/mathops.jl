@@ -41,20 +41,26 @@ Base.one{T<:BasicType}(::Type{T}) = BasicType(Basic(1))
 
 ## Math constants
 ## no oo!
-for (op, libnm) in [(:IM, :I),
-                 (:PI, :pi),
-                 (:E, :E),
-                 (:EulerGamma, :EulerGamma)
-                 ]
-    tup = (Base.Symbol("basic_const_$libnm"), libsymengine)
+
+for op in [:IM, :PI, :E, :EulerGamma]
     @eval begin
-        ($op) = begin
-            a = Basic()
-            ccall($tup, Void, (Ptr{Basic}, ), &a)
-            a
-        end
+        const $op = Basic()
     end
     eval(Expr(:export, op))
+end
+
+function init_constants()
+    for (op, libnm) in [(:IM, :I),
+                     (:PI, :pi),
+                     (:E, :E),
+                     (:EulerGamma, :EulerGamma)
+                     ]
+        tup = (Base.Symbol("basic_const_$libnm"), libsymengine)
+        @eval begin
+            ccall((:basic_new_stack, libsymengine), Void, (Ptr{Basic}, ), &($op))
+            ccall($tup, Void, (Ptr{Basic}, ), &($op))
+        end
+    end
 end
 
 ## ## Conversions

@@ -1,3 +1,5 @@
+__precompile__()
+
 module SymEngine
 
 import Base: show, convert, real, imag
@@ -9,7 +11,6 @@ export free_symbols, get_args
 export ascii_art
 export subs, lambdify, N
 export series
-
 
 const deps_file = joinpath(dirname(@__FILE__), "..", "deps", "deps.jl")
 
@@ -30,4 +31,7 @@ include("simplify.jl")
 include("calculus.jl")
 include("recipes.jl")
 include("dense-matrix.jl")
+
+__init__() = init_constants()
+
 end
