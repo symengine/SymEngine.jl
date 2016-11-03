@@ -13,13 +13,15 @@ export subs, lambdify, N
 export series
 
 const deps_file = joinpath(dirname(@__FILE__), "..", "deps", "deps.jl")
+const deps_in_file = joinpath(dirname(@__FILE__), "..", "deps", "deps.jl.in")
 
-if isfile(deps_file)
-    include(deps_file)
-else
-    error("SymEngine is not properly configured. Run Pkg.build(\"SymEngine\") before importing the SymEngine module.")
+noinit = false
+
+if !isfile(deps_file)
+    cp(deps_in_file, deps_file)
 end
 
+include(deps_file)
 include("types.jl")
 include("ctypes.jl")
 include("display.jl")
@@ -32,6 +34,8 @@ include("calculus.jl")
 include("recipes.jl")
 include("dense-matrix.jl")
 
-__init__() = init_constants()
+if !noinit
+    __init__() = init_constants()
+end
 
 end

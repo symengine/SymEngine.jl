@@ -19,6 +19,10 @@ type Basic  <: Number
         finalizer(z, basic_free)
         return z
     end
+    function Basic(v::Ptr{Void})
+        z = new(v)
+        return z
+    end
 end
 
 basic_free(b::Basic) = ccall((:basic_free_stack, libsymengine), Void, (Ptr{Basic}, ), &b)
