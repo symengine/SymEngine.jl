@@ -44,7 +44,7 @@ Base.one{T<:BasicType}(::Type{T}) = BasicType(Basic(1))
 
 for op in [:IM, :PI, :E, :EulerGamma]
     @eval begin
-        const $op = Basic()
+        const $op = Basic(C_NULL)
     end
     eval(Expr(:export, op))
 end
@@ -59,6 +59,7 @@ function init_constants()
         @eval begin
             ccall((:basic_new_stack, libsymengine), Void, (Ptr{Basic}, ), &($op))
             ccall($tup, Void, (Ptr{Basic}, ), &($op))
+            finalizer($op, basic_free)
         end
     end
 end

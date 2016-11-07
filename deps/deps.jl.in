@@ -1,0 +1,9 @@
+
+if "symengine_jl_safe_failure" in keys(ENV)
+    const libsymengine = is_windows() ? "symengine" : "libsymengine"
+else
+    error("""SymEngine is not properly configured. Run Pkg.build(\"SymEngine\")
+          before importing the SymEngine module.""")
+end
+
+noinit = true
