@@ -128,3 +128,9 @@ A = [x 2; x 1]
 ## check that unique work (hash)
 x,y,z = symbols("x y z")
 @test length(SymEngine.free_symbols([x*y, y,z])) == 3
+
+
+## check that symengine expressions can be used as functions 
+@vars x
+a,err = quadgk(x^2, 0, 1)
+@test abs(a - 1/3) <= err

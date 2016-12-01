@@ -24,6 +24,30 @@ subs{T <: SymbolicType, S<:SymbolicType}(ex::T, y::Tuple{S, Any}) = subs(ex, y[1
 subs{T <: SymbolicType, S<:SymbolicType}(ex::T, y::Tuple{S, Any}, args...) = subs(subs(ex, y), args...)
 subs{T <: SymbolicType}(ex::T, d::Pair...) = subs(ex, [(p.first, p.second) for p in d]...)
 
+
+## Allow an expression to be called, as with ex(2). When there is more than one symbol, one can rely on order of `free_symbols` or
+## be explicit by passing in pairs : `ex(x=>1, y=>2)` or a dict `ex(Dict(x=>1, y=>2))`.
+## This uses `eval` to avoid having to work around different styles in v0.5 and v0.4
+call_v0_4 = quote
+  function Base.call{T <: Basic}(ex::T, args...)
+      xs = free_symbols(ex)
+      subs(ex, collect(zip(xs, args))...)
+  end
+  Base.call(ex::Basic, x::Dict) = subs(ex, x)
+  Base.call(ex::Basic, x::Pair...) = subs(ex, x...)
+end
+
+call_v0_5 = quote
+  function (ex::Basic)(args...)
+      xs = free_symbols(ex)
+      subs(ex, collect(zip(xs, args))...)
+  end
+  (ex::Basic)(x::Dict) = subs(ex, x)
+  (ex::Basic)(x::Pair...) = subs(ex, x...)
+end
+VERSION < v"0.5.0" ? eval(call_v0_4) : eval(call_v0_5)
+
+
 ## Lambdify
 
 ## Mapping of SymEngine Constants into julia values
