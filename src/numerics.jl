@@ -124,9 +124,6 @@ end
         
 
 ##  Conversions SymEngine -> Julia 
-## define convert(T, x) methods leveraging N()
-convert{T <: Union{Int, BigInt,  Float64, BigFloat, Real}}(::Type{T}, x::Basic) = convert(T, BasicType(x))
-convert{T <: Union{Int, BigInt,  Float64, BigFloat, Real}}(::Type{T}, x::BasicType) = convert(T, N(x))
 
 ## Rational: TODO: follow symengine/symengine#1143 for support in the cwrapper
 den(x::Basic)                     = den(BasicType(x))
@@ -141,9 +138,6 @@ num(x::BasicType{Val{:Rational}}) = Basic(String(copy(split(SymEngine.toString(x
 num(x::BasicComplexNumber)        = imag(x) == Basic(0) ? num(real(x)) : throw(InexactError())
 num(x::BasicType)                 = throw(InexactError())
 
-convert{T}(::Type{Rational{T}}, x::Basic) = convert(Rational{T}, BasicType(x))
-convert{T}(::Type{Rational{T}}, x::BasicType) = Rational(convert(T, num(x)), convert(T, den(x)))
-
 
 ## Complex
 real(x::Basic) = real(SymEngine.BasicType(x))
@@ -156,9 +150,15 @@ imag(x::BasicType{Val{:RealMPFR}}) = Basic(0)
 imag(x::BasicType{Val{:Rational}}) = Basic(0)
 imag(x::SymEngine.BasicType) = throw(InexactError())
 
-convert{T}(::Type{Complex{T}}, x::Basic) = convert(Complex{T}, BasicType(x))
-convert{T}(::Type{Complex{T}}, x::BasicType) = complex(convert(T, real(x)), convert(T, imag(x)))
 
+convert(::Type{Complex{Float64}}, x::Basic)  = convert(Complex{Float64}, N(evalf(x, 53, false)))
+convert(::Type{Complex{BigFloat}}, x::Basic) = convert(Complex{Float64}, N(evalf(x, precision(BigFloat), false)))
+convert{T}(::Type{Complex{T}}, x::Basic)     = complex(convert(T, real(x)), convert(T, imag(x)))
+
+## define convert(T, x) methods leveraging N()
+convert(::Type{Float64}, x::Basic)      = convert(Float64, N(evalf(x, 53, true)))
+convert(::Type{BigFloat}, x::Basic)     = convert(BigFloat, N(evalf(x, precision(BigFloat), true)))
+convert{T <: Real}(::Type{T}, x::Basic) = convert(T, N(x))
 
 
 ## For generic programming in Julia
