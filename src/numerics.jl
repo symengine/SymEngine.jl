@@ -107,7 +107,7 @@ function N(b::BasicType{Val{:Integer}})
     end
 end
 
-N(b::BasicType{Val{:Rational}}) = Rational(N(num(b)), N(den(b))) # TODO: Implement rational_get_mpq in cwrapper.h
+N(b::BasicType{Val{:Rational}}) = Rational(N(num(b)), N(den(b))) # TODO: conditionally wrap rational_get_mpq from cwrapper.h
 N(b::BasicType{Val{:RealDouble}}) = convert(Cdouble, b)
 N(b::BasicType{Val{:RealMPFR}}) = convert(BigFloat, b)
 
@@ -128,7 +128,7 @@ end
 convert{T <: Union{Int, BigInt,  Float64, BigFloat, Real}}(::Type{T}, x::Basic) = convert(T, BasicType(x))
 convert{T <: Union{Int, BigInt,  Float64, BigFloat, Real}}(::Type{T}, x::BasicType) = convert(T, N(x))
 
-## Rational
+## Rational: TODO: follow symengine/symengine#1143 for support in the cwrapper
 den(x::Basic)                     = den(BasicType(x))
 den(x::BasicType{Val{:Integer}})  = Basic(1)
 den(x::BasicType{Val{:Rational}}) = Basic(String(copy(split(SymEngine.toString(x), "/"))[2]))
@@ -172,14 +172,14 @@ isless(x::Basic, y::Basic) = isless(N(x), N(y))
 
 
 ## These should have support in symengine-wrapper, but currently don't
-trunc(x::Basic, args...) = Basic(trunc(Float64(x), args...))  
+trunc(x::Basic, args...) = Basic(trunc(N(x), args...))  
 trunc{T <: Integer}(::Type{T},x::Basic, args...) = convert(T, trunc(x,args...))
 
-ceil(x::Basic) = Basic(ceil(Float64(x)))
+ceil(x::Basic) = Basic(ceil(N(x)))
 ceil{T <: Integer}(::Type{T},x::Basic) = convert(T, ceil(x))
 
-floor(x::Basic) = Basic(floor(Float64(x)))
+floor(x::Basic) = Basic(floor(N(x)))
 floor{T <: Integer}(::Type{T},x::Basic) = convert(T, floor(x))
 
-round(x::Basic) = Basic(round(Float64(x)))
+round(x::Basic) = Basic(round(N(x)))
 round{T <: Integer}(::Type{T},x::Basic) = convert(T, round(x))
