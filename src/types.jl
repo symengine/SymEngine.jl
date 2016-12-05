@@ -161,6 +161,8 @@ type BasicType{T} <: Number
     x::Basic
 end
 
+convert(::Type{Basic}, x::Basic) = x
+
 SymbolicType = Union{Basic, BasicType}
 convert(::Type{Basic}, x::BasicType) = x.x
 Basic(x::BasicType) = x.x
