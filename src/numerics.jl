@@ -107,7 +107,7 @@ function N(b::BasicType{Val{:Integer}})
     end
 end
 
-N(b::BasicType{Val{:Rational}}) = Rational(N(num(b)), N(den(b))) # TODO: conditionally wrap rational_get_mpq from cwrapper.h
+N(b::BasicType{Val{:Rational}}) = Rational(N(numerator(b)), N(denominator(b))) # TODO: conditionally wrap rational_get_mpq from cwrapper.h
 N(b::BasicType{Val{:RealDouble}}) = convert(Cdouble, b)
 N(b::BasicType{Val{:RealMPFR}}) = convert(BigFloat, b)
 
@@ -126,17 +126,17 @@ end
 ##  Conversions SymEngine -> Julia 
 
 ## Rational: TODO: follow symengine/symengine#1143 for support in the cwrapper
-den(x::Basic)                     = den(BasicType(x))
-den(x::BasicType{Val{:Integer}})  = Basic(1)
-den(x::BasicType{Val{:Rational}}) = Basic(String(copy(split(SymEngine.toString(x), "/"))[2]))
-den(x::BasicComplexNumber)        = imag(x) == Basic(0) ? den(real(x)) : throw(InexactError())
-den(x::BasicType)                 = throw(InexactError())
+denominator(x::Basic)                     = denominator(BasicType(x))
+denominator(x::BasicType{Val{:Integer}})  = Basic(1)
+denominator(x::BasicType{Val{:Rational}}) = Basic(String(copy(split(SymEngine.toString(x), "/"))[2]))
+denominator(x::BasicComplexNumber)        = imag(x) == Basic(0) ? denominator(real(x)) : throw(InexactError())
+denominator(x::BasicType)                 = throw(InexactError())
 
-num(x::Basic)                     = num(BasicType(x))
-num(x::BasicType{Val{:Integer}})  = Basic(x)
-num(x::BasicType{Val{:Rational}}) = Basic(String(copy(split(SymEngine.toString(x), "/"))[1]))
-num(x::BasicComplexNumber)        = imag(x) == Basic(0) ? num(real(x)) : throw(InexactError())
-num(x::BasicType)                 = throw(InexactError())
+numerator(x::Basic)                     = numerator(BasicType(x))
+numerator(x::BasicType{Val{:Integer}})  = Basic(x)
+numerator(x::BasicType{Val{:Rational}}) = Basic(String(copy(split(SymEngine.toString(x), "/"))[1]))
+numerator(x::BasicComplexNumber)        = imag(x) == Basic(0) ? numerator(real(x)) : throw(InexactError())
+numerator(x::BasicType)                 = throw(InexactError())
 
 
 ## Complex
