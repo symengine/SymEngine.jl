@@ -128,3 +128,23 @@ A = [x 2; x 1]
 ## check that unique work (hash)
 x,y,z = symbols("x y z")
 @test length(SymEngine.free_symbols([x*y, y,z])) == 3
+
+
+## check that callable symengine expressions can be used as functions for duck-typed functions
+@vars x
+a,err = quadgk(x^2, 0, 1)
+@test abs(a - 1/3) <= err
+
+## Check conversions SymEngine -> Julia
+z,flt, rat, ima, cplx = btypes = [Basic(1), Basic(1.23), Basic(3//5), Basic(2im), Basic(1 + 2im)]
+
+@test Int(z) == 1
+@test BigInt(z) == 1
+@test Float64(flt) ≈ 1.23
+@test Real(flt) ≈ 1.23
+@test convert(Rational{Int}, rat) == 3//5
+@test convert(Complex{Int}, ima) == 2im
+@test convert(Complex{Int}, cplx) == 1 + 2im
+
+@test_throws InexactError convert(Int, flt)
+@test_throws InexactError convert(Int, rat)

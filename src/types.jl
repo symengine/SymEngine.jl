@@ -161,12 +161,16 @@ type BasicType{T} <: Number
     x::Basic
 end
 
+convert(::Type{Basic}, x::Basic) = x
+
 SymbolicType = Union{Basic, BasicType}
 convert(::Type{Basic}, x::BasicType) = x.x
 Basic(x::BasicType) = x.x
 
 BasicType(val::Basic) =  BasicType{Val{get_symengine_class(val)}}(val)
 convert{T}(::Type{BasicType{T}}, val::Basic) = BasicType{Val{get_symengine_class(val)}}(val)
+# Needed for julia v0.4.7
+convert{T<:BasicType}(::Type{T}, x::Basic) = BasicType(x)
 
 
 
