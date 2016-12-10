@@ -5,11 +5,13 @@ import Base: trunc, ceil, floor, round
 
 function evalf(b::Basic, bits::Integer=53, real::Bool=false)
     c = Basic()
+    bits > 53 && real && (have_mpfr || throw(ArgumentError("libsymengine has to be compiled with MPFR for this feature")))
+    bits > 53 && !real && (have_mpc || throw(ArgumentError("libsymengine has to be compiled with MPC for this feature")))
     status = ccall((:basic_evalf, libsymengine), Cint, (Ptr{Basic}, Ptr{Basic}, Culong, Cint), &c, &b, Culong(bits), Int(real))
     if status == 0
         return c
     else
-        throw(ArgumentError("libsymengine has to be compiled with MPFR and MPC for eval with precision greater than 53."))
+        throw(ArgumentError("symbolic value cannot be evaluated to a numeric value"))
     end
 end
 

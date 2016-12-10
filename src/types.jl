@@ -58,6 +58,18 @@ function convert(::Type{Basic}, x::Cdouble)
     return a
 end
 
+function convert(::Type{Basic}, x::BigFloat)
+    if (x.prec <= 53)
+        return convert(Basic, Cdouble(x))
+    elseif have_mpfr
+        a = Basic()
+        ccall((:real_mpfr_set, libsymengine), Void, (Ptr{Basic}, Ptr{BigFloat}), &a, &x)
+        return a
+    else
+        warn("SymEngine is not compiled with MPFR support. Converting will lose precision.")
+        return convert(Basic, Cdouble(x))
+    end
+end
 
 if Clong == Int32
     convert(::Type{Basic}, x::Union{Int8, Int16, Int32}) = Basic(convert(Clong, x))

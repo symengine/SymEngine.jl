@@ -148,3 +148,8 @@ z,flt, rat, ima, cplx = btypes = [Basic(1), Basic(1.23), Basic(3//5), Basic(2im)
 
 @test_throws InexactError convert(Int, flt)
 @test_throws InexactError convert(Int, rat)
+
+t = BigFloat(1.23)
+@test !SymEngine.have_component("mpfr") || t == convert(BigFloat, convert(Basic, t))
+
+@test SymEngine.libversion >= VersionNumber("0.2.0")
