@@ -22,6 +22,11 @@ if !isfile(deps_file)
 end
 
 include(deps_file)
+include("utils.jl")
+const have_mpfr = have_component("mpfr")
+const have_mpc = have_component("mpc")
+const libversion = get_libversion()
+
 include("types.jl")
 include("ctypes.jl")
 include("display.jl")
