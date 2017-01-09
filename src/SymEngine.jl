@@ -3,8 +3,9 @@ __precompile__()
 module SymEngine
 
 import Base: show, convert, real, imag
-
-using Compat: String, unsafe_string, @compat
+using Compat: String, unsafe_string, @compat, denominator, numerator
+VERSION >= v"0.6.0-dev" && import Base.numerator, Base.denominator
+VERSION < v"0.6.0-dev" && import Compat.numerator, Compat.denominator
 
 export Basic, symbols, @vars
 export free_symbols, get_args

@@ -80,7 +80,7 @@ else
 end
 convert(::Type{Basic}, x::Union{Float16, Float32, Float64}) = Basic(convert(Cdouble, x))
 convert(::Type{Basic}, x::Integer) = Basic(BigInt(x))
-convert(::Type{Basic}, x::Rational) = Basic(num(x)) / Basic(den(x))
+convert(::Type{Basic}, x::Rational) = Basic(numerator(x)) / Basic(denominator(x))
 convert(::Type{Basic}, x::Complex) = Basic(real(x)) + Basic(imag(x)) * IM
 
 Base.promote_rule{S<:Number}(::Type{Basic}, ::Type{S} ) = Basic

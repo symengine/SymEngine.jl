@@ -106,11 +106,13 @@ for val1 in samples, val2 in samples
 end
 
 ## lambidfy
-@test_approx_eq lambdify(sin(Basic(1))) sin(1)
-@test_approx_eq lambdify(exp(PI/2*x))(1) exp(pi/2)
+@test norm(lambdify(sin(Basic(1))) - sin(1)) <= 1e-14
+fn = lambdify(exp(PI/2*x))
+@test norm(fn(1) - exp(pi/2)) <= 1e-14
 for val in samples
     ex = sin(x + val)
-    @test_approx_eq lambdify(ex)(val) sin(2*val)
+    fn = lambdify(ex)
+    @test norm(fn(val) - sin(2*val)) <= 1e-14
 end
 
 ## N
@@ -132,8 +134,14 @@ x,y,z = symbols("x y z")
 
 ## check that callable symengine expressions can be used as functions for duck-typed functions
 @vars x
-a,err = quadgk(x^2, 0, 1)
-@test abs(a - 1/3) <= err
+function simple_newton(f, fp, x0)
+    x = float(x0)
+    while norm(f(x)) >= 1e-14
+        x = x - f(x)/fp(x)
+    end
+    x
+end
+@test norm(simple_newton(sin(x), diff(sin(x), x), 3) - pi) <= 1e-14
 
 ## Check conversions SymEngine -> Julia
 z,flt, rat, ima, cplx = btypes = [Basic(1), Basic(1.23), Basic(3//5), Basic(2im), Basic(1 + 2im)]
