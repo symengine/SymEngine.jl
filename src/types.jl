@@ -198,6 +198,8 @@ Base.promote_rule{T<:BasicType}( ::Type{Basic}, ::Type{T} ) = T
 
 ## needed for mathops
 convert{T<:BasicType}(::Type{T}, val::Number) = T(Basic(val))
+## Julia v0.6 errors with ambiguous error if this method is not defined.
+convert{T<:BasicType}(::Type{T}, val::T) = val
 
 
 ## some type unions possibly useful for dispatch
