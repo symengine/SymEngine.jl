@@ -8,7 +8,7 @@ libsymengine = library_dependency("libsymengine", aliases=["libsymengine", "syme
 if is_windows()
     path = abspath(dirname(@__FILE__), "usr")
     isdir(path) || mkdir(path)
-    if WORD_SIZE == 64
+    if Sys.WORD_SIZE == 64
         url = "https://github.com/symengine/symengine/releases/download/v0.2.0/binaries-msvc-x86_64.tar.bz2"
     else
         url = "https://github.com/symengine/symengine/releases/download/v0.2.0/binaries-msvc-x86.tar.bz2"
