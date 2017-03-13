@@ -100,7 +100,7 @@ function N(b::BasicType{Val{:Integer}})
     else
         u = unsafe_load(a.d, 1)
         if u <= typemax(Int64)
-            return Int64(u) * sign(a)
+            return Int64(u) * sign(a.size)
         elseif sign(a) == 1
             return u
         else
