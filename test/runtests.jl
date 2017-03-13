@@ -160,4 +160,8 @@ z,flt, rat, ima, cplx = btypes = [Basic(1), Basic(1.23), Basic(3//5), Basic(2im)
 t = BigFloat(1.23)
 @test !SymEngine.have_component("mpfr") || t == convert(BigFloat, convert(Basic, t))
 
+@test typeof(N(Basic(-1))) != BigInt
+
+# Check that libversion works. VersionNumber should always be >= 0.2.0
+# since 0.2.0 is the first public release
 @test SymEngine.libversion >= VersionNumber("0.2.0")
