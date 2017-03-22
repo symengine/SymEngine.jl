@@ -49,19 +49,23 @@ for op in [:IM, :PI, :E, :EulerGamma]
     eval(Expr(:export, op))
 end
 
-function init_constants()
-    for (op, libnm) in [(:IM, :I),
-                     (:PI, :pi),
-                     (:E, :E),
-                     (:EulerGamma, :EulerGamma)
-                     ]
-        tup = (Base.Symbol("basic_const_$libnm"), libsymengine)
-        @eval begin
-            ccall((:basic_new_stack, libsymengine), Void, (Ptr{Basic}, ), &($op))
+macro init_constant(op, libnm)
+    tup = (Base.Symbol("basic_const_$libnm"), libsymengine)
+    alloc_tup = (:basic_new_stack, libsymengine)
+    :(
+        begin
+            ccall($alloc_tup, Void, (Ptr{Basic}, ), &($op))
             ccall($tup, Void, (Ptr{Basic}, ), &($op))
             finalizer($op, basic_free)
         end
-    end
+    )
+end
+
+function init_constants()
+    @init_constant IM I
+    @init_constant PI pi
+    @init_constant E E
+    @init_constant EulerGamma EulerGamma
 end
 
 ## ## Conversions
