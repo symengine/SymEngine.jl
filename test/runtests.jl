@@ -169,6 +169,7 @@ t = BigFloat(1.23)
 # Check that constructing Basic from Expr works
 @vars x y
 @test Basic(:(-2*x)) == -2*x
-@test Basic(:(3*x*y)) == 3*x*y
+@test Basic(:(-3*x*y)) == -3*x*y
+@test Basic(:((x-y)*-3)) == (x-y)*(-3)
 @test Basic(:(-y)) == -y
 @test Basic(:(-2*(x-2*y))) == -2*(x-2*y)
