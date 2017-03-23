@@ -51,7 +51,25 @@ function convert(::Type{Basic}, s::String)
     return a
 end
 
-convert(::Type{Basic}, ex::Union{Symbol,Expr}) = Basic(string(ex))
+flip_mult!(ex) = nothing
+
+function flip_mult!(ex::Expr)
+    if ex.args[1] == :(*) && length(ex.args) == 3 && isa(ex.args[2], Number)
+        ex.args[3], ex.args[2] = ex.args[2], ex.args[3]
+    end
+    for (i,arg) in enumerate(ex.args)
+        flip_mult!(arg)
+    end
+end
+
+function convert(::Type{Basic}, ex::Expr)
+    expr = copy(ex)
+    flip_mult!(expr)
+    Basic(string(expr))
+end
+
+convert(::Type{Basic}, ex::Symbol) = Basic(string(ex))
+
 function convert(::Type{Basic}, x::Cdouble)
     a = Basic()
     ccall((:real_double_set_d, libsymengine), Void, (Ptr{Basic}, Cdouble), &a, x)
