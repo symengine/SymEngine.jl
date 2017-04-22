@@ -157,6 +157,10 @@ z,flt, rat, ima, cplx = btypes = [Basic(1), Basic(1.23), Basic(3//5), Basic(2im)
 @test_throws InexactError convert(Int, flt)
 @test_throws InexactError convert(Int, rat)
 
+x = symbols("x")
+Number[1 2 3 x]
+@test_throws ArgumentError Int[1 2 3 x]
+
 t = BigFloat(1.23)
 @test !SymEngine.have_component("mpfr") || t == convert(BigFloat, convert(Basic, t))
 

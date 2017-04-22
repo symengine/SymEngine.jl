@@ -158,7 +158,9 @@ convert(::Type{Float64}, x::Basic)           = convert(Float64, N(evalf(x, 53, t
 convert(::Type{BigFloat}, x::Basic)          = convert(BigFloat, N(evalf(x, precision(BigFloat), true)))
 convert(::Type{Complex{Float64}}, x::Basic)  = convert(Complex{Float64}, N(evalf(x, 53, false)))
 convert(::Type{Complex{BigFloat}}, x::Basic) = convert(Complex{BigFloat}, N(evalf(x, precision(BigFloat), false)))
-convert{T <: Number}(::Type{T}, x::Basic)    = convert(T, N(x))
+convert(::Type{Number}, x::Basic)            = x
+convert{T <: Real}(::Type{T}, x::Basic)      = convert(T, N(x))
+convert{T <: Real}(::Type{Complex{T}}, x::Basic)    = convert(Complex{T}, N(x))
 
 
 ## For generic programming in Julia
