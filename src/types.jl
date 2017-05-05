@@ -51,20 +51,8 @@ function convert(::Type{Basic}, s::String)
     return a
 end
 
-flip_mult!(ex) = nothing
-
-function flip_mult!(ex::Expr)
-    if ex.args[1] == :(*) && length(ex.args) == 3 && isa(ex.args[2], Number)
-        ex.args[3], ex.args[2] = ex.args[2], ex.args[3]
-    end
-    for (i,arg) in enumerate(ex.args)
-        flip_mult!(arg)
-    end
-end
-
 function convert(::Type{Basic}, ex::Expr)
     expr = copy(ex)
-    flip_mult!(expr)
     Basic(string(expr))
 end
 
