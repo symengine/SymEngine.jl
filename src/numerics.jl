@@ -113,6 +113,8 @@ end
 N(b::BasicType{Val{:Rational}}) = Rational(N(numerator(b)), N(denominator(b))) # TODO: conditionally wrap rational_get_mpq from cwrapper.h
 N(b::BasicType{Val{:RealDouble}}) = convert(Cdouble, b)
 N(b::BasicType{Val{:RealMPFR}}) = convert(BigFloat, b)
+N(b::BasicType{Val{:NaN}}) = NaN
+N(b::BasicType{Val{:Infty}}) = (string(b) == "-inf") ? -Inf : Inf
 
 N(b::BasicComplexNumber) = complex(N(real(b)), N(imag(b)))
 function N(b::BasicType)

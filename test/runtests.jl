@@ -177,3 +177,6 @@ t = BigFloat(1.23)
 @test Basic(:((x-y)*-3)) == (x-y)*(-3)
 @test Basic(:(-y)) == -y
 @test Basic(:(-2*(x-2*y))) == -2*(x-2*y)
+
+@test string(Basic(0)/0) == "nan"
+@test subs(1/x, x, 0) == Basic(1)/0
