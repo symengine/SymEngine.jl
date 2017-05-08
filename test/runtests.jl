@@ -180,3 +180,6 @@ t = BigFloat(1.23)
 
 @test string(Basic(0)/0) == "nan"
 @test subs(1/x, x, 0) == Basic(1)/0
+
+d = Dict(x=>y, y=>x)
+@test subs(x + 2*y, d) == y + 2*x

@@ -67,6 +67,50 @@ function Base.convert(::Type{Vector}, x::CVecBasic)
     [x[i-1] for i in 1:n]
 end
 
+## CMapBasicBasic
+type CMapBasicBasic
+    ptr::Ptr{Void}
+end
+
+function CMapBasicBasic()
+    z = CMapBasicBasic(ccall((:mapbasicbasic_new, libsymengine), Ptr{Void}, ()))
+    finalizer(z, CMapBasicBasic_free)
+    z
+end
+
+function CMapBasicBasic(dict::Dict)
+    c = CMapBasicBasic()
+    for (key, value) in dict
+        c[Basic(key)] = Basic(value)
+    end
+    return c
+end
+
+function CMapBasicBasic_free(x::CMapBasicBasic)
+    if x.ptr != C_NULL
+        ccall((:mapbasicbasic_free, libsymengine), Void, (Ptr{Void},), x.ptr)
+        x.ptr = C_NULL
+    end
+end
+
+function Base.length(s::CMapBasicBasic)
+    ccall((:mapbasicbasic_size, libsymengine), UInt, (Ptr{Void},), s.ptr)
+end
+
+function Base.getindex(s::CMapBasicBasic, k::Basic)
+    result = Basic()
+    ret = ccall((:mapbasicbasic_get, libsymengine), CInt, (Ptr{Void}, Ptr{Basic}, Ptr{Basic}), s.ptr, &k, &result)
+    if ret == 0
+        throw(KeyError("Key not found"))
+    end
+    result
+end
+
+function Base.setindex!(s::CMapBasicBasic, k::Basic, v::Basic)
+    ccall((:mapbasicbasic_insert, libsymengine), Void, (Ptr{Void}, Ptr{Basic}, Ptr{Basic}), s.ptr, &k, &v)
+end
+
+Base.convert(::Type{CMapBasicBasic}, x::Dict{Any, Any}) = CMapBasicBasic(x)
 
 ## Dense matrix
 
