@@ -5,7 +5,7 @@
 
 [![SymEngine](http://pkg.julialang.org/badges/SymEngine_0.4.svg)](http://pkg.julialang.org/?pkg=SymEngine)
 [![SymEngine](http://pkg.julialang.org/badges/SymEngine_0.5.svg)](http://pkg.julialang.org/?pkg=SymEngine)
-
+[![SymEngine](http://pkg.julialang.org/badges/SymEngine_0.6.svg)](http://pkg.julialang.org/?pkg=SymEngine)
 
 Julia Wrappers for SymEngine, a fast symbolic manipulation library, written in C++.
 
