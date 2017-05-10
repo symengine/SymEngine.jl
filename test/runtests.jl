@@ -183,3 +183,6 @@ t = BigFloat(1.23)
 
 d = Dict(x=>y, y=>x)
 @test subs(x + 2*y, d) == y + 2*x
+
+@test sin(x+PI/4) != sin(x)
+@test sin(PI/2-x) == cos(x)
