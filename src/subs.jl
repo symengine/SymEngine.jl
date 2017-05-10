@@ -20,6 +20,13 @@ function subs{T<:SymbolicType, S<:SymbolicType}(ex::T, var::S, val)
     ccall((:basic_subs2, libsymengine), Void, (Ptr{Basic}, Ptr{Basic}, Ptr{Basic}, Ptr{Basic}), &s, &ex, &var, &val)
     return s
 end
+function subs{T<:SymbolicType}(ex::T, d::CMapBasicBasic)
+    s = Basic()
+    ccall((:basic_subs, libsymengine), Void, (Ptr{Basic}, Ptr{Basic}, Ptr{Void}), &s, &ex, d.ptr)
+    return s
+end
+
+subs{T<:SymbolicType}(ex::T, d::Dict) = subs(ex, CMapBasicBasic(d))
 subs{T <: SymbolicType, S<:SymbolicType}(ex::T, y::Tuple{S, Any}) = subs(ex, y[1], y[2])
 subs{T <: SymbolicType, S<:SymbolicType}(ex::T, y::Tuple{S, Any}, args...) = subs(subs(ex, y), args...)
 subs{T <: SymbolicType}(ex::T, d::Pair...) = subs(ex, [(p.first, p.second) for p in d]...)
@@ -51,7 +58,7 @@ VERSION < v"0.5.0" ? eval(call_v0_4) : eval(call_v0_5)
 ## Lambdify
 
 ## Mapping of SymEngine Constants into julia values
-constant_map = Dict("pi" => :pi, "E" => :e, "EulerGamma" => :γ)
+constant_map = Dict("pi" => :pi, "E" => :e, "EulerGamma" => :γ, "exp(1)" => :e)
 
 ## Map symengine classes to function names
 fn_map = Dict(

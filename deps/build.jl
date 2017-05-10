@@ -1,21 +1,38 @@
 using BinDeps
 using Compat
 using Conda
+
 @BinDeps.setup
 
-libsymengine = library_dependency("libsymengine", aliases=["libsymengine", "symengine"])
+# Use x.y.z for downloading binaries, but only check for x.y in shared libraries
+# so that patch version increases can be found in system
+libsymengine_version = "0.3.0"
+libsymengine_soversion = join(split(libsymengine_version, ".")[1:2], ".")
 
 if is_windows()
-    path = abspath(dirname(@__FILE__), "usr")
+   libsymengine_soname = "symengine-$(libsymengine_soversion).dll"
+elseif is_apple()
+   libsymengine_soname = "libsymengine.$(libsymengine_soversion).dylib"
+else
+   libsymengine_soname = "libsymengine.so.$(libsymengine_soversion)"
+end
+
+# Use the dummy name libsymengine-dummy to avoid finding libsymengine.so
+# We only want to find the versioned library
+libdep = library_dependency("libsymengine_dummy", aliases=[libsymengine_soname])
+
+path = abspath(dirname(@__FILE__), "usr")
+if is_windows()
     isdir(path) || mkdir(path)
     if Sys.WORD_SIZE == 64
-        url = "https://github.com/symengine/symengine/releases/download/v0.2.0/binaries-msvc-x86_64.tar.bz2"
+        suffix = "x86_64"
     else
-        url = "https://github.com/symengine/symengine/releases/download/v0.2.0/binaries-msvc-x86.tar.bz2"
+        suffix = "x86"
     end
-    provides(Binaries, URI(url), libsymengine, unpacked_dir="$path/bin")
+    url = "https://github.com/symengine/symengine/releases/download/v$(libsymengine_version)/binaries-msvc-$(suffix).tar.bz2"
+    provides(Binaries, URI(url), libdep, unpacked_dir="$path/bin")
 else
-    env = Symbol(abspath(dirname(@__FILE__), "usr"))
+    env = Symbol(path)
     EnvManagerType = Conda.EnvManager{env}
     # Conda's method will install miniconda to check that a package exists.
     # This will indicate to BinDeps that the packages for this env exists unconditionally.
@@ -24,11 +41,9 @@ else
     # Override the command for install in this env so that channels are added.
     function BinDeps.generate_steps(dep::BinDeps.LibraryDependency, manager::EnvManagerType, opts)
         Conda.add_channel("conda-forge", env)
-        Conda.add_channel("symengine", env)
         Conda.add("$(manager.packages[1])", env)
     end
-    provides(EnvManagerType, "symengine==0.2.0", [libsymengine])
+    provides(EnvManagerType, "symengine=$(libsymengine_version)", [libdep])
 end
 
-@BinDeps.install Dict([(:libsymengine, :libsymengine)])
-
+@BinDeps.install Dict([(:libsymengine_dummy, :libsymengine)])

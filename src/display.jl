@@ -1,10 +1,9 @@
 
 function toString(b::SymbolicType)
     b = Basic(b)
-    a = ccall((:basic_str, libsymengine), Cstring, (Ptr{Basic}, ), &b)
+    a = ccall((:basic_str_julia, libsymengine), Cstring, (Ptr{Basic}, ), &b)
     string = unsafe_string(a)
     ccall((:basic_str_free, libsymengine), Void, (Cstring, ), a)
-    string = replace(string, "**", "^") # de pythonify
     return string
 end
 

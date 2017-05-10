@@ -177,3 +177,12 @@ t = BigFloat(1.23)
 @test Basic(:((x-y)*-3)) == (x-y)*(-3)
 @test Basic(:(-y)) == -y
 @test Basic(:(-2*(x-2*y))) == -2*(x-2*y)
+
+@test string(Basic(0)/0) == "nan"
+@test subs(1/x, x, 0) == Basic(1)/0
+
+d = Dict(x=>y, y=>x)
+@test subs(x + 2*y, d) == y + 2*x
+
+@test sin(x+PI/4) != sin(x)
+@test sin(PI/2-x) == cos(x)
