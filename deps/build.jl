@@ -29,8 +29,9 @@ if is_windows()
     else
         suffix = "x86"
     end
-    url = "https://github.com/symengine/symengine/releases/download/v$(libsymengine_version)/binaries-msvc-$(suffix).tar.bz2"
-    provides(Binaries, URI(url), libdep, unpacked_dir="$path/bin")
+    url = "https://github.com/symengine/symengine/releases/download/"
+    url *= "v$(libsymengine_version)/symengine-$(libsymengine_version)-binaries-msvc-$(suffix).tar.bz2"
+    provides(Binaries, URI(url), libdep, unpacked_dir="symengine-$(libsymengine_version)/bin")
 else
     env = Symbol(path)
     EnvManagerType = Conda.EnvManager{env}
