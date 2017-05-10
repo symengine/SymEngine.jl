@@ -99,7 +99,7 @@ end
 
 function Base.getindex(s::CMapBasicBasic, k::Basic)
     result = Basic()
-    ret = ccall((:mapbasicbasic_get, libsymengine), CInt, (Ptr{Void}, Ptr{Basic}, Ptr{Basic}), s.ptr, &k, &result)
+    ret = ccall((:mapbasicbasic_get, libsymengine), Cint, (Ptr{Void}, Ptr{Basic}, Ptr{Basic}), s.ptr, &k, &result)
     if ret == 0
         throw(KeyError("Key not found"))
     end
