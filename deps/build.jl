@@ -17,7 +17,9 @@ else
    libsymengine_soname = "libsymengine.so.$(libsymengine_soversion)"
 end
 
-libdep = library_dependency("libsymengine", aliases=[libsymengine_soname])
+# Use the dummy name libsymengine-dummy to avoid finding libsymengine.so
+# We only want to find the versioned library
+libdep = library_dependency("libsymengine_dummy", aliases=[libsymengine_soname])
 
 path = abspath(dirname(@__FILE__), "usr")
 if is_windows()
@@ -44,4 +46,4 @@ else
     provides(EnvManagerType, "symengine=$(libsymengine_version)", [libdep])
 end
 
-@BinDeps.install Dict([(:libsymengine, :libsymengine)])
+@BinDeps.install Dict([(:libsymengine_dummy, :libsymengine)])
