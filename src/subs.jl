@@ -58,7 +58,8 @@ VERSION < v"0.5.0" ? eval(call_v0_4) : eval(call_v0_5)
 ## Lambdify
 
 ## Mapping of SymEngine Constants into julia values
-constant_map = Dict("pi" => :pi, "E" => :e, "EulerGamma" => :γ, "exp(1)" => :e)
+constant_map = Dict("pi" => :pi, "EulerGamma" => :γ, "exp(1)" => :e, "Catalan" => :catalan,
+                    "GoldenRation" => :φ)
 
 ## Map symengine classes to function names
 fn_map = Dict(

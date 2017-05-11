@@ -42,7 +42,7 @@ Base.one{T<:BasicType}(::Type{T}) = BasicType(Basic(1))
 ## Math constants
 ## no oo!
 
-for op in [:IM, :PI, :E, :EulerGamma]
+for op in [:IM, :PI, :E, :EulerGamma, :Catalan, :oo, :zoo, :NAN]
     @eval begin
         const $op = Basic(C_NULL)
     end
@@ -66,13 +66,17 @@ function init_constants()
     @init_constant PI pi
     @init_constant E E
     @init_constant EulerGamma EulerGamma
+    @init_constant Catalan Catalan
+    @init_constant oo infinity
+    @init_constant zoo complex_infinity
+    @init_constant NAN nan
 end
 
 ## ## Conversions
 Base.convert(::Type{Basic}, x::Irrational{:π}) = PI
 Base.convert(::Type{Basic}, x::Irrational{:e}) = E
 Base.convert(::Type{Basic}, x::Irrational{:γ}) = EulerGamma
-#Base.convert(::Type{Basic}, x::Irrational{:catalan}) = ???
+Base.convert(::Type{Basic}, x::Irrational{:catalan}) = Catalan
 Base.convert(::Type{Basic}, x::Irrational{:φ}) = (1 + Basic(5)^Basic(1//2))/2
 Base.convert(::Type{BasicType}, x::Irrational) = BasicType(convert(Basic, x))
 

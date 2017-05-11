@@ -131,18 +131,16 @@ end
 ##  Conversions SymEngine -> Julia 
 
 ## Rational: TODO: follow symengine/symengine#1143 for support in the cwrapper
-denominator(x::Basic)                     = denominator(BasicType(x))
-denominator(x::BasicType{Val{:Integer}})  = Basic(1)
-denominator(x::BasicType{Val{:Rational}}) = Basic(String(copy(split(SymEngine.toString(x), "/"))[2]))
-denominator(x::BasicComplexNumber)        = imag(x) == Basic(0) ? denominator(real(x)) : throw(InexactError())
-denominator(x::BasicType)                 = throw(InexactError())
 
-numerator(x::Basic)                     = numerator(BasicType(x))
-numerator(x::BasicType{Val{:Integer}})  = Basic(x)
-numerator(x::BasicType{Val{:Rational}}) = Basic(String(copy(split(SymEngine.toString(x), "/"))[1]))
-numerator(x::BasicComplexNumber)        = imag(x) == Basic(0) ? numerator(real(x)) : throw(InexactError())
-numerator(x::BasicType)                 = throw(InexactError())
+function as_numer_denom(x::Basic)
+    a, b = Basic(), Basic()
+    ccall((:basic_as_numer_denom, libsymengine), Void, (Ptr{Basic}, Ptr{Basic}, Ptr{Basic}), &a, &b, &x)
+    return a, b
+end
 
+as_numer_denom(x::BasicType) = as_numer_denom(Basic(x))
+denominator(x::SymbolicType) = as_numer_denom(x)[2]
+numerator(x::SymbolicType)   = as_numer_denom(x)[1]
 
 ## Complex
 real(x::Basic) = real(SymEngine.BasicType(x))
