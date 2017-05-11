@@ -120,6 +120,10 @@ for val in samples
     @test N(Basic(val)) == val
 end
 
+for val in [π, γ, e, φ, catalan]
+    @test N(Basic(val)) == val
+end
+
 ## generic linear algebra
 x = symbols("x")
 A = [x 2; x 1]

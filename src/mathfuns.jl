@@ -21,7 +21,6 @@ end
 
 ## import from base one argument functions
 ## these are from cwrapper.cpp, one arg func
-## Where are exp? log?, sqrt?
 for (meth, libnm) in [
                       (:abs,:abs),
                       (:sin,:sin),
@@ -51,6 +50,9 @@ for (meth, libnm) in [
                       (:zeta,:zeta),
                       (:gamma,:gamma),
                       (:eta,:dirichlet_eta),
+                      (:log,:log),
+                      (:sqrt,:sqrt),
+                      (:exp,:exp),
                       ]
     eval(Expr(:import, :Base, meth))
     IMPLEMENT_ONE_ARG_FUNC(meth, libnm)
@@ -65,13 +67,6 @@ for  (meth, libnm) in [
 end
 
 ## add these in until they are wrapped
-Base.exp(a::SymbolicType) = E^a
-function Base.log(a::SymbolicType) # super hacky
-    u = symbols(gensym())
-    v = a^u
-    diff(v, u) / v
-end
-Base.sqrt(a::SymbolicType) = a^(1//2)
 Base.cbrt(a::SymbolicType) = a^(1//3)
                   
 for (meth, fn) in [(:sind, :sin), (:cosd, :cos), (:tand, :tan), (:secd, :sec), (:cscd, :csc), (:cotd, :cot)]
@@ -86,25 +81,15 @@ end
 for (meth, libnm) in [(:gcd, :gcd),
                       (:lcm, :lcm),
                       (:div, :quotient),
+                      (:mod, :mod_f),
                       ]
     eval(Expr(:import, :Base, meth))
     IMPLEMENT_TWO_ARG_FUNC(meth, libnm, lib=:ntheory_)    
 end
 
-## SymEngine mod can have different sign than Julia. Here we ensure that p > 0 ans \in [0, p) and p < 0 ans in (p, 0]
-IMPLEMENT_TWO_ARG_FUNC(:ntheory_mod, :mod, lib=:ntheory_)
-function Base.mod(k::SymbolicType, p::Number)
-    m =  ntheory_mod(k, p)
-    (m < 0 && p > 0) && return p + m
-    (m > 0 && p < 0) && return p + m
-    m
-end
-
 Base.binomial(n::Basic, k::Number) = binomial(N(n), N(k))  #ntheory_binomial seems wrong
 Base.rem(a::SymbolicType, b::SymbolicType) = a - (a ÷ b) * b
 Base.factorial(n::SymbolicType, k) = factorial(N(n), N(k))
-
-
 
 ## but not (:fibonacci,:fibonacci), (:lucas, :lucas) (Basic type is not the signature)
 for (meth, libnm) in [(:nextprime,:nextprime)
