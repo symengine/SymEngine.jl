@@ -57,10 +57,6 @@ VERSION < v"0.5.0" ? eval(call_v0_4) : eval(call_v0_5)
 
 ## Lambdify
 
-## Mapping of SymEngine Constants into julia values
-constant_map = Dict("pi" => :pi, "EulerGamma" => :γ, "exp(1)" => :e, "Catalan" => :catalan,
-                    "GoldenRation" => :φ)
-
 ## Map symengine classes to function names
 fn_map = Dict(
               :Add => :+,
@@ -80,11 +76,8 @@ function walk_expression(ex)
     
     if fn == :Symbol
         return Symbol(toString(ex))
-    elseif fn in number_types
+    elseif (fn in number_types) || (fn == :Constant)
         return N(ex)
-    elseif fn == :Constant
-        return constant_map[toString(ex)]
-                            
     end
 
     as = get_args(ex)

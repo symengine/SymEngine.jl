@@ -116,6 +116,12 @@ N(b::BasicType{Val{:RealMPFR}}) = convert(BigFloat, b)
 N(b::BasicType{Val{:NaN}}) = NaN
 N(b::BasicType{Val{:Infty}}) = (string(b) == "-inf") ? -Inf : Inf
 
+## Mapping of SymEngine Constants into julia values
+constant_map = Dict("pi" => π, "eulergamma" => γ, "exp(1)" => e, "catalan" => catalan,
+                    "goldenratio" => φ)
+
+N(b::BasicType{Val{:Constant}}) = constant_map[toString(b)]
+
 N(b::BasicComplexNumber) = complex(N(real(b)), N(imag(b)))
 function N(b::BasicType)
     b = convert(Basic, b)
@@ -129,9 +135,6 @@ end
         
 
 ##  Conversions SymEngine -> Julia 
-
-## Rational: TODO: follow symengine/symengine#1143 for support in the cwrapper
-
 function as_numer_denom(x::Basic)
     a, b = Basic(), Basic()
     ccall((:basic_as_numer_denom, libsymengine), Void, (Ptr{Basic}, Ptr{Basic}, Ptr{Basic}), &a, &b, &x)
