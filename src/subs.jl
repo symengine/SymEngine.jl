@@ -107,9 +107,14 @@ function _lambdify(ex::Basic, vars)
     body = walk_expression(ex)
 
     try
-        eval(Expr(:function,
+        fn = eval(Expr(:function,
                   Expr(:call, gensym(), map(Symbol,vars)...),
-                  body))
+                       body))
+        if VERSION >= v"0.6.0-rc1"
+            (args...) -> Base.invokelatest(fn, args...) # https://github.com/JuliaLang/julia/pull/19784
+        else
+            fn
+        end
     catch err
         throw(ArgumentError("Expression does not lambdify"))
     end
