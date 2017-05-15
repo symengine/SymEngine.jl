@@ -3,7 +3,7 @@ __precompile__()
 module SymEngine
 
 import Base: show, convert, real, imag
-import Compat: String, unsafe_string, @compat, denominator, numerator
+import Compat: String, unsafe_string, @compat, denominator, numerator, invokelatest
 
 export Basic, symbols, @vars
 export free_symbols, get_args

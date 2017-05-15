@@ -110,7 +110,7 @@ function _lambdify(ex::Basic, vars)
         fn = eval(Expr(:function,
                   Expr(:call, gensym(), map(Symbol,vars)...),
                        body))
-        (args...) -> Base.invokelatest(fn, args...) # https://github.com/JuliaLang/julia/pull/19784
+        (args...) -> invokelatest(fn, args...) # https://github.com/JuliaLang/julia/pull/19784
     catch err
         throw(ArgumentError("Expression does not lambdify"))
     end
