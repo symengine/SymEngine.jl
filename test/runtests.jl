@@ -114,6 +114,7 @@ for val in samples
     fn = lambdify(ex)
     @test norm(fn(val) - sin(2*val)) <= 1e-14
 end
+@test lambdify(x^2)(3) == 9
 
 ## N
 for val in samples
