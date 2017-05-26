@@ -5,7 +5,7 @@ module SymEngine
 import Base: show, convert, real, imag
 import Compat: String, unsafe_string, @compat, denominator, numerator, invokelatest
 
-export Basic, symbols, @vars
+export Basic, symbols, @vars, SymFunction
 export free_symbols, get_args
 export ascii_art
 export subs, lambdify, N

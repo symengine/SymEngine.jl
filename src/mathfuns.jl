@@ -97,3 +97,35 @@ for (meth, libnm) in [(:nextprime,:nextprime)
     IMPLEMENT_ONE_ARG_FUNC(meth, libnm, lib=:ntheory_)    
     eval(Expr(:export, meth))
 end
+
+function Base.convert{T}(::Type{CVecBasic}, x::Vector{T})
+    vec = CVecBasic()
+    for i in x
+       b::Basic = Basic(i)
+       ccall((:vecbasic_push_back, libsymengine), Void, (Ptr{Void}, Ptr{Basic}), vec.ptr, &b)
+    end
+    return vec
+end
+
+function Base.convert(::Type{CVecBasic}, x...)
+    vec = CVecBasic()
+    for i in x
+       b::Basic = Basic(i)
+       ccall((:vecbasic_push_back, libsymengine), Void, (Ptr{Void}, Ptr{Basic}), vec.ptr, &b)
+    end
+    return vec
+end
+
+type SymFunction
+    name::String
+end
+
+function (f::SymFunction)(x::CVecBasic)
+    a = Basic()
+    ccall((:function_symbol_set, libsymengine), Void, (Ptr{Basic}, Ptr{Int8}, Ptr{Void}), &a, f.name, x.ptr)
+    return a
+end
+
+(f::SymFunction){T}(x::Vector{T}) = (f::SymFunction)(convert(CVecBasic, x))
+(f::SymFunction)(x...) = (f::SymFunction)(convert(CVecBasic, x...))
+
