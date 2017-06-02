@@ -196,3 +196,8 @@ f = SymFunction("f")
 @test string(f(x, y)) == "f(x, y)"
 @test string(f([x, y])) == "f(x, y)"
 @test string(f(2*x)) == "f(2*x)"
+
+@funs g, h
+@test string(g(x, y)) == "g(x, y)"
+@test string(h(x, y)) == "h(x, y)"
+

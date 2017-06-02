@@ -120,6 +120,8 @@ type SymFunction
     name::String
 end
 
+SymFunction(s::Symbol) = SymFunction(string(s))
+
 @compat function (f::SymFunction)(x::CVecBasic)
     a = Basic()
     ccall((:function_symbol_set, libsymengine), Void, (Ptr{Basic}, Ptr{Int8}, Ptr{Void}), &a, f.name, x.ptr)
@@ -129,3 +131,16 @@ end
 @compat (f::SymFunction){T}(x::Vector{T}) = (f::SymFunction)(convert(CVecBasic, x))
 @compat (f::SymFunction)(x...) = (f::SymFunction)(convert(CVecBasic, x...))
 
+macro funs(x...)
+    q=Expr(:block)
+    if length(x) == 1 && isa(x[1],Expr)
+        @assert x[1].head === :tuple "@funs expected a list of symbols"
+        x = x[1].args
+    end
+    for s in x
+        @assert isa(s,Symbol) "@funs expected a list of symbols"
+        push!(q.args, Expr(:(=), esc(s), Expr(:call, :(SymEngine.SymFunction), Expr(:quote, s))))
+    end
+    push!(q.args, Expr(:tuple, map(esc, x)...))
+    q
+end
