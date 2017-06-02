@@ -107,14 +107,7 @@ function Base.convert{T}(::Type{CVecBasic}, x::Vector{T})
     return vec
 end
 
-function Base.convert(::Type{CVecBasic}, x...)
-    vec = CVecBasic()
-    for i in x
-       b::Basic = Basic(i)
-       ccall((:vecbasic_push_back, libsymengine), Void, (Ptr{Void}, Ptr{Basic}), vec.ptr, &b)
-    end
-    return vec
-end
+Base.convert(::Type{CVecBasic}, x...) = Base.convert(CVecBasic, collect(promote(x...)))
 
 type SymFunction
     name::String
