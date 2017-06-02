@@ -120,12 +120,12 @@ type SymFunction
     name::String
 end
 
-function (f::SymFunction)(x::CVecBasic)
+@compat function (f::SymFunction)(x::CVecBasic)
     a = Basic()
     ccall((:function_symbol_set, libsymengine), Void, (Ptr{Basic}, Ptr{Int8}, Ptr{Void}), &a, f.name, x.ptr)
     return a
 end
 
-(f::SymFunction){T}(x::Vector{T}) = (f::SymFunction)(convert(CVecBasic, x))
-(f::SymFunction)(x...) = (f::SymFunction)(convert(CVecBasic, x...))
+@compat (f::SymFunction){T}(x::Vector{T}) = (f::SymFunction)(convert(CVecBasic, x))
+@compat (f::SymFunction)(x...) = (f::SymFunction)(convert(CVecBasic, x...))
 
