@@ -1,12 +1,13 @@
 
 
-## subs
 """
+    subs
+
 Substitute values into a symbolic expression.
 
 Examples
 ```
-@syms x y
+@vars x y
 ex = x^2 + y^2
 subs(ex, x, 1) # 1 + y^2
 subs(ex, (x, 1)) # 1 + y^2
@@ -85,7 +86,11 @@ function walk_expression(ex)
     Expr(:call, map_fn(fn, fn_map), [walk_expression(a) for a in as]...)
 end
 
-## evaluate symbolless expression or return afunction
+"""
+    lambdify
+
+evaluates a symbolless expression or returns a function
+"""
 function lambdify(ex::Basic)
     vars = free_symbols(ex)
     if length(vars) == 0
