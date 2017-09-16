@@ -22,8 +22,8 @@ julia> Pkg.add("SymEngine")
 ### Working with scalar variables
 
 #### Defining variables 
-One can define variables in a few ways the following 3 examples are equivent.
-Defining 2 variables `a`  and `b` with the names `a` and `b`.
+One can define variables in a few ways. The following 3 examples are equivent.
+Defining 2 symbolic variables with the names `a` and `b`, and assigning them to julia variables with the same name.
 
 ``` julia
 julia> a=symbols(:a); b=symbols(:b)
@@ -36,10 +36,8 @@ julia> @vars a b
 (a, b)
 ```
 
-`@vars` is perhaps the most handy for basic use, as it creates a varible whos julia name and whos symbolic name match.
-Which is what one normally wants.
-
 ### Simple expressions
+
 We are going to define an expression using the variables from earlier:
 
 ``` julia
@@ -48,7 +46,6 @@ julia> ex1 = a + 2(b+2)^2 + 2a + 3(a+1)
 ```
 
 One can see that values are grouped, but no expansion is done.
-
 
 ### Working with vector and matrix variables
 
@@ -66,7 +63,8 @@ julia> W = [symbols("W_$i$j") for i in 1:3, j in 1:4]
 ```
 
 #### Matrix-vector multiplication
-Now using the matrix we can do matrix math:
+
+Now using the matrix we can perform matrix operations:
 
 ```julia
 julia> W*[1.0, 2.0, 3.0, 4.0]
@@ -86,7 +84,7 @@ julia> expand(a + 2(b+2)^2 + 2a + 3(a+1))
 11 + 6*a + 8*b + 2*b^2
 ```
 
-#### `sub`
+#### `subs`
 Performs subsitution.
 
 ```julia
