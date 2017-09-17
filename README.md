@@ -22,8 +22,9 @@ julia> Pkg.add("SymEngine")
 ### Working with scalar variables
 
 #### Defining variables 
-One can define variables in a few ways. The following 3 examples are equivent.
-Defining 2 symbolic variables with the names `a` and `b`, and assigning them to julia variables with the same name.
+
+One can define variables in a few ways. The following 3 examples are equivalent.
+Defining two symbolic variables with the names `a` and `b`, and assigning them to julia variables with the same name.
 
 ``` julia
 julia> a=symbols(:a); b=symbols(:b)
@@ -72,8 +73,7 @@ julia> W*[1.0, 2.0, 3.0, 4.0]
  1.0*W_11 + 2.0*W_12 + 3.0*W_13 + 4.0*W_14
  1.0*W_21 + 2.0*W_22 + 3.0*W_23 + 4.0*W_24
  1.0*W_31 + 2.0*W_32 + 3.0*W_33 + 4.0*W_34
-``` 
-
+```
 
 ### Operations
 
@@ -85,6 +85,7 @@ julia> expand(a + 2(b+2)^2 + 2a + 3(a+1))
 ```
 
 #### `subs`
+
 Performs subsitution.
 
 ```julia
@@ -105,13 +106,13 @@ julia> subs(a^2+(b-2)^2, a=>2, b=>3)
 ```
 
 #### `diff`
+
 Peforms differentiation
 
 ```julia
 julia> diff(a + 2(b+2)^2 + 2a + 3(a+1), b)`
 4*(2 + b)
 ```
-
 
 ## License
 
