@@ -23,7 +23,8 @@ julia> Pkg.add("SymEngine")
 
 #### Defining variables 
 
-One can define variables in a few ways. The following 3 examples are equivalent.
+One can define variables in a few ways. The following three examples are equivalent.
+
 Defining two symbolic variables with the names `a` and `b`, and assigning them to julia variables with the same name.
 
 ``` julia
