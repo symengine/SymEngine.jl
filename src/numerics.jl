@@ -188,3 +188,8 @@ floor{T <: Integer}(::Type{T},x::Basic) = convert(T, floor(x))
 
 round(x::Basic) = Basic(round(N(x)))
 round{T <: Integer}(::Type{T},x::Basic) = convert(T, round(x))
+
+# eps
+Base.eps(::Type{T}) where T<:SymEngine.BasicType = 0
+Base.eps(x::SymEngine.Basic) = eps(typeof(x))
+Base.eps(::Type{T}) where T<:SymEngine.Basic = 0
