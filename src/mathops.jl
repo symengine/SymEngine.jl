@@ -80,9 +80,10 @@ Base.convert(::Type{Basic}, x::Irrational{:catalan}) = Catalan
 Base.convert(::Type{Basic}, x::Irrational{:φ}) = (1 + Basic(5)^Basic(1//2))/2
 Base.convert(::Type{BasicType}, x::Irrational) = BasicType(convert(Basic, x))
 
-
-
 ## Logical operators
 @compat Base.:<(x::SymbolicType, y::SymbolicType) = N(x) < N(y)
 @compat Base.:<(x::SymbolicType, y) = <(promote(x,y)...)
 @compat Base.:<(x, y::SymbolicType) = <(promote(x,y)...)
+
+## Other Basic Operations
+Base.copysign(x::SymEngine.Basic,y::SymEngine.BasicType) = sign(y)*abs(x)
