@@ -189,14 +189,14 @@ floor{T <: Integer}(::Type{T},x::Basic) = convert(T, floor(x))
 round(x::Basic) = Basic(round(N(x)))
 round{T <: Integer}(::Type{T},x::Basic) = convert(T, round(x))
 
-prec(x::BasicType{:RealMPFR}) = ccall((:real_mpfr_get_prec, libsymengine), Clong, (Ptr{Basic}), &x)
+prec(x::BasicType{Val{:RealMPFR}}) = ccall((:real_mpfr_get_prec, libsymengine), Clong, (Ptr{Basic},), &x)
 
 # eps
-eps(::Type{T}) where T<:BasicType = 0
 eps(x::Basic) = eps(BasicType(x))
-eps(::Type{T}) where T<:SymEngine.Basic = 0
 eps{T}(x::BasicType{T}) = eps(typeof(x))
-eps(::Type{BasicType{:RealDouble}}) = 2^-52
-eps(::Type{BasicType{:ComplexDouble}}) = 2^-52
-eps(x::BasicType{:RealMPFR}) == (2+(x-x)) ^ -prec(x)
-eps(x::BasicType{:ComplexMPFR}) == eps(real(x))
+eps{T <: BasicType}(::Type{T}) = 0
+eps{T <: Basic}(::Type{T}) = 0
+eps(::Type{BasicType{Val{:RealDouble}}}) = 2^-52
+eps(::Type{BasicType{Val{:ComplexDouble}}}) = 2^-52
+eps(x::BasicType{Val{:RealMPFR}}) = evalf(Basic(2), prec(x), true) ^ -prec(x)
+eps(x::BasicType{Val{:ComplexMPFR}}) = eps(real(x))
