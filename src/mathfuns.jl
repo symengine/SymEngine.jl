@@ -57,6 +57,7 @@ for (meth, libnm) in [
     eval(Expr(:import, :Base, meth))
     IMPLEMENT_ONE_ARG_FUNC(meth, libnm)
 end
+Base.abs2(x::SymEngine.Basic) = abs(x)^2
 
 # export not import
 for  (meth, libnm) in [
