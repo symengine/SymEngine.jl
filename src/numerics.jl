@@ -198,5 +198,5 @@ eps{T <: BasicType}(::Type{T}) = 0
 eps{T <: Basic}(::Type{T}) = 0
 eps(::Type{BasicType{Val{:RealDouble}}}) = 2^-52
 eps(::Type{BasicType{Val{:ComplexDouble}}}) = 2^-52
-eps(x::BasicType{Val{:RealMPFR}}) = evalf(Basic(2), prec(x), true) ^ -prec(x)
+eps(x::BasicType{Val{:RealMPFR}}) = evalf(Basic(2), prec(x), true) ^ (-prec(x)+1)
 eps(x::BasicType{Val{:ComplexMPFR}}) = eps(real(x))
