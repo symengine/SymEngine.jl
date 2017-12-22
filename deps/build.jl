@@ -33,7 +33,7 @@ if is_windows()
     url *= "v$(libsymengine_version)/symengine-$(libsymengine_version)-binaries-msvc-$(suffix).tar.bz2"
     provides(Binaries, URI(url), libdep, unpacked_dir="symengine-$(libsymengine_version)/bin")
 else
-    env = Symbol(path)
+    env = Symbol(Conda.ROOTENV)
     EnvManagerType = Conda.EnvManager{env}
     # Conda's method will install miniconda to check that a package exists.
     # This will indicate to BinDeps that the packages for this env exists unconditionally.
