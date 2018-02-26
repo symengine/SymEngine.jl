@@ -6,7 +6,7 @@ import Base: show, convert, real, imag
 import Compat: String, unsafe_string, @compat, denominator, numerator, invokelatest
 
 export Basic, symbols, @vars, @funs, SymFunction
-export free_symbols, get_args
+export free_symbols, function_symbols, get_name, get_args
 export ascii_art
 export subs, lambdify, N
 export series

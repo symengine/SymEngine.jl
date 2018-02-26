@@ -239,6 +239,24 @@ _flat(A) = mapreduce(x->isa(x,Array)? _flat(x): x, vcat, Basic[], A)  # from ros
 free_symbols{T<:SymbolicType}(exs::Array{T})  = unique(_flat([free_symbols(ex) for ex in exs]))
 free_symbols(exs::Tuple) =  unique(_flat([free_symbols(ex) for ex in exs]))
 
+"Return function symbols in an expression as a `Set`"
+function function_symbols(ex::Basic)
+    syms = CSetBasic()
+    ccall((:basic_function_symbols, libsymengine), Void, (Ptr{Basic}, Ptr{Void}), &ex, syms.ptr)
+    convert(Vector, syms)
+end
+function_symbols(ex::BasicType) = function_symbols(Basic(ex))
+function_symbols{T<:SymbolicType}(exs::Array{T})  = unique(_flat([function_symbols(ex) for ex in exs]))
+function_symbols(exs::Tuple) =  unique(_flat([function_symbols(ex) for ex in exs]))
+
+"Return name of function symbol"
+function get_name(ex::Basic)
+    # Only works for function symbols
+    a = ccall((:function_symbol_get_name, libsymengine), Cstring, (Ptr{Basic}, ), &ex)
+    string = unsafe_string(a)
+    ccall((:basic_str_free, libsymengine), Void, (Cstring, ), a)
+    return string
+end
 
 "Return arguments of a function call as a vector of `Basic` objects"
 function get_args(ex::Basic)
