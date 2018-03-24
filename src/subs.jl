@@ -91,30 +91,48 @@ end
 
 evaluates a symbolless expression or returns a function
 """
-function lambdify(ex::Basic)
-    vars = free_symbols(ex)
+function lambdify(ex::Basic, vars=[])
     if length(vars) == 0
-        _lambdify(ex)
+        vars = free_symbols(ex)
+    end
+    body = walk_expression(ex)
+
+    if length(vars) == 0
+        # return a number
+        eval(body)
     else
-        _lambdify(ex, vars)
+        # return a function
+        _lambdify(body, vars)
     end
 end
-lambdify(ex::BasicType) = lambdify(Basic(ex))
+lambdify(ex::BasicType, vars=[]) = lambdify(Basic(ex), vars)
 
-## return a number
-function _lambdify(ex)
-    body = walk_expression(ex)
-    eval(body)
+function lambdify(m::AbstractArray{Basic, 2}, vars=[])
+    col_args = []
+    for i = 1:size(m,1)
+        row_args = []
+        for j = 1:size(m,2)
+            push!(row_args, walk_expression(m[i, j]))
+        end
+        row = Expr(:hcat, row_args...)
+        push!(col_args, row)
+    end
+    body = Expr(:vcat, col_args...)
+
+    if length(vars) == 0
+        # return a number
+        eval(body)
+    else
+        # return a function
+        _lambdify(body, vars)
+    end
 end
 
-## return a function
-function _lambdify(ex::Basic, vars)
-    body = walk_expression(ex)
-
+function _lambdify(ex::Expr, vars)
     try
         fn = eval(Expr(:function,
                   Expr(:call, gensym(), map(Symbol,vars)...),
-                       body))
+                       ex))
         (args...) -> invokelatest(fn, args...) # https://github.com/JuliaLang/julia/pull/19784
     catch err
         throw(ArgumentError("Expression does not lambdify"))
