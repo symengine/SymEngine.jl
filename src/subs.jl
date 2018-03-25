@@ -96,14 +96,7 @@ function lambdify(ex::Basic, vars=[])
         vars = free_symbols(ex)
     end
     body = walk_expression(ex)
-
-    if length(vars) == 0
-        # return a number
-        eval(body)
-    else
-        # return a function
-        _lambdify(body, vars)
-    end
+    _lambdify(body, vars)
 end
 lambdify(ex::BasicType, vars=[]) = lambdify(Basic(ex), vars)
 
@@ -118,14 +111,7 @@ function lambdify(m::AbstractArray{Basic, 2}, vars=[])
         push!(col_args, row)
     end
     body = Expr(:vcat, col_args...)
-
-    if length(vars) == 0
-        # return a number
-        eval(body)
-    else
-        # return a function
-        _lambdify(body, vars)
-    end
+    _lambdify(body, vars)
 end
 
 
@@ -135,7 +121,10 @@ function lambdify(m::AbstractArray{Basic, 1}, vars=[])
         push!(row_args, walk_expression(m[j]))
     end
     body = Expr(:vcat, row_args...)
+    _lambdify(body, vars)
+end
 
+function _lambdify(ex::Expr, vars)
     if length(vars) == 0
         # return a number
         eval(body)
@@ -145,7 +134,7 @@ function lambdify(m::AbstractArray{Basic, 1}, vars=[])
     end
 end
 
-function _lambdify(ex::Expr, vars)
+function lambdify(ex::Expr, vars)
     try
         fn = eval(Expr(:function,
                   Expr(:call, gensym(), map(Symbol,vars)...),
