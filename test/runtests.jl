@@ -116,6 +116,13 @@ for val in samples
 end
 @test lambdify(x^2)(3) == 9
 
+A = [x 2; x 1]
+@test lambdify(A, [x])(0) == [0 2; 0 1]
+@test lambdify(A)(0) == [0 2; 0 1]
+A = [x 2]
+@test lambdify(A, [x])(1) == [1 2]
+@test lambdify(A)(1) == [1 2]
+
 ## N
 for val in samples
     @test N(Basic(val)) == val
