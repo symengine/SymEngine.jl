@@ -109,15 +109,32 @@ lambdify(ex::BasicType, vars=[]) = lambdify(Basic(ex), vars)
 
 function lambdify(m::AbstractArray{Basic, 2}, vars=[])
     col_args = []
-    for i = 1:size(m,1)
+    for i = 1:size(m, 1)
         row_args = []
-        for j = 1:size(m,2)
+        for j = 1:size(m, 2)
             push!(row_args, walk_expression(m[i, j]))
         end
         row = Expr(:hcat, row_args...)
         push!(col_args, row)
     end
     body = Expr(:vcat, col_args...)
+
+    if length(vars) == 0
+        # return a number
+        eval(body)
+    else
+        # return a function
+        _lambdify(body, vars)
+    end
+end
+
+
+function lambdify(m::AbstractArray{Basic, 1}, vars=[])
+    row_args = []
+    for j = 1:size(m, 1)
+        push!(row_args, walk_expression(m[j]))
+    end
+    body = Expr(:vcat, row_args...)
 
     if length(vars) == 0
         # return a number
