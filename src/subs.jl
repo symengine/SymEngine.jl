@@ -72,7 +72,7 @@ fn_map = Dict(
 
 map_fn(key, fn_map) = haskey(fn_map, key) ? fn_map[key] : Symbol(lowercase(string(key)))
 
-function walk_expression(ex)
+function convert(::Type{Expr}, ex::Basic)
     fn = get_symengine_class(ex)
     
     if fn == :Symbol
@@ -83,58 +83,58 @@ function walk_expression(ex)
 
     as = get_args(ex)
 
-    Expr(:call, map_fn(fn, fn_map), [walk_expression(a) for a in as]...)
+    Expr(:call, map_fn(fn, fn_map), [convert(Expr,a) for a in as]...)
 end
+
+function convert(::Type{Expr}, m::AbstractArray{Basic, 2})
+    col_args = []
+    for i = 1:size(m, 1)
+        row_args = []
+        for j = 1:size(m, 2)
+            push!(row_args, convert(Expr, m[i, j]))
+        end
+        row = Expr(:hcat, row_args...)
+        push!(col_args, row)
+    end
+    Expr(:vcat, col_args...)
+end
+
+function convert(::Type{Expr}, m::AbstractArray{Basic, 1})
+    row_args = []
+    for j = 1:size(m, 1)
+        push!(row_args, convert(Expr, m[j]))
+    end
+    Expr(:vcat, row_args...)
+end
+
+walk_expression(b) = convert(Expr, b)
 
 """
     lambdify
 
 evaluates a symbolless expression or returns a function
 """
-function lambdify(ex::Basic, vars=[])
+function lambdify(ex, vars=[])
     if length(vars) == 0
         vars = free_symbols(ex)
     end
-    body = walk_expression(ex)
-    _lambdify(body, vars)
+    body = convert(Expr, ex)
+    lambdify(body, vars)
 end
+
 lambdify(ex::BasicType, vars=[]) = lambdify(Basic(ex), vars)
 
-function lambdify(m::AbstractArray{Basic, 2}, vars=[])
-    col_args = []
-    for i = 1:size(m, 1)
-        row_args = []
-        for j = 1:size(m, 2)
-            push!(row_args, walk_expression(m[i, j]))
-        end
-        row = Expr(:hcat, row_args...)
-        push!(col_args, row)
+function lambdify(ex::Expr, vars)
+    if length(vars) == 0
+        # return a number
+        eval(ex)
+    else
+        # return a function
+        _lambdify(ex, vars)
     end
-    body = Expr(:vcat, col_args...)
-    _lambdify(body, vars)
-end
-
-
-function lambdify(m::AbstractArray{Basic, 1}, vars=[])
-    row_args = []
-    for j = 1:size(m, 1)
-        push!(row_args, walk_expression(m[j]))
-    end
-    body = Expr(:vcat, row_args...)
-    _lambdify(body, vars)
 end
 
 function _lambdify(ex::Expr, vars)
-    if length(vars) == 0
-        # return a number
-        eval(body)
-    else
-        # return a function
-        _lambdify(body, vars)
-    end
-end
-
-function lambdify(ex::Expr, vars)
     try
         fn = eval(Expr(:function,
                   Expr(:call, gensym(), map(Symbol,vars)...),
