@@ -3,7 +3,7 @@ import Base.Operators: +, -, ^, /, //, \, *, ==
 ## equality
 function ==(b1::SymbolicType, b2::SymbolicType)
     b1,b2 = map(Basic, (b1, b2))
-    ccall((:basic_eq, libsymengine), Int, (Ptr{Basic}, Ptr{Basic}), &b1, &b2) == 1
+    ccall((:basic_eq, libsymengine), Int, (Ref{Basic}, Ref{Basic}), b1, b2) == 1
 end
 
 
@@ -13,7 +13,7 @@ for (op, libnm) in ((:+, :add), (:-, :sub), (:*, :mul), (:/, :div), (://, :div),
     @eval begin
         function ($op)(b1::Basic, b2::Basic)
             a = Basic()
-            ccall($tup, Void, (Ptr{Basic}, Ptr{Basic}, Ptr{Basic}), &a, &b1, &b2)
+            ccall($tup, Nothing, (Ref{Basic}, Ref{Basic}, Ref{Basic}), a, b1, b2)
             return a
         end
         ($op)(b1::BasicType, b2::BasicType) = ($op)(Basic(b1), Basic(b2))
@@ -54,8 +54,8 @@ macro init_constant(op, libnm)
     alloc_tup = (:basic_new_stack, libsymengine)
     :(
         begin
-            ccall($alloc_tup, Void, (Ptr{Basic}, ), &($op))
-            ccall($tup, Void, (Ptr{Basic}, ), &($op))
+            ccall($alloc_tup, Nothing, (Ref{Basic}, ), $op)
+            ccall($tup, Nothing, (Ref{Basic}, ), $op)
             finalizer($op, basic_free)
         end
     )

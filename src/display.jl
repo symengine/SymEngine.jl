@@ -1,9 +1,9 @@
 
 function toString(b::SymbolicType)
     b = Basic(b)
-    a = ccall((:basic_str_julia, libsymengine), Cstring, (Ptr{Basic}, ), &b)
+    a = ccall((:basic_str_julia, libsymengine), Cstring, (Ref{Basic}, ), b)
     string = unsafe_string(a)
-    ccall((:basic_str_free, libsymengine), Void, (Cstring, ), a)
+    ccall((:basic_str_free, libsymengine), Nothing, (Cstring, ), a)
     return string
 end
 

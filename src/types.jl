@@ -12,42 +12,42 @@
 
 ## Hold a reference to a SymEngine object
 mutable struct Basic  <: Number
-    ptr::Ptr{Void}
+    ptr::Ptr{Cvoid}
     function Basic()
         z = new(C_NULL)
-        ccall((:basic_new_stack, libsymengine), Void, (Ptr{Basic}, ), &z)
+        ccall((:basic_new_stack, libsymengine), Nothing, (Ref{Basic}, ), z)
         finalizer(z, basic_free)
         return z
     end
-    function Basic(v::Ptr{Void})
+    function Basic(v::Ptr{Cvoid})
         z = new(v)
         return z
     end
 end
 
-basic_free(b::Basic) = ccall((:basic_free_stack, libsymengine), Void, (Ptr{Basic}, ), &b)
+basic_free(b::Basic) = ccall((:basic_free_stack, libsymengine), Nothing, (Ref{Basic}, ), b)
 
 function convert(::Type{Basic}, x::Clong)
     a = Basic()
-    ccall((:integer_set_si, libsymengine), Void, (Ptr{Basic}, Clong), &a, x)
+    ccall((:integer_set_si, libsymengine), Nothing, (Ref{Basic}, Clong), a, x)
     return a
 end
 
 function convert(::Type{Basic}, x::Culong)
     a = Basic()
-    ccall((:integer_set_ui, libsymengine), Void, (Ptr{Basic}, Culong), &a, x)
+    ccall((:integer_set_ui, libsymengine), Nothing, (Ref{Basic}, Culong), a, x)
     return a
 end
 
 function convert(::Type{Basic}, x::BigInt)
     a = Basic()
-    ccall((:integer_set_mpz, libsymengine), Void, (Ptr{Basic}, Ptr{BigInt}), &a, &x)
+    ccall((:integer_set_mpz, libsymengine), Nothing, (Ref{Basic}, Ref{BigInt}), a, x)
     return a
 end
 
 function convert(::Type{Basic}, s::String)
     a = Basic()
-    ccall((:basic_parse, libsymengine), Void, (Ptr{Basic}, Ptr{Int8}), &a, s)
+    ccall((:basic_parse, libsymengine), Nothing, (Ref{Basic}, Ptr{Int8}), a, s)
     return a
 end
 
@@ -60,7 +60,7 @@ convert(::Type{Basic}, ex::Symbol) = Basic(string(ex))
 
 function convert(::Type{Basic}, x::Cdouble)
     a = Basic()
-    ccall((:real_double_set_d, libsymengine), Void, (Ptr{Basic}, Cdouble), &a, x)
+    ccall((:real_double_set_d, libsymengine), Nothing, (Ref{Basic}, Cdouble), a, x)
     return a
 end
 
@@ -69,7 +69,7 @@ function convert(::Type{Basic}, x::BigFloat)
         return convert(Basic, Cdouble(x))
     elseif have_mpfr
         a = Basic()
-        ccall((:real_mpfr_set, libsymengine), Void, (Ptr{Basic}, Ptr{BigFloat}), &a, &x)
+        ccall((:real_mpfr_set, libsymengine), Nothing, (Ref{Basic}, Ref{BigFloat}), a, x)
         return a
     else
         warn("SymEngine is not compiled with MPFR support. Converting will lose precision.")
@@ -92,11 +92,11 @@ convert(::Type{Basic}, x::Complex) = Basic(real(x)) + Basic(imag(x)) * IM
 Base.promote_rule(::Type{Basic}, ::Type{S} ) where {S<:Number} = Basic
 
 ## Class ID
-get_type(s::Basic) = ccall((:basic_get_type, libsymengine), UInt, (Ptr{Basic},), &s)
+get_type(s::Basic) = ccall((:basic_get_type, libsymengine), UInt, (Ref{Basic},), s)
 function get_class_from_id(id::UInt)
     a = ccall((:basic_get_class_from_id, libsymengine), Ptr{UInt8}, (Int,), id)
     str = unsafe_string(a)
-    ccall((:basic_str_free, libsymengine), Void, (Ptr{UInt8}, ), a)
+    ccall((:basic_str_free, libsymengine), Nothing, (Ptr{UInt8}, ), a)
     str
 end
 
@@ -108,7 +108,7 @@ get_symengine_class(s::Basic) = Symbol(get_class_from_id(get_type(s)))
 ## renamed, as `Symbol` conflicts with Base.Symbol
 function _symbol(s::String)
     a = Basic()
-    ccall((:symbol_set, libsymengine), Void, (Ptr{Basic}, Ptr{Int8}), &a, s)
+    ccall((:symbol_set, libsymengine), Nothing, (Ref{Basic}, Ptr{Int8}), a, s)
     return a
 end
 _symbol(s::Symbol) = _symbol(string(s))
@@ -231,7 +231,7 @@ BasicTrigFunction =  Union{[SymEngine.BasicType{Val{i}} for i in trig_types]...}
 " Return free symbols in an expression as a `Set`"
 function free_symbols(ex::Basic)
     syms = CSetBasic()
-    ccall((:basic_free_symbols, libsymengine), Void, (Ptr{Basic}, Ptr{Void}), &ex, syms.ptr)
+    ccall((:basic_free_symbols, libsymengine), Nothing, (Ref{Basic}, Ptr{Cvoid}), ex, syms.ptr)
     convert(Vector, syms)
 end
 free_symbols(ex::BasicType) = free_symbols(Basic(ex))
@@ -243,9 +243,9 @@ free_symbols(exs::Tuple) =  unique(_flat([free_symbols(ex) for ex in exs]))
 "Return arguments of a function call as a vector of `Basic` objects"
 function get_args(ex::Basic)
     args = CVecBasic()
-    ccall((:basic_get_args, libsymengine), Void, (Ptr{Basic}, Ptr{Void}), &ex, args.ptr)
+    ccall((:basic_get_args, libsymengine), Nothing, (Ref{Basic}, Ptr{Cvoid}), ex, args.ptr)
     convert(Vector, args)
 end
 
 ## so that Dicts will work
-Base.hash(ex::Basic) = ccall((:basic_hash, libsymengine), UInt, (Ptr{Basic}, ), &ex)
+Base.hash(ex::Basic) = ccall((:basic_hash, libsymengine), UInt, (Ref{Basic}, ), ex)

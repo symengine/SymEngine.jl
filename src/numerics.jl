@@ -7,7 +7,7 @@ function evalf(b::Basic, bits::Integer=53, real::Bool=false)
     c = Basic()
     bits > 53 && real && (have_mpfr || throw(ArgumentError("libsymengine has to be compiled with MPFR for this feature")))
     bits > 53 && !real && (have_mpc || throw(ArgumentError("libsymengine has to be compiled with MPC for this feature")))
-    status = ccall((:basic_evalf, libsymengine), Cint, (Ptr{Basic}, Ptr{Basic}, Culong, Cint), &c, &b, Culong(bits), Int(real))
+    status = ccall((:basic_evalf, libsymengine), Cint, (Ref{Basic}, Ref{Basic}, Culong, Cint), c, b, Culong(bits), Int(real))
     if status == 0
         return c
     else
@@ -19,7 +19,7 @@ end
 function convert(::Type{BigInt}, b::BasicType{Val{:Integer}})
     a = BigInt()
     c = Basic(b)
-    ccall((:integer_get_mpz, libsymengine), Void, (Ptr{BigInt}, Ptr{Basic}), &a, &c)
+    ccall((:integer_get_mpz, libsymengine), Nothing, (Ref{BigInt}, Ref{Basic}), a, c)
     return a
 end
 
@@ -27,54 +27,54 @@ end
 function convert(::Type{BigFloat}, b::BasicType{Val{:RealMPFR}})
     c = Basic(b)
     a = BigFloat()
-    ccall((:real_mpfr_get, libsymengine), Void, (Ptr{BigFloat}, Ptr{Basic}), &a, &c)
+    ccall((:real_mpfr_get, libsymengine), Nothing, (Ref{BigFloat}, Ref{Basic}), a, c)
     return a
 end
 
 function convert(::Type{Cdouble}, b::BasicType{Val{:RealDouble}})
     c = Basic(b)
-    return ccall((:real_double_get_d, libsymengine), Cdouble, (Ptr{Basic},), &c)
+    return ccall((:real_double_get_d, libsymengine), Cdouble, (Ref{Basic},), c)
 end
 
 function real(b::BasicType{Val{:ComplexDouble}})
     c = Basic(b)
     a = Basic()
-    ccall((:complex_double_real_part, libsymengine), Void, (Ptr{Basic}, Ptr{Basic}), &a, &c)
+    ccall((:complex_double_real_part, libsymengine), Nothing, (Ref{Basic}, Ref{Basic}), a, c)
     return a
 end
 
 function imag(b::BasicType{Val{:ComplexDouble}})
     c = Basic(b)
     a = Basic()
-    ccall((:complex_double_imaginary_part, libsymengine), Void, (Ptr{Basic}, Ptr{Basic}), &a, &c)
+    ccall((:complex_double_imaginary_part, libsymengine), Nothing, (Ref{Basic}, Ref{Basic}), a, c)
     return a
 end
 
 function real(b::BasicType{Val{:Complex}})
     c = Basic(b)
     a = Basic()
-    ccall((:complex_real_part, libsymengine), Void, (Ptr{Basic}, Ptr{Basic}), &a, &c)
+    ccall((:complex_real_part, libsymengine), Nothing, (Ref{Basic}, Ref{Basic}), a, c)
     return a
 end
 
 function imag(b::BasicType{Val{:Complex}})
     c = Basic(b)
     a = Basic()
-    ccall((:complex_imaginary_part, libsymengine), Void, (Ptr{Basic}, Ptr{Basic}), &a, &c)
+    ccall((:complex_imaginary_part, libsymengine), Nothing, (Ref{Basic}, Ref{Basic}), a, c)
     return a
 end
 
 function real(b::BasicType{Val{:ComplexMPC}})
     c = Basic(b)
     a = Basic()
-    ccall((:complex_mpc_real_part, libsymengine), Void, (Ptr{Basic}, Ptr{Basic}), &a, &c)
+    ccall((:complex_mpc_real_part, libsymengine), Nothing, (Ref{Basic}, Ref{Basic}), a, c)
     return a
 end
 
 function imag(b::BasicType{Val{:ComplexMPC}})
     c = Basic(b)
     a = Basic()
-    ccall((:complex_mpc_imaginary_part, libsymengine), Void, (Ptr{Basic}, Ptr{Basic}), &a, &c)
+    ccall((:complex_mpc_imaginary_part, libsymengine), Nothing, (Ref{Basic}, Ref{Basic}), a, c)
     return a
 end
 
@@ -137,7 +137,7 @@ end
 ##  Conversions SymEngine -> Julia 
 function as_numer_denom(x::Basic)
     a, b = Basic(), Basic()
-    ccall((:basic_as_numer_denom, libsymengine), Void, (Ptr{Basic}, Ptr{Basic}, Ptr{Basic}), &a, &b, &x)
+    ccall((:basic_as_numer_denom, libsymengine), Nothing, (Ref{Basic}, Ref{Basic}, Ref{Basic}), a, b, x)
     return a, b
 end
 
@@ -189,7 +189,7 @@ floor(::Type{T},x::Basic) where {T <: Integer} = convert(T, floor(x))
 round(x::Basic) = Basic(round(N(x)))
 round(::Type{T},x::Basic) where {T <: Integer} = convert(T, round(x))
 
-prec(x::BasicType{Val{:RealMPFR}}) = ccall((:real_mpfr_get_prec, libsymengine), Clong, (Ptr{Basic},), &x)
+prec(x::BasicType{Val{:RealMPFR}}) = ccall((:real_mpfr_get_prec, libsymengine), Clong, (Ref{Basic},), x)
 
 # eps
 eps(x::Basic) = eps(BasicType(x))

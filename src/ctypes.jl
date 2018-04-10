@@ -1,29 +1,29 @@
 # types from SymEngine to Julia
 ## CSetBasic
 mutable struct CSetBasic
-    ptr::Ptr{Void}
+    ptr::Ptr{Cvoid}
 end
 
 function CSetBasic()
-    z = CSetBasic(ccall((:setbasic_new, libsymengine), Ptr{Void}, ()))
+    z = CSetBasic(ccall((:setbasic_new, libsymengine), Ptr{Cvoid}, ()))
     finalizer(z, CSetBasic_free)
     z
 end
 
 function CSetBasic_free(x::CSetBasic)
     if x.ptr != C_NULL
-        ccall((:setbasic_free, libsymengine), Void, (Ptr{Void},), x.ptr)
+        ccall((:setbasic_free, libsymengine), Nothing, (Ptr{Cvoid},), x.ptr)
         x.ptr = C_NULL
     end
 end
 
 function Base.length(s::CSetBasic)
-    ccall((:setbasic_size, libsymengine), UInt, (Ptr{Void},), s.ptr)
+    ccall((:setbasic_size, libsymengine), UInt, (Ptr{Cvoid},), s.ptr)
 end
 
 function Base.getindex(s::CSetBasic, n::UInt)
     result = Basic()
-    ccall((:setbasic_get, libsymengine), Void, (Ptr{Void}, UInt, Ptr{Basic}), s.ptr, n, &result)
+    ccall((:setbasic_get, libsymengine), Nothing, (Ptr{Cvoid}, UInt, Ref{Basic}), s.ptr, n, result)
     result
 end
 
@@ -36,29 +36,29 @@ Base.convert(::Type{Set}, x::CSetBasic) = Set(convert(Vector, x))
 ## VecBasic Need this for get_args...
 
 mutable struct CVecBasic
-    ptr::Ptr{Void}
+    ptr::Ptr{Cvoid}
 end
 
 function CVecBasic()
-    z = CVecBasic(ccall((:vecbasic_new, libsymengine), Ptr{Void}, ()))
+    z = CVecBasic(ccall((:vecbasic_new, libsymengine), Ptr{Cvoid}, ()))
     finalizer(z, CVecBasic_free)
     z
 end
 
 function CVecBasic_free(x::CVecBasic)
     if x.ptr != C_NULL
-        ccall((:vecbasic_free, libsymengine), Void, (Ptr{Void},), x.ptr)
+        ccall((:vecbasic_free, libsymengine), Nothing, (Ptr{Cvoid},), x.ptr)
         x.ptr = C_NULL
     end
 end
 
 function Base.length(s::CVecBasic)
-    ccall((:vecbasic_size, libsymengine), UInt, (Ptr{Void},), s.ptr)
+    ccall((:vecbasic_size, libsymengine), UInt, (Ptr{Cvoid},), s.ptr)
 end
 
 function Base.getindex(s::CVecBasic, n::UInt)
     result = Basic()
-    ccall((:vecbasic_get, libsymengine), Void, (Ptr{Void}, UInt, Ptr{Basic}), s.ptr, n, &result)
+    ccall((:vecbasic_get, libsymengine), Nothing, (Ptr{Cvoid}, UInt, Ref{Basic}), s.ptr, n, result)
     result
 end
 
@@ -69,11 +69,11 @@ end
 
 ## CMapBasicBasic
 mutable struct CMapBasicBasic
-    ptr::Ptr{Void}
+    ptr::Ptr{Cvoid}
 end
 
 function CMapBasicBasic()
-    z = CMapBasicBasic(ccall((:mapbasicbasic_new, libsymengine), Ptr{Void}, ()))
+    z = CMapBasicBasic(ccall((:mapbasicbasic_new, libsymengine), Ptr{Cvoid}, ()))
     finalizer(z, CMapBasicBasic_free)
     z
 end
@@ -88,18 +88,18 @@ end
 
 function CMapBasicBasic_free(x::CMapBasicBasic)
     if x.ptr != C_NULL
-        ccall((:mapbasicbasic_free, libsymengine), Void, (Ptr{Void},), x.ptr)
+        ccall((:mapbasicbasic_free, libsymengine), Nothing, (Ptr{Cvoid},), x.ptr)
         x.ptr = C_NULL
     end
 end
 
 function Base.length(s::CMapBasicBasic)
-    ccall((:mapbasicbasic_size, libsymengine), UInt, (Ptr{Void},), s.ptr)
+    ccall((:mapbasicbasic_size, libsymengine), UInt, (Ptr{Cvoid},), s.ptr)
 end
 
 function Base.getindex(s::CMapBasicBasic, k::Basic)
     result = Basic()
-    ret = ccall((:mapbasicbasic_get, libsymengine), Cint, (Ptr{Void}, Ptr{Basic}, Ptr{Basic}), s.ptr, &k, &result)
+    ret = ccall((:mapbasicbasic_get, libsymengine), Cint, (Ptr{Cvoid}, Ref{Basic}, Ref{Basic}), s.ptr, k, result)
     if ret == 0
         throw(KeyError("Key not found"))
     end
@@ -107,7 +107,7 @@ function Base.getindex(s::CMapBasicBasic, k::Basic)
 end
 
 function Base.setindex!(s::CMapBasicBasic, k::Basic, v::Basic)
-    ccall((:mapbasicbasic_insert, libsymengine), Void, (Ptr{Void}, Ptr{Basic}, Ptr{Basic}), s.ptr, &k, &v)
+    ccall((:mapbasicbasic_insert, libsymengine), Nothing, (Ptr{Cvoid}, Ref{Basic}, Ref{Basic}), s.ptr, k, v)
 end
 
 Base.convert(::Type{CMapBasicBasic}, x::Dict{Any, Any}) = CMapBasicBasic(x)
@@ -115,26 +115,26 @@ Base.convert(::Type{CMapBasicBasic}, x::Dict{Any, Any}) = CMapBasicBasic(x)
 ## Dense matrix
 
 mutable struct CDenseMatrix <: DenseArray{Basic, 2}
-    ptr::Ptr{Void}
+    ptr::Ptr{Cvoid}
 end
 
 Base.promote_rule(::Type{CDenseMatrix}, ::Type{Matrix{T}} ) where {T <: Basic} = CDenseMatrix
 
 function CDenseMatrix_free(x::CDenseMatrix)
     if x.ptr != C_NULL
-        ccall((:dense_matrix_free, libsymengine), Void, (Ptr{Void},), x.ptr)
+        ccall((:dense_matrix_free, libsymengine), Nothing, (Ptr{Cvoid},), x.ptr)
         x.ptr = C_NULL
     end
 end
 
 function CDenseMatrix()
-    z = CDenseMatrix(ccall((:dense_matrix_new, libsymengine), Ptr{Void}, ()))
+    z = CDenseMatrix(ccall((:dense_matrix_new, libsymengine), Ptr{Cvoid}, ()))
     finalizer(z, CDenseMatrix_free)
     z
 end
 
 function CDenseMatrix(m::Int, n::Int)
-    z = CDenseMatrix(ccall((:dense_matrix_new_rows_cols, libsymengine), Ptr{Void}, (Int, Int), m, n))
+    z = CDenseMatrix(ccall((:dense_matrix_new_rows_cols, libsymengine), Ptr{Cvoid}, (Int, Int), m, n))
     finalizer(z, CDenseMatrix_free)
     z
 end
@@ -162,9 +162,9 @@ Base.convert(::Type{CDenseMatrix}, x::Array{T, 1}) where {T} = convert(CDenseMat
 
 
 function toString(b::CDenseMatrix)
-    a = ccall((:dense_matrix_str, libsymengine), Cstring, (Ptr{Void}, ), b.ptr)
+    a = ccall((:dense_matrix_str, libsymengine), Cstring, (Ptr{Cvoid}, ), b.ptr)
     string = unsafe_string(a)
-    ccall((:basic_str_free, libsymengine), Void, (Cstring, ), a)
+    ccall((:basic_str_free, libsymengine), Nothing, (Cstring, ), a)
     string = replace(string, "**", "^") # de pythonify
     return string
 end

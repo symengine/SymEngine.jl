@@ -2,7 +2,7 @@ function IMPLEMENT_ONE_ARG_FUNC(meth, symnm; lib=:basic_)
      @eval begin
         function ($meth)(b::SymbolicType)
             a = Basic()
-            ccall(($(string(lib,symnm)), libsymengine), Void, (Ptr{Basic}, Ptr{Basic}), &a, &b)
+            ccall(($(string(lib,symnm)), libsymengine), Nothing, (Ref{Basic}, Ref{Basic}), a, b)
             return a
         end
     end
@@ -13,7 +13,7 @@ function IMPLEMENT_TWO_ARG_FUNC(meth, symnm; lib=:basic_)
         function ($meth)(b1::SymbolicType, b2::Number)
             a = Basic()
             b1, b2 = promote(b1, b2)
-            ccall(($(string(lib,symnm)), libsymengine), Void, (Ptr{Basic}, Ptr{Basic}, Ptr{Basic}), &a, &b1, &b2)
+            ccall(($(string(lib,symnm)), libsymengine), Nothing, (Ref{Basic}, Ref{Basic}, Ref{Basic}), a, b1, b2)
             return a
         end
     end
@@ -103,7 +103,7 @@ function Base.convert(::Type{CVecBasic}, x::Vector{T}) where T
     vec = CVecBasic()
     for i in x
        b::Basic = Basic(i)
-       ccall((:vecbasic_push_back, libsymengine), Void, (Ptr{Void}, Ptr{Basic}), vec.ptr, &b)
+       ccall((:vecbasic_push_back, libsymengine), Nothing, (Ptr{Cvoid}, Ref{Basic}), vec.ptr, b)
     end
     return vec
 end
@@ -118,7 +118,7 @@ SymFunction(s::Symbol) = SymFunction(string(s))
 
 function (f::SymFunction)(x::CVecBasic)
     a = Basic()
-    ccall((:function_symbol_set, libsymengine), Void, (Ptr{Basic}, Ptr{Int8}, Ptr{Void}), &a, f.name, x.ptr)
+    ccall((:function_symbol_set, libsymengine), Nothing, (Ref{Basic}, Ptr{Int8}, Ptr{Cvoid}), a, f.name, x.ptr)
     return a
 end
 

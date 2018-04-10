@@ -18,12 +18,12 @@ subs(ex, x=>1, y=>1) # ditto
 """
 function subs(ex::T, var::S, val) where {T<:SymbolicType, S<:SymbolicType}
     s = Basic()
-    ccall((:basic_subs2, libsymengine), Void, (Ptr{Basic}, Ptr{Basic}, Ptr{Basic}, Ptr{Basic}), &s, &ex, &var, &val)
+    ccall((:basic_subs2, libsymengine), Nothing, (Ref{Basic}, Ref{Basic}, Ref{Basic}, Ref{Basic}), s, ex, var, val)
     return s
 end
 function subs(ex::T, d::CMapBasicBasic) where T<:SymbolicType
     s = Basic()
-    ccall((:basic_subs, libsymengine), Void, (Ptr{Basic}, Ptr{Basic}, Ptr{Void}), &s, &ex, d.ptr)
+    ccall((:basic_subs, libsymengine), Nothing, (Ref{Basic}, Ref{Basic}, Ptr{Cvoid}), s, ex, d.ptr)
     return s
 end
 
@@ -35,25 +35,12 @@ subs(ex::T, d::Pair...) where {T <: SymbolicType} = subs(ex, [(p.first, p.second
 
 ## Allow an expression to be called, as with ex(2). When there is more than one symbol, one can rely on order of `free_symbols` or
 ## be explicit by passing in pairs : `ex(x=>1, y=>2)` or a dict `ex(Dict(x=>1, y=>2))`.
-## This uses `eval` to avoid having to work around different styles in v0.5 and v0.4
-call_v0_4 = quote
-  function Base.call(ex::T, args...) where T <: Basic
-      xs = free_symbols(ex)
-      subs(ex, collect(zip(xs, args))...)
-  end
-  Base.call(ex::Basic, x::Dict) = subs(ex, x)
-  Base.call(ex::Basic, x::Pair...) = subs(ex, x...)
+function (ex::Basic)(args...)
+  xs = free_symbols(ex)
+  subs(ex, collect(zip(xs, args))...)
 end
-
-call_v0_5 = quote
-  function (ex::Basic)(args...)
-      xs = free_symbols(ex)
-      subs(ex, collect(zip(xs, args))...)
-  end
-  (ex::Basic)(x::Dict) = subs(ex, x)
-  (ex::Basic)(x::Pair...) = subs(ex, x...)
-end
-VERSION < v"0.5.0" ? eval(call_v0_4) : eval(call_v0_5)
+(ex::Basic)(x::Dict) = subs(ex, x)
+(ex::Basic)(x::Pair...) = subs(ex, x...)
 
 
 ## Lambdify
@@ -111,7 +98,6 @@ walk_expression(b) = convert(Expr, b)
 
 """
     lambdify
-
 evaluates a symbolless expression or returns a function
 """
 function lambdify(ex, vars=[])
@@ -144,4 +130,3 @@ function _lambdify(ex::Expr, vars)
         throw(ArgumentError("Expression does not lambdify"))
     end
 end
-
