@@ -11,7 +11,7 @@ Base.show(io::IO, b::SymbolicType) = print(io, toString(b))
 
 
 " show symengine logo "
-type AsciiArt x end
+mutable struct AsciiArt x end
 function ascii_art()
     out = ccall((:ascii_art_str, libsymengine),  Ptr{UInt8},  ())
     AsciiArt(unsafe_string(out))

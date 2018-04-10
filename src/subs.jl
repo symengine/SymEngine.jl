@@ -16,28 +16,28 @@ subs(ex, x=>1)  # alternate to subs(x, (x,1))
 subs(ex, x=>1, y=>1) # ditto
 ```
 """
-function subs{T<:SymbolicType, S<:SymbolicType}(ex::T, var::S, val)
+function subs(ex::T, var::S, val) where {T<:SymbolicType, S<:SymbolicType}
     s = Basic()
     ccall((:basic_subs2, libsymengine), Void, (Ptr{Basic}, Ptr{Basic}, Ptr{Basic}, Ptr{Basic}), &s, &ex, &var, &val)
     return s
 end
-function subs{T<:SymbolicType}(ex::T, d::CMapBasicBasic)
+function subs(ex::T, d::CMapBasicBasic) where T<:SymbolicType
     s = Basic()
     ccall((:basic_subs, libsymengine), Void, (Ptr{Basic}, Ptr{Basic}, Ptr{Void}), &s, &ex, d.ptr)
     return s
 end
 
-subs{T<:SymbolicType}(ex::T, d::Dict) = subs(ex, CMapBasicBasic(d))
-subs{T <: SymbolicType, S<:SymbolicType}(ex::T, y::Tuple{S, Any}) = subs(ex, y[1], y[2])
-subs{T <: SymbolicType, S<:SymbolicType}(ex::T, y::Tuple{S, Any}, args...) = subs(subs(ex, y), args...)
-subs{T <: SymbolicType}(ex::T, d::Pair...) = subs(ex, [(p.first, p.second) for p in d]...)
+subs(ex::T, d::Dict) where {T<:SymbolicType} = subs(ex, CMapBasicBasic(d))
+subs(ex::T, y::Tuple{S, Any}) where {T <: SymbolicType, S<:SymbolicType} = subs(ex, y[1], y[2])
+subs(ex::T, y::Tuple{S, Any}, args...) where {T <: SymbolicType, S<:SymbolicType} = subs(subs(ex, y), args...)
+subs(ex::T, d::Pair...) where {T <: SymbolicType} = subs(ex, [(p.first, p.second) for p in d]...)
 
 
 ## Allow an expression to be called, as with ex(2). When there is more than one symbol, one can rely on order of `free_symbols` or
 ## be explicit by passing in pairs : `ex(x=>1, y=>2)` or a dict `ex(Dict(x=>1, y=>2))`.
 ## This uses `eval` to avoid having to work around different styles in v0.5 and v0.4
 call_v0_4 = quote
-  function Base.call{T <: Basic}(ex::T, args...)
+  function Base.call(ex::T, args...) where T <: Basic
       xs = free_symbols(ex)
       subs(ex, collect(zip(xs, args))...)
   end

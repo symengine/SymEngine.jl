@@ -11,7 +11,7 @@
 ## To control dispatch, one might have `N(b::Basic) = N(BasicType(b))` and then define `N` for types of interest
 
 ## Hold a reference to a SymEngine object
-type Basic  <: Number
+mutable struct Basic  <: Number
     ptr::Ptr{Void}
     function Basic()
         z = new(C_NULL)
@@ -89,7 +89,7 @@ convert(::Type{Basic}, x::Integer) = Basic(BigInt(x))
 convert(::Type{Basic}, x::Rational) = Basic(numerator(x)) / Basic(denominator(x))
 convert(::Type{Basic}, x::Complex) = Basic(real(x)) + Basic(imag(x)) * IM
 
-Base.promote_rule{S<:Number}(::Type{Basic}, ::Type{S} ) = Basic
+Base.promote_rule(::Type{Basic}, ::Type{S} ) where {S<:Number} = Basic
 
 ## Class ID
 get_type(s::Basic) = ccall((:basic_get_type, libsymengine), UInt, (Ptr{Basic},), &s)
@@ -175,7 +175,7 @@ end
 ## and then
 ## meth(x::BasicType{Val{:Integer}}) = ... or
 ## meth(x::BasicNumber) = ...
-type BasicType{T} <: Number
+mutable struct BasicType{T} <: Number
     x::Basic
 end
 
@@ -186,9 +186,9 @@ convert(::Type{Basic}, x::BasicType) = x.x
 Basic(x::BasicType) = x.x
 
 BasicType(val::Basic) =  BasicType{Val{get_symengine_class(val)}}(val)
-convert{T}(::Type{BasicType{T}}, val::Basic) = BasicType{Val{get_symengine_class(val)}}(val)
+convert(::Type{BasicType{T}}, val::Basic) where {T} = BasicType{Val{get_symengine_class(val)}}(val)
 # Needed for julia v0.4.7
-convert{T<:BasicType}(::Type{T}, x::Basic) = BasicType(x)
+convert(::Type{T}, x::Basic) where {T<:BasicType} = BasicType(x)
 
 
 
@@ -196,16 +196,16 @@ convert{T<:BasicType}(::Type{T}, x::Basic) = BasicType(x)
 ## Basic(b::BasicType) and BasicType(b::Basic)
 
 # for mathops
-Base.promote_rule{T<:BasicType, S<:Number}(::Type{T}, ::Type{S} ) = T
+Base.promote_rule(::Type{T}, ::Type{S} ) where {T<:BasicType, S<:Number} = T
 
 # to intersperse BasicType and Basic in math ops
-Base.promote_rule{T<:BasicType}(::Type{T}, ::Type{Basic} ) = T
-Base.promote_rule{T<:BasicType}( ::Type{Basic}, ::Type{T} ) = T
+Base.promote_rule(::Type{T}, ::Type{Basic} ) where {T<:BasicType} = T
+Base.promote_rule( ::Type{Basic}, ::Type{T} ) where {T<:BasicType} = T
 
 ## needed for mathops
-convert{T<:BasicType}(::Type{T}, val::Number) = T(Basic(val))
+convert(::Type{T}, val::Number) where {T<:BasicType} = T(Basic(val))
 ## Julia v0.6 errors with ambiguous error if this method is not defined.
-convert{T<:BasicType}(::Type{T}, val::T) = val
+convert(::Type{T}, val::T) where {T<:BasicType} = val
 
 
 ## some type unions possibly useful for dispatch
@@ -235,8 +235,8 @@ function free_symbols(ex::Basic)
     convert(Vector, syms)
 end
 free_symbols(ex::BasicType) = free_symbols(Basic(ex))
-_flat(A) = mapreduce(x->isa(x,Array)? _flat(x): x, vcat, Basic[], A)  # from rosetta code example
-free_symbols{T<:SymbolicType}(exs::Array{T})  = unique(_flat([free_symbols(ex) for ex in exs]))
+_flat(A) = mapreduce(x->isa(x,Array) ? _flat(x) : x, vcat, Basic[], A)  # from rosetta code example
+free_symbols(exs::Array{T}) where {T<:SymbolicType}  = unique(_flat([free_symbols(ex) for ex in exs]))
 free_symbols(exs::Tuple) =  unique(_flat([free_symbols(ex) for ex in exs]))
 
 

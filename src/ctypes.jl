@@ -1,6 +1,6 @@
 # types from SymEngine to Julia
 ## CSetBasic
-type CSetBasic
+mutable struct CSetBasic
     ptr::Ptr{Void}
 end
 
@@ -35,7 +35,7 @@ Base.convert(::Type{Set}, x::CSetBasic) = Set(convert(Vector, x))
 
 ## VecBasic Need this for get_args...
 
-type CVecBasic
+mutable struct CVecBasic
     ptr::Ptr{Void}
 end
 
@@ -68,7 +68,7 @@ function Base.convert(::Type{Vector}, x::CVecBasic)
 end
 
 ## CMapBasicBasic
-type CMapBasicBasic
+mutable struct CMapBasicBasic
     ptr::Ptr{Void}
 end
 
@@ -114,11 +114,11 @@ Base.convert(::Type{CMapBasicBasic}, x::Dict{Any, Any}) = CMapBasicBasic(x)
 
 ## Dense matrix
 
-type CDenseMatrix <: DenseArray{Basic, 2}
+mutable struct CDenseMatrix <: DenseArray{Basic, 2}
     ptr::Ptr{Void}
 end
 
-Base.promote_rule{T <: Basic}(::Type{CDenseMatrix}, ::Type{Matrix{T}} ) = CDenseMatrix
+Base.promote_rule(::Type{CDenseMatrix}, ::Type{Matrix{T}} ) where {T <: Basic} = CDenseMatrix
 
 function CDenseMatrix_free(x::CDenseMatrix)
     if x.ptr != C_NULL
@@ -140,7 +140,7 @@ function CDenseMatrix(m::Int, n::Int)
 end
 
 
-function CDenseMatrix{T}(x::Array{T, 2})
+function CDenseMatrix(x::Array{T, 2}) where T
     r,c = size(x)
     M = CDenseMatrix(r, c)
     for j in 1:c
@@ -157,8 +157,8 @@ function Base.convert(::Type{Matrix}, x::CDenseMatrix)
     [x[i,j] for i in 1:m, j in 1:n]
 end
 
-Base.convert{T}(::Type{CDenseMatrix}, x::Array{T, 2}) = CDenseMatrix(x)
-Base.convert{T}(::Type{CDenseMatrix}, x::Array{T, 1}) = convert(CDenseMatrix, reshape(x, length(x), 1))
+Base.convert(::Type{CDenseMatrix}, x::Array{T, 2}) where {T} = CDenseMatrix(x)
+Base.convert(::Type{CDenseMatrix}, x::Array{T, 1}) where {T} = convert(CDenseMatrix, reshape(x, length(x), 1))
 
 
 function toString(b::CDenseMatrix)

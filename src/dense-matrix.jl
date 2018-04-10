@@ -175,7 +175,7 @@ function Base.lu(a::CDenseMatrix)
     l, u = dense_matrix_LU(a)
     convert(Matrix, l), convert(Matrix, u), eye(Basic, size(l)[1])
 end
-Base.lu{T <: Basic}(a::Array{T,2}) = lu(convert(CDenseMatrix, a))
+Base.lu(a::Array{T,2}) where {T <: Basic} = lu(convert(CDenseMatrix, a))
 
 
 # solve using LU_solve

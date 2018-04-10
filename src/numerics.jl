@@ -162,8 +162,8 @@ convert(::Type{BigFloat}, x::Basic)          = convert(BigFloat, N(evalf(x, prec
 convert(::Type{Complex{Float64}}, x::Basic)  = convert(Complex{Float64}, N(evalf(x, 53, false)))
 convert(::Type{Complex{BigFloat}}, x::Basic) = convert(Complex{BigFloat}, N(evalf(x, precision(BigFloat), false)))
 convert(::Type{Number}, x::Basic)            = x
-convert{T <: Real}(::Type{T}, x::Basic)      = convert(T, N(x))
-convert{T <: Real}(::Type{Complex{T}}, x::Basic)    = convert(Complex{T}, N(x))
+convert(::Type{T}, x::Basic) where {T <: Real}      = convert(T, N(x))
+convert(::Type{Complex{T}}, x::Basic) where {T <: Real}    = convert(Complex{T}, N(x))
 
 
 ## For generic programming in Julia
@@ -178,24 +178,24 @@ isless(x::Basic, y::Basic) = isless(N(x), N(y))
 
 ## These should have support in symengine-wrapper, but currently don't
 trunc(x::Basic, args...) = Basic(trunc(N(x), args...))  
-trunc{T <: Integer}(::Type{T},x::Basic, args...) = convert(T, trunc(x,args...))
+trunc(::Type{T},x::Basic, args...) where {T <: Integer} = convert(T, trunc(x,args...))
 
 ceil(x::Basic) = Basic(ceil(N(x)))
-ceil{T <: Integer}(::Type{T},x::Basic) = convert(T, ceil(x))
+ceil(::Type{T},x::Basic) where {T <: Integer} = convert(T, ceil(x))
 
 floor(x::Basic) = Basic(floor(N(x)))
-floor{T <: Integer}(::Type{T},x::Basic) = convert(T, floor(x))
+floor(::Type{T},x::Basic) where {T <: Integer} = convert(T, floor(x))
 
 round(x::Basic) = Basic(round(N(x)))
-round{T <: Integer}(::Type{T},x::Basic) = convert(T, round(x))
+round(::Type{T},x::Basic) where {T <: Integer} = convert(T, round(x))
 
 prec(x::BasicType{Val{:RealMPFR}}) = ccall((:real_mpfr_get_prec, libsymengine), Clong, (Ptr{Basic},), &x)
 
 # eps
 eps(x::Basic) = eps(BasicType(x))
-eps{T}(x::BasicType{T}) = eps(typeof(x))
-eps{T <: BasicType}(::Type{T}) = 0
-eps{T <: Basic}(::Type{T}) = 0
+eps(x::BasicType{T}) where {T} = eps(typeof(x))
+eps(::Type{T}) where {T <: BasicType} = 0
+eps(::Type{T}) where {T <: Basic} = 0
 eps(::Type{BasicType{Val{:RealDouble}}}) = 2^-52
 eps(::Type{BasicType{Val{:ComplexDouble}}}) = 2^-52
 eps(x::BasicType{Val{:RealMPFR}}) = evalf(Basic(2), prec(x), true) ^ (-prec(x)+1)

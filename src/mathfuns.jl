@@ -99,7 +99,7 @@ for (meth, libnm) in [(:nextprime,:nextprime)
     eval(Expr(:export, meth))
 end
 
-function Base.convert{T}(::Type{CVecBasic}, x::Vector{T})
+function Base.convert(::Type{CVecBasic}, x::Vector{T}) where T
     vec = CVecBasic()
     for i in x
        b::Basic = Basic(i)
@@ -110,20 +110,20 @@ end
 
 Base.convert(::Type{CVecBasic}, x...) = Base.convert(CVecBasic, collect(promote(x...)))
 
-type SymFunction
+mutable struct SymFunction
     name::String
 end
 
 SymFunction(s::Symbol) = SymFunction(string(s))
 
-@compat function (f::SymFunction)(x::CVecBasic)
+function (f::SymFunction)(x::CVecBasic)
     a = Basic()
     ccall((:function_symbol_set, libsymengine), Void, (Ptr{Basic}, Ptr{Int8}, Ptr{Void}), &a, f.name, x.ptr)
     return a
 end
 
-@compat (f::SymFunction){T}(x::Vector{T}) = (f::SymFunction)(convert(CVecBasic, x))
-@compat (f::SymFunction)(x...) = (f::SymFunction)(convert(CVecBasic, x...))
+(f::SymFunction)(x::Vector{T}) where {T} = (f::SymFunction)(convert(CVecBasic, x))
+(f::SymFunction)(x...) = (f::SymFunction)(convert(CVecBasic, x...))
 
 macro funs(x...)
     q=Expr(:block)
