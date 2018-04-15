@@ -87,7 +87,10 @@ c = Basic(0.125)
 ## can we do math with items of BasicType?
 a1 = SymEngine.BasicType(a)
 tot = a1
-for i in 1:100  tot = tot + a1 end
+for i in 1:100
+    global tot
+    tot = tot + a1
+end
 @test tot == 101
 sin(a1)
 
@@ -112,9 +115,9 @@ end
 fn = lambdify(exp(PI/2*x))
 @test abs(fn(1) - exp(pi/2)) <= 1e-14
 for val in samples
-    ex = sin(x + val)
-    fn = lambdify(ex)
-    @test abs(fn(val) - sin(2*val)) <= 1e-14
+    ex2 = sin(x + val)
+    fn2 = lambdify(ex2)
+    @test abs(fn2(val) - sin(2*val)) <= 1e-14
 end
 @test lambdify(x^2)(3) == 9
 
