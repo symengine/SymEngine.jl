@@ -1,4 +1,4 @@
-import Base.Operators: +, -, ^, /, //, \, *, ==
+import Base: +, -, ^, /, //, \, *, ==
 
 ## equality
 function ==(b1::SymbolicType, b2::SymbolicType)
