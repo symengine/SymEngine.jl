@@ -1,4 +1,4 @@
-import Base: convert, real, imag, num, den, float, eps
+import Base: convert, real, imag, float, eps
 import Base: isfinite, isnan, isinf, isless
 import Base: trunc, ceil, floor, round
 
