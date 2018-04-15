@@ -3,7 +3,7 @@ __precompile__()
 module SymEngine
 
 import Base: show, convert, real, imag
-import Compat: String, unsafe_string, @compat, denominator, numerator, invokelatest
+import Compat: String, unsafe_string, @compat, denominator, numerator, invokelatest, Cvoid, Nothing, MathConstants.γ, MathConstants.e, MathConstants.φ, MathConstants.catalan, LinearAlgebra, finalizer, Libdl
 
 export Basic, symbols, @vars, @funs, SymFunction
 export free_symbols, get_args
@@ -25,6 +25,12 @@ include("utils.jl")
 const have_mpfr = have_component("mpfr")
 const have_mpc = have_component("mpc")
 const libversion = get_libversion()
+
+if VERSION > VersionNumber("0.7.0-DEV")
+    _finalizer(f, o) = finalizer(f, o)
+else
+    _finalizer(f, o) = finalizer(o, f)
+end
 
 include("types.jl")
 include("ctypes.jl")

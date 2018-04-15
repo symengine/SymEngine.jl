@@ -1,9 +1,9 @@
-import Base.Operators: +, -, ^, /, //, \, *, ==
+import Base: +, -, ^, /, //, \, *, ==
 
 ## equality
 function ==(b1::SymbolicType, b2::SymbolicType)
     b1,b2 = map(Basic, (b1, b2))
-    ccall((:basic_eq, libsymengine), Int, (Ptr{Basic}, Ptr{Basic}), &b1, &b2) == 1
+    ccall((:basic_eq, libsymengine), Int, (Ref{Basic}, Ref{Basic}), b1, b2) == 1
 end
 
 
@@ -13,15 +13,15 @@ for (op, libnm) in ((:+, :add), (:-, :sub), (:*, :mul), (:/, :div), (://, :div),
     @eval begin
         function ($op)(b1::Basic, b2::Basic)
             a = Basic()
-            ccall($tup, Void, (Ptr{Basic}, Ptr{Basic}, Ptr{Basic}), &a, &b1, &b2)
+            ccall($tup, Nothing, (Ref{Basic}, Ref{Basic}, Ref{Basic}), a, b1, b2)
             return a
         end
         ($op)(b1::BasicType, b2::BasicType) = ($op)(Basic(b1), Basic(b2))
     end
 end
 
-^{T<:SymbolicType, S <: Integer}(a::T, b::S) = Basic(a)^Basic(b)
-^{T<:SymbolicType, S <: Rational}(a::T, b::S) = Basic(a)^Basic(b)
+^(a::T, b::S) where {T<:SymbolicType, S <: Integer} = Basic(a)^Basic(b)
+^(a::T, b::S) where {T<:SymbolicType, S <: Rational} = Basic(a)^Basic(b)
 +(b::SymbolicType) = b
 -(b::SymbolicType) = 0 - b
 \(b1::SymbolicType, b2::SymbolicType) = b2 / b1
@@ -29,14 +29,14 @@ end
 
 ## ## constants
 Base.zero(x::Basic) = Basic(0)
-Base.zero{T<:Basic}(::Type{T}) = Basic(0)
+Base.zero(::Type{T}) where {T<:Basic} = Basic(0)
 Base.one(x::Basic) = Basic(1)
-Base.one{T<:Basic}(::Type{T}) = Basic(1)
+Base.one(::Type{T}) where {T<:Basic} = Basic(1)
 
 Base.zero(x::BasicType) = BasicType(Basic(0))
-Base.zero{T<:BasicType}(::Type{T}) = BasicType(Basic(0))
+Base.zero(::Type{T}) where {T<:BasicType} = BasicType(Basic(0))
 Base.one(x::BasicType) = BasicType(Basic(1))
-Base.one{T<:BasicType}(::Type{T}) = BasicType(Basic(1))
+Base.one(::Type{T}) where {T<:BasicType} = BasicType(Basic(1))
 
 
 ## Math constants
@@ -54,9 +54,9 @@ macro init_constant(op, libnm)
     alloc_tup = (:basic_new_stack, libsymengine)
     :(
         begin
-            ccall($alloc_tup, Void, (Ptr{Basic}, ), &($op))
-            ccall($tup, Void, (Ptr{Basic}, ), &($op))
-            finalizer($op, basic_free)
+            ccall($alloc_tup, Nothing, (Ref{Basic}, ), $op)
+            ccall($tup, Nothing, (Ref{Basic}, ), $op)
+            _finalizer(basic_free, $op)
         end
     )
 end
@@ -81,9 +81,9 @@ Base.convert(::Type{Basic}, x::Irrational{:φ}) = (1 + Basic(5)^Basic(1//2))/2
 Base.convert(::Type{BasicType}, x::Irrational) = BasicType(convert(Basic, x))
 
 ## Logical operators
-@compat Base.:<(x::SymbolicType, y::SymbolicType) = N(x) < N(y)
-@compat Base.:<(x::SymbolicType, y) = <(promote(x,y)...)
-@compat Base.:<(x, y::SymbolicType) = <(promote(x,y)...)
+Base.:<(x::SymbolicType, y::SymbolicType) = N(x) < N(y)
+Base.:<(x::SymbolicType, y) = <(promote(x,y)...)
+Base.:<(x, y::SymbolicType) = <(promote(x,y)...)
 
 ## Other Basic Operations
 Base.copysign(x::SymEngine.Basic,y::SymEngine.BasicType) = sign(y)*abs(x)

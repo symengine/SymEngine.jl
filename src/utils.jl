@@ -1,6 +1,6 @@
 "Helper function to lookup a symbol from libsymengine"
 function get_symbol(sym::Symbol)
-    handle = Base.Libdl.dlopen_e(libsymengine)
+    handle = Libdl.dlopen_e(libsymengine)
     if handle == C_NULL
         C_NULL
     else

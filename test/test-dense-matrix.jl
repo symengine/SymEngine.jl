@@ -1,5 +1,6 @@
-using Base.Test
+using Compat.Test
 using SymEngine
+import Compat.LinearAlgebra: lu, det, zeros
 CDenseMatrix = SymEngine.CDenseMatrix
 
 @vars x
@@ -19,7 +20,7 @@ M[1,1] = x^2
 M[1,1] = x
 
 # inherits from DenseArray
-@test all(M + 3 .== A + 3)
+@test all(M .+ 3 .== A .+ 3)
 @test all(M * 3 .== A * 3)
 @test all(M + M .== A + A)
 @test all(M * M .== A * A)

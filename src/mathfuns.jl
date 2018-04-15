@@ -2,7 +2,7 @@ function IMPLEMENT_ONE_ARG_FUNC(meth, symnm; lib=:basic_)
      @eval begin
         function ($meth)(b::SymbolicType)
             a = Basic()
-            ccall(($(string(lib,symnm)), libsymengine), Void, (Ptr{Basic}, Ptr{Basic}), &a, &b)
+            ccall(($(string(lib,symnm)), libsymengine), Nothing, (Ref{Basic}, Ref{Basic}), a, b)
             return a
         end
     end
@@ -13,7 +13,7 @@ function IMPLEMENT_TWO_ARG_FUNC(meth, symnm; lib=:basic_)
         function ($meth)(b1::SymbolicType, b2::Number)
             a = Basic()
             b1, b2 = promote(b1, b2)
-            ccall(($(string(lib,symnm)), libsymengine), Void, (Ptr{Basic}, Ptr{Basic}, Ptr{Basic}), &a, &b1, &b2)
+            ccall(($(string(lib,symnm)), libsymengine), Nothing, (Ref{Basic}, Ref{Basic}, Ref{Basic}), a, b1, b2)
             return a
         end
     end
@@ -47,29 +47,29 @@ for (meth, libnm) in [
                       (:acsch,:acsch),
                       (:atanh,:atanh),
                       (:acoth,:acoth),
-                      (:zeta,:zeta),
                       (:gamma,:gamma),
-                      (:eta,:dirichlet_eta),
                       (:log,:log),
                       (:sqrt,:sqrt),
                       (:exp,:exp),
                       ]
     eval(Expr(:import, :Base, meth))
-    IMPLEMENT_ONE_ARG_FUNC(meth, libnm)
+    IMPLEMENT_ONE_ARG_FUNC(:(Base.$meth), libnm)
 end
 Base.abs2(x::SymEngine.Basic) = abs(x)^2
 
 # export not import
 for  (meth, libnm) in [
-                       (:lambertw,:lambertw)   # in add-on packages, not base
+                       (:lambertw,:lambertw),   # in add-on packages, not base
+                       (:eta,:dirichlet_eta),
+                       (:zeta,:zeta),
                        ]
-    IMPLEMENT_ONE_ARG_FUNC(meth, libnm)    
+    IMPLEMENT_ONE_ARG_FUNC(meth, libnm)
     eval(Expr(:export, meth))
 end
 
 ## add these in until they are wrapped
 Base.cbrt(a::SymbolicType) = a^(1//3)
-                  
+
 for (meth, fn) in [(:sind, :sin), (:cosd, :cos), (:tand, :tan), (:secd, :sec), (:cscd, :csc), (:cotd, :cot)]
     eval(Expr(:import, :Base, meth))
     @eval begin
@@ -85,7 +85,7 @@ for (meth, libnm) in [(:gcd, :gcd),
                       (:mod, :mod_f),
                       ]
     eval(Expr(:import, :Base, meth))
-    IMPLEMENT_TWO_ARG_FUNC(meth, libnm, lib=:ntheory_)    
+    IMPLEMENT_TWO_ARG_FUNC(:(Base.$meth), libnm, lib=:ntheory_)
 end
 
 Base.binomial(n::Basic, k::Number) = binomial(N(n), N(k))  #ntheory_binomial seems wrong
@@ -95,35 +95,35 @@ Base.factorial(n::SymbolicType, k) = factorial(N(n), N(k))
 ## but not (:fibonacci,:fibonacci), (:lucas, :lucas) (Basic type is not the signature)
 for (meth, libnm) in [(:nextprime,:nextprime)
                       ]
-    IMPLEMENT_ONE_ARG_FUNC(meth, libnm, lib=:ntheory_)    
+    IMPLEMENT_ONE_ARG_FUNC(meth, libnm, lib=:ntheory_)
     eval(Expr(:export, meth))
 end
 
-function Base.convert{T}(::Type{CVecBasic}, x::Vector{T})
+function Base.convert(::Type{CVecBasic}, x::Vector{T}) where T
     vec = CVecBasic()
     for i in x
        b::Basic = Basic(i)
-       ccall((:vecbasic_push_back, libsymengine), Void, (Ptr{Void}, Ptr{Basic}), vec.ptr, &b)
+       ccall((:vecbasic_push_back, libsymengine), Nothing, (Ptr{Cvoid}, Ref{Basic}), vec.ptr, b)
     end
     return vec
 end
 
 Base.convert(::Type{CVecBasic}, x...) = Base.convert(CVecBasic, collect(promote(x...)))
 
-type SymFunction
+mutable struct SymFunction
     name::String
 end
 
 SymFunction(s::Symbol) = SymFunction(string(s))
 
-@compat function (f::SymFunction)(x::CVecBasic)
+function (f::SymFunction)(x::CVecBasic)
     a = Basic()
-    ccall((:function_symbol_set, libsymengine), Void, (Ptr{Basic}, Ptr{Int8}, Ptr{Void}), &a, f.name, x.ptr)
+    ccall((:function_symbol_set, libsymengine), Nothing, (Ref{Basic}, Ptr{Int8}, Ptr{Cvoid}), a, f.name, x.ptr)
     return a
 end
 
-@compat (f::SymFunction){T}(x::Vector{T}) = (f::SymFunction)(convert(CVecBasic, x))
-@compat (f::SymFunction)(x...) = (f::SymFunction)(convert(CVecBasic, x...))
+(f::SymFunction)(x::Vector{T}) where {T} = (f::SymFunction)(convert(CVecBasic, x))
+(f::SymFunction)(x...) = (f::SymFunction)(convert(CVecBasic, x...))
 
 macro funs(x...)
     q=Expr(:block)

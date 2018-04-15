@@ -1,5 +1,7 @@
-using Base.Test
 using SymEngine
+using Compat
+using Compat.Test
+import Compat: MathConstants.γ, MathConstants.e, MathConstants.φ, MathConstants.catalan
 
 include("test-dense-matrix.jl")
 
@@ -85,7 +87,10 @@ c = Basic(0.125)
 ## can we do math with items of BasicType?
 a1 = SymEngine.BasicType(a)
 tot = a1
-for i in 1:100  tot = tot + a1 end
+for i in 1:100
+    global tot
+    tot = tot + a1
+end
 @test tot == 101
 sin(a1)
 
@@ -106,13 +111,13 @@ for val1 in samples, val2 in samples
 end
 
 ## lambidfy
-@test norm(lambdify(sin(Basic(1))) - sin(1)) <= 1e-14
+@test abs(lambdify(sin(Basic(1))) - sin(1)) <= 1e-14
 fn = lambdify(exp(PI/2*x))
-@test norm(fn(1) - exp(pi/2)) <= 1e-14
+@test abs(fn(1) - exp(pi/2)) <= 1e-14
 for val in samples
-    ex = sin(x + val)
-    fn = lambdify(ex)
-    @test norm(fn(val) - sin(2*val)) <= 1e-14
+    ex2 = sin(x + val)
+    fn2 = lambdify(ex2)
+    @test abs(fn2(val) - sin(2*val)) <= 1e-14
 end
 @test lambdify(x^2)(3) == 9
 
@@ -148,12 +153,12 @@ x,y,z = symbols("x y z")
 @vars x
 function simple_newton(f, fp, x0)
     x = float(x0)
-    while norm(f(x)) >= 1e-14
+    while abs(f(x)) >= 1e-14
         x = x - f(x)/fp(x)
     end
     x
 end
-@test norm(simple_newton(sin(x), diff(sin(x), x), 3) - pi) <= 1e-14
+@test abs(simple_newton(sin(x), diff(sin(x), x), 3) - pi) <= 1e-14
 
 ## Check conversions SymEngine -> Julia
 z,flt, rat, ima, cplx = btypes = [Basic(1), Basic(1.23), Basic(3//5), Basic(2im), Basic(1 + 2im)]

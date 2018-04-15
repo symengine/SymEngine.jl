@@ -1,6 +1,12 @@
 using BinDeps
 using Compat
+import BinDeps: lower
 using Conda
+
+if VERSION > VersionNumber("0.7.0-DEV")
+    # TODO: Remove this hack when BinDeps is fixed
+    lower(s::Base.Process, c::BinDeps.SynchronousStepCollection) = nothing
+end
 
 @BinDeps.setup
 
