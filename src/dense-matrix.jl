@@ -156,26 +156,25 @@ Base.setindex!(s::CDenseMatrix, val, r::Int, c::Int) = dense_matrix_set_basic(s,
 ## special matrices
 Base.zeros(::Type{CDenseMatrix}, r::Int, c::Int) = dense_matrix_zeros(s, r-1, c-1)
 Base.ones(::Type{CDenseMatrix}, r::Int, c::Int) = dense_matrix_ones(r-1, c-1)
-Base.eye(::Type{CDenseMatrix}, n::Integer) = convert(CDenseMatrix, eye(Basic, n))
 
 
 ## basic functions
-Base.det(s::CDenseMatrix) = dense_matrix_det(s)
+LinearAlgebra.det(s::CDenseMatrix) = dense_matrix_det(s)
 Base.inv(s::CDenseMatrix) = dense_matrix_inv(s)
 Base.transpose(s::CDenseMatrix) = dense_matrix_transpose(s)
 
-Base.factorize(M::CDenseMatrix) = factorize(convert(Matrix, M))
+LinearAlgebra.factorize(M::CDenseMatrix) = factorize(convert(Matrix, M))
 
 """
 LU decomposition for CDenseMatrix, dense matrices of symbolic values
 
 Also: lufact(a, val{:false}) for non-pivoting lu factorization
 """
-function Base.lu(a::CDenseMatrix)
+function LinearAlgebra.lu(a::CDenseMatrix)
     l, u = dense_matrix_LU(a)
-    convert(Matrix, l), convert(Matrix, u), eye(Basic, size(l)[1])
+    convert(Matrix, l), convert(Matrix, u), Matrix{Basic}(LinearAlgebra.I, size(l)[1], size(l)[1])
 end
-Base.lu(a::Array{T,2}) where {T <: Basic} = lu(convert(CDenseMatrix, a))
+LinearAlgebra.lu(a::Array{T,2}) where {T <: Basic} = LinearAlgebra.lu(convert(CDenseMatrix, a))
 
 
 # solve using LU_solve

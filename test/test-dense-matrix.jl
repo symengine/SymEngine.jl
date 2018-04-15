@@ -1,5 +1,6 @@
 using Base.Test
 using SymEngine
+import Compat.LinearAlgebra: lu, det, zeros
 CDenseMatrix = SymEngine.CDenseMatrix
 
 @vars x
