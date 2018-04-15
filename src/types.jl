@@ -139,7 +139,7 @@ x,y,z = symbols("x,y,z")
 symbols(s::Symbol) = _symbol(s)
 function symbols(s::String)
     ## handle space or comma sparation
-    s = replace(s, ",", " ")
+    s = replace(s, ","=> " ")
     by_space = split(s, r"\s+")
     Base.length(by_space) == 1 && return symbols(Symbol(s))
     tuple([_symbol(Symbol(o)) for o in by_space]...)
