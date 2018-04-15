@@ -1,4 +1,4 @@
-using Base.Test
+using Compat.Test
 using SymEngine
 import Compat.LinearAlgebra: lu, det, zeros
 CDenseMatrix = SymEngine.CDenseMatrix
