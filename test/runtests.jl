@@ -1,5 +1,7 @@
 using Base.Test
 using SymEngine
+using Compat
+import Compat: MathConstants.γ, MathConstants.e, MathConstants.φ, MathConstants.catalan
 
 include("test-dense-matrix.jl")
 
