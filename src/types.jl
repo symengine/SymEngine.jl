@@ -16,7 +16,7 @@ mutable struct Basic  <: Number
     function Basic()
         z = new(C_NULL)
         ccall((:basic_new_stack, libsymengine), Nothing, (Ref{Basic}, ), z)
-        finalizer(z, basic_free)
+        _finalizer(basic_free, z)
         return z
     end
     function Basic(v::Ptr{Cvoid})

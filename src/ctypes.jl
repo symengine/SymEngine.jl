@@ -6,7 +6,7 @@ end
 
 function CSetBasic()
     z = CSetBasic(ccall((:setbasic_new, libsymengine), Ptr{Cvoid}, ()))
-    finalizer(z, CSetBasic_free)
+    _finalizer(CSetBasic_free, z)
     z
 end
 
@@ -41,7 +41,7 @@ end
 
 function CVecBasic()
     z = CVecBasic(ccall((:vecbasic_new, libsymengine), Ptr{Cvoid}, ()))
-    finalizer(z, CVecBasic_free)
+    _finalizer(CVecBasic_free, z)
     z
 end
 
@@ -74,7 +74,7 @@ end
 
 function CMapBasicBasic()
     z = CMapBasicBasic(ccall((:mapbasicbasic_new, libsymengine), Ptr{Cvoid}, ()))
-    finalizer(z, CMapBasicBasic_free)
+    _finalizer(CMapBasicBasic_free, z)
     z
 end
 
@@ -129,13 +129,13 @@ end
 
 function CDenseMatrix()
     z = CDenseMatrix(ccall((:dense_matrix_new, libsymengine), Ptr{Cvoid}, ()))
-    finalizer(z, CDenseMatrix_free)
+    _finalizer(CDenseMatrix_free, z)
     z
 end
 
 function CDenseMatrix(m::Int, n::Int)
     z = CDenseMatrix(ccall((:dense_matrix_new_rows_cols, libsymengine), Ptr{Cvoid}, (Int, Int), m, n))
-    finalizer(z, CDenseMatrix_free)
+    _finalizer(CDenseMatrix_free, z)
     z
 end
 

@@ -56,7 +56,7 @@ macro init_constant(op, libnm)
         begin
             ccall($alloc_tup, Nothing, (Ref{Basic}, ), $op)
             ccall($tup, Nothing, (Ref{Basic}, ), $op)
-            finalizer($op, basic_free)
+            _finalizer(basic_free, $op)
         end
     )
 end
