@@ -94,7 +94,11 @@ Basic(x::Basic) = x
 
 Base.promote_rule(::Type{Basic}, ::Type{S}) where {S<:Number} = Basic
 Base.promote_rule(::Type{S}, ::Type{Basic}) where {S<:Number} = Basic
-Base.promote_rule(::Type{S}, ::Type{Basic}) where {S<:AbstractIrrational} = Basic
+if VERSION > VersionNumber("0.7.0-DEV")
+    Base.promote_rule(::Type{S}, ::Type{Basic}) where {S<:AbstractIrrational} = Basic
+else
+    Base.promote_rule(::Type{S}, ::Type{Basic}) where {S<:Irrational} = Basic
+end
 
 ## Class ID
 get_type(s::Basic) = ccall((:basic_get_type, libsymengine), UInt, (Ref{Basic},), s)
@@ -205,7 +209,11 @@ Base.promote_rule(::Type{S}, ::Type{T} ) where {T<:BasicType, S<:Number} = T
 # to intersperse BasicType and Basic in math ops
 Base.promote_rule(::Type{T}, ::Type{Basic} ) where {T<:BasicType} = T
 Base.promote_rule( ::Type{Basic}, ::Type{T} ) where {T<:BasicType} = T
-Base.promote_rule(::Type{S}, ::Type{T}) where {S<:AbstractIrrational, T<:BasicType} = T
+if VERSION > VersionNumber("0.7.0-DEV")
+    Base.promote_rule(::Type{S}, ::Type{T}) where {S<:AbstractIrrational, T<:BasicType} = T
+else
+    Base.promote_rule(::Type{S}, ::Type{T}) where {S<:Irrational, T<:BasicType} = T
+end
 
 ## needed for mathops
 convert(::Type{T}, val::Number) where {T<:BasicType} = T(Basic(val))
