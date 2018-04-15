@@ -108,13 +108,13 @@ for val1 in samples, val2 in samples
 end
 
 ## lambidfy
-@test norm(lambdify(sin(Basic(1))) - sin(1)) <= 1e-14
+@test abs(lambdify(sin(Basic(1))) - sin(1)) <= 1e-14
 fn = lambdify(exp(PI/2*x))
-@test norm(fn(1) - exp(pi/2)) <= 1e-14
+@test abs(fn(1) - exp(pi/2)) <= 1e-14
 for val in samples
     ex = sin(x + val)
     fn = lambdify(ex)
-    @test norm(fn(val) - sin(2*val)) <= 1e-14
+    @test abs(fn(val) - sin(2*val)) <= 1e-14
 end
 @test lambdify(x^2)(3) == 9
 
@@ -150,12 +150,12 @@ x,y,z = symbols("x y z")
 @vars x
 function simple_newton(f, fp, x0)
     x = float(x0)
-    while norm(f(x)) >= 1e-14
+    while abs(f(x)) >= 1e-14
         x = x - f(x)/fp(x)
     end
     x
 end
-@test norm(simple_newton(sin(x), diff(sin(x), x), 3) - pi) <= 1e-14
+@test abs(simple_newton(sin(x), diff(sin(x), x), 3) - pi) <= 1e-14
 
 ## Check conversions SymEngine -> Julia
 z,flt, rat, ima, cplx = btypes = [Basic(1), Basic(1.23), Basic(3//5), Basic(2im), Basic(1 + 2im)]
