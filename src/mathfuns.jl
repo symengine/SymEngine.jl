@@ -47,29 +47,29 @@ for (meth, libnm) in [
                       (:acsch,:acsch),
                       (:atanh,:atanh),
                       (:acoth,:acoth),
-                      (:zeta,:zeta),
                       (:gamma,:gamma),
-                      (:eta,:dirichlet_eta),
                       (:log,:log),
                       (:sqrt,:sqrt),
                       (:exp,:exp),
                       ]
     eval(Expr(:import, :Base, meth))
-    IMPLEMENT_ONE_ARG_FUNC(meth, libnm)
+    IMPLEMENT_ONE_ARG_FUNC(:(Base.$meth), libnm)
 end
 Base.abs2(x::SymEngine.Basic) = abs(x)^2
 
 # export not import
 for  (meth, libnm) in [
-                       (:lambertw,:lambertw)   # in add-on packages, not base
+                       (:lambertw,:lambertw),   # in add-on packages, not base
+                       (:eta,:dirichlet_eta),
+                       (:zeta,:zeta),
                        ]
-    IMPLEMENT_ONE_ARG_FUNC(meth, libnm)    
+    IMPLEMENT_ONE_ARG_FUNC(meth, libnm)
     eval(Expr(:export, meth))
 end
 
 ## add these in until they are wrapped
 Base.cbrt(a::SymbolicType) = a^(1//3)
-                  
+
 for (meth, fn) in [(:sind, :sin), (:cosd, :cos), (:tand, :tan), (:secd, :sec), (:cscd, :csc), (:cotd, :cot)]
     eval(Expr(:import, :Base, meth))
     @eval begin
@@ -85,7 +85,7 @@ for (meth, libnm) in [(:gcd, :gcd),
                       (:mod, :mod_f),
                       ]
     eval(Expr(:import, :Base, meth))
-    IMPLEMENT_TWO_ARG_FUNC(meth, libnm, lib=:ntheory_)    
+    IMPLEMENT_TWO_ARG_FUNC(:(Base.$meth), libnm, lib=:ntheory_)
 end
 
 Base.binomial(n::Basic, k::Number) = binomial(N(n), N(k))  #ntheory_binomial seems wrong
@@ -95,7 +95,7 @@ Base.factorial(n::SymbolicType, k) = factorial(N(n), N(k))
 ## but not (:fibonacci,:fibonacci), (:lucas, :lucas) (Basic type is not the signature)
 for (meth, libnm) in [(:nextprime,:nextprime)
                       ]
-    IMPLEMENT_ONE_ARG_FUNC(meth, libnm, lib=:ntheory_)    
+    IMPLEMENT_ONE_ARG_FUNC(meth, libnm, lib=:ntheory_)
     eval(Expr(:export, meth))
 end
 
