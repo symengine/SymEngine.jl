@@ -78,18 +78,23 @@ function convert(::Type{Basic}, x::BigFloat)
 end
 
 if Clong == Int32
+    convert(::Type{Basic}, x::Union{Int8, Int16}) = Basic(convert(Clong, x))
+    convert(::Type{Basic}, x::Union{UInt8, UInt16}) = Basic(convert(Culong, x))
+else
     convert(::Type{Basic}, x::Union{Int8, Int16, Int32}) = Basic(convert(Clong, x))
     convert(::Type{Basic}, x::Union{UInt8, UInt16, UInt32}) = Basic(convert(Culong, x))
-else
-    convert(::Type{Basic}, x::Union{Int8, Int16, Int32, Int64}) = Basic(convert(Clong, x))
-    convert(::Type{Basic}, x::Union{UInt8, UInt16, UInt32, UInt64}) = Basic(convert(Culong, x))
 end
-convert(::Type{Basic}, x::Union{Float16, Float32, Float64}) = Basic(convert(Cdouble, x))
+convert(::Type{Basic}, x::Union{Float16, Float32}) = Basic(convert(Cdouble, x))
 convert(::Type{Basic}, x::Integer) = Basic(BigInt(x))
 convert(::Type{Basic}, x::Rational) = Basic(numerator(x)) / Basic(denominator(x))
 convert(::Type{Basic}, x::Complex) = Basic(real(x)) + Basic(imag(x)) * IM
 
-Base.promote_rule(::Type{Basic}, ::Type{S} ) where {S<:Number} = Basic
+Basic(x::T) where {T} = convert(Basic, x)
+Basic(x::Basic) = x
+
+Base.promote_rule(::Type{Basic}, ::Type{S}) where {S<:Number} = Basic
+Base.promote_rule(::Type{S}, ::Type{Basic}) where {S<:Number} = Basic
+Base.promote_rule(::Type{S}, ::Type{Basic}) where {S<:AbstractIrrational} = Basic
 
 ## Class ID
 get_type(s::Basic) = ccall((:basic_get_type, libsymengine), UInt, (Ref{Basic},), s)
@@ -127,7 +132,6 @@ x,y,z = symbols("x,y,z")
 ```
 
 """
-
 symbols(s::Symbol) = _symbol(s)
 function symbols(s::String)
     ## handle space or comma sparation
@@ -191,16 +195,17 @@ convert(::Type{BasicType{T}}, val::Basic) where {T} = BasicType{Val{get_symengin
 convert(::Type{T}, x::Basic) where {T<:BasicType} = BasicType(x)
 
 
-
 ## We have Basic and BasicType{...}. We go back and forth with:
 ## Basic(b::BasicType) and BasicType(b::Basic)
 
 # for mathops
 Base.promote_rule(::Type{T}, ::Type{S} ) where {T<:BasicType, S<:Number} = T
+Base.promote_rule(::Type{S}, ::Type{T} ) where {T<:BasicType, S<:Number} = T
 
 # to intersperse BasicType and Basic in math ops
 Base.promote_rule(::Type{T}, ::Type{Basic} ) where {T<:BasicType} = T
 Base.promote_rule( ::Type{Basic}, ::Type{T} ) where {T<:BasicType} = T
+Base.promote_rule(::Type{S}, ::Type{T}) where {S<:AbstractIrrational, T<:BasicType} = T
 
 ## needed for mathops
 convert(::Type{T}, val::Number) where {T<:BasicType} = T(Basic(val))
