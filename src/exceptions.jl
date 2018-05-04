@@ -1,15 +1,23 @@
 @inline function throw_if_error(error_code::Cuint, str=nothing)
     if error_code == 0
         return
-    elseif error_code == 1
-        error("Unknown SymEngine Exception")
+    else
+        throw(get_error(error_code, str))
+    end
+end
+
+function get_error(error_code::Cuint, str=nothing)
+    if error_code == 1
+        return ErrorException("Unknown SymEngine Exception")
     elseif error_code == 2
-        throw(DivideError())
+        return DivideError()
     elseif error_code == 3
-        error("Not implemented SymEngine feature")
+        return ErrorException("Not implemented SymEngine feature")
     elseif error_code == 4
-        throw(DomainError())
+        return DomainError()
     elseif error_code == 5
-        throw(ParseError(str))
+        return ParseError(str)
+    else
+        return ErrorException("Unexpected SymEngine error code")
     end
 end
