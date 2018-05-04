@@ -1,4 +1,4 @@
-function throw_if_error(error_code::Cuint, str=nothing)
+@inline function throw_if_error(error_code::Cuint, str=nothing)
     if error_code == 0
         return
     elseif error_code == 1
