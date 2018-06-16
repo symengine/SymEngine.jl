@@ -31,7 +31,10 @@ M[1,1] = x
 @test inv(M) - inv(A) == zeros(Basic, 3,3)
 
 # factorizations
-@test lu(M) == lu(A)
+L1, U1 = lu(M)
+L2, U2, P2 = lu(A)
+@test iszero(expand.(L1 - L2))
+@test iszero(expand.(U1 - U2))
 
 A = [x 1 2; 0 x 4; 0 0 x]
 b = [1, 2, 3]
