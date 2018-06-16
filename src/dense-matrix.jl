@@ -175,6 +175,9 @@ function LinearAlgebra.lu(a::CDenseMatrix)
     convert(Matrix, l), convert(Matrix, u), Matrix{Basic}(LinearAlgebra.I, size(l)[1], size(l)[1])
 end
 
+if VERSION < VersionNumber("0.7.0-DEV")
+    LinearAlgebra.lu(a::Array{T,2}) where {T <: Basic} = LinearAlgebra.lu(convert(CDenseMatrix, a))
+end
 
 
 # solve using LU_solve
