@@ -146,10 +146,10 @@ denominator(x::SymbolicType) = as_numer_denom(x)[2]
 numerator(x::SymbolicType)   = as_numer_denom(x)[1]
 
 ## Complex
-real(x::Basic) = real(SymEngine.BasicType(x))
+real(x::Basic) = Basic(real(SymEngine.BasicType(x)))
 real(x::SymEngine.BasicType) = x
 
-imag(x::Basic) = imag(SymEngine.BasicType(x))
+imag(x::Basic) = Basic(imag(SymEngine.BasicType(x)))
 imag(x::BasicType{Val{:Integer}}) = Basic(0)
 imag(x::BasicType{Val{:RealDouble}}) = Basic(0)
 imag(x::BasicType{Val{:RealMPFR}}) = Basic(0)
