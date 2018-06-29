@@ -174,7 +174,10 @@ function LinearAlgebra.lu(a::CDenseMatrix)
     l, u = dense_matrix_LU(a)
     convert(Matrix, l), convert(Matrix, u), Matrix{Basic}(LinearAlgebra.I, size(l)[1], size(l)[1])
 end
-LinearAlgebra.lu(a::Array{T,2}) where {T <: Basic} = LinearAlgebra.lu(convert(CDenseMatrix, a))
+
+if VERSION < VersionNumber("0.7.0-DEV")
+    LinearAlgebra.lu(a::Array{T,2}) where {T <: Basic} = LinearAlgebra.lu(convert(CDenseMatrix, a))
+end
 
 
 # solve using LU_solve

@@ -146,10 +146,10 @@ denominator(x::SymbolicType) = as_numer_denom(x)[2]
 numerator(x::SymbolicType)   = as_numer_denom(x)[1]
 
 ## Complex
-real(x::Basic) = real(SymEngine.BasicType(x))
+real(x::Basic) = Basic(real(SymEngine.BasicType(x)))
 real(x::SymEngine.BasicType) = x
 
-imag(x::Basic) = imag(SymEngine.BasicType(x))
+imag(x::Basic) = Basic(imag(SymEngine.BasicType(x)))
 imag(x::BasicType{Val{:Integer}}) = Basic(0)
 imag(x::BasicType{Val{:RealDouble}}) = Basic(0)
 imag(x::BasicType{Val{:RealMPFR}}) = Basic(0)
@@ -165,6 +165,11 @@ convert(::Type{Number}, x::Basic)            = x
 convert(::Type{T}, x::Basic) where {T <: Real}      = convert(T, N(x))
 convert(::Type{Complex{T}}, x::Basic) where {T <: Real}    = convert(Complex{T}, N(x))
 
+# Constructors no longer fall back to `convert` methods
+Base.Int64(x::Basic) = convert(Int64, x)
+Base.Float64(x::Basic) = convert(Float64, x)
+Base.BigInt(x::Basic) = convert(BigInt, x)
+Base.Real(x::Basic) = convert(Real, x)
 
 ## For generic programming in Julia
 float(x::Basic) = float(N(x))
