@@ -33,10 +33,5 @@ for (url, hash) in dependencies
     append!(all_products, products)
 end
 
-# dlopen the libraries in order so that latter libraries can be dlopened
-for product in all_products
-    Libdl.dlopen_e(locate(product))
-end
-
 # Write out a deps.jl file that will contain mappings for our products
 write_deps_file(joinpath(@__DIR__, "deps.jl"), all_products)
