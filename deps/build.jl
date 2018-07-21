@@ -1,8 +1,8 @@
 using BinaryProvider
 
 dependencies = Dict(
-    "https://github.com/JuliaMath/GMPBuilder/releases/download/v6.1.2/build.jl" =>
-        "7674924b83e090d2490f7dbc103045142e083c92bb7d7baea5d779f10afae910",
+    "https://github.com/isuruf/GMPBuilder/releases/download/v6.1.2-1/build_GMP.v6.1.2.jl" =>
+        "9bd8d9078c2a9c9a6451f6850ec45c925727afc395b5e4740153707826cd7439",
 
     "https://github.com/JuliaMath/MPFRBuilder/releases/download/v4.0.1/build.jl" =>
         "36ed4f47426eea41a2576f1c57b4dbbef552c42eea819f8e6c590d394fef049b",
