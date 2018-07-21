@@ -21,6 +21,11 @@ if !isfile(deps_file)
 end
 
 include(deps_file)
+
+if !noinit
+    check_deps()
+end
+
 include("utils.jl")
 const have_mpfr = have_component("mpfr")
 const have_mpc = have_component("mpc")
@@ -45,7 +50,10 @@ include("recipes.jl")
 include("dense-matrix.jl")
 
 if !noinit
-    __init__() = init_constants()
+    function __init__()
+        check_deps()
+        init_constants()
+    end
 end
 
 end
