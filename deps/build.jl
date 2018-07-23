@@ -1,7 +1,7 @@
 using BinDeps
 using Compat
 import BinDeps: lower
-using Conda
+import CondaBinDeps
 
 if VERSION > VersionNumber("0.7.0-DEV")
     # TODO: Remove this hack when BinDeps is fixed
@@ -39,18 +39,16 @@ if is_windows()
     url *= "v$(libsymengine_version)/symengine-$(libsymengine_version)-binaries-msvc-$(suffix).tar.bz2"
     provides(Binaries, URI(url), libdep, unpacked_dir="symengine-$(libsymengine_version)/bin")
 else
-    env = Symbol(Conda.ROOTENV)
-    EnvManagerType = Conda.EnvManager{env}
     # Conda's method will install miniconda to check that a package exists.
     # This will indicate to BinDeps that the packages for this env exists unconditionally.
-    BinDeps.package_available(m::EnvManagerType) = true
+    BinDeps.package_available(m::CondaBinDeps.Manager) = true
     # Adding the channel to conda will install miniconda even if conda is not the chosen LibraryProvider
     # Override the command for install in this env so that channels are added.
-    function BinDeps.generate_steps(dep::BinDeps.LibraryDependency, manager::EnvManagerType, opts)
-        Conda.add_channel("conda-forge", env)
-        Conda.add("$(manager.packages[1])", env)
+    function BinDeps.generate_steps(dep::BinDeps.LibraryDependency, manager::CondaBinDeps.Manager, opts)
+        CondaBinDeps.Conda.add_channel("conda-forge", env)
+        CondaBinDeps.Conda.add("$(manager.packages[1])", env)
     end
-    provides(EnvManagerType, "symengine=$(libsymengine_version)", [libdep])
+    provides(CondaBinDeps.Manager, "symengine=$(libsymengine_version)", [libdep])
 end
 
 @BinDeps.install Dict([(:libsymengine_dummy, :libsymengine)])
