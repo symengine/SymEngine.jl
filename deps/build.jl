@@ -1,56 +1,41 @@
-using BinDeps
-using Compat
-import BinDeps: lower
-using Conda
+using BinaryProvider
 
-if VERSION > VersionNumber("0.7.0-DEV")
-    # TODO: Remove this hack when BinDeps is fixed
-    lower(s::Base.Process, c::BinDeps.SynchronousStepCollection) = nothing
+dependencies = Dict(
+    "https://github.com/isuruf/GMPBuilder/releases/download/v6.1.2-1/build_GMP.v6.1.2.jl" =>
+        "9bd8d9078c2a9c9a6451f6850ec45c925727afc395b5e4740153707826cd7439",
+
+    "https://github.com/JuliaMath/MPFRBuilder/releases/download/v4.0.1/build.jl" =>
+        "36ed4f47426eea41a2576f1c57b4dbbef552c42eea819f8e6c590d394fef049b",
+
+    "https://github.com/isuruf/MPCBuilder/releases/download/v1.1.0/build_mpc.v1.1.0.jl" =>
+        "d800a46181c40fe046dfd51bf0357393bb58e2475b6082065ad0756971ad82eb",
+
+    "https://github.com/symengine/SymEngineBuilder/releases/download/v0.3.0/build_SymEngine.v0.3.0.jl" =>
+        "cd98583c98c386bc8273ae24efb0ab537f365a115d03342b17623d1ebfde5e6a",
+)
+
+prefix = joinpath(@__DIR__, "symengine-0.3")
+downloads_dir = joinpath(prefix, "downloads")
+all_products = LibraryProduct[]
+
+for (url, hash) in dependencies
+    tmp_file = joinpath(downloads_dir, "build_$hash.jl")
+    download_verify(url, hash, tmp_file)
+    contents = read(tmp_file, String)
+    m = Module(:__anon__)
+    products = eval(m, quote
+        using BinaryProvider
+        function write_deps_file(path, products) end
+        ARGS = [$prefix]
+        include_string($(contents))
+        products
+    end)
+    append!(all_products, products)
 end
 
-@BinDeps.setup
-
-# Use x.y.z for downloading binaries, but only check for x.y in shared libraries
-# so that patch version increases can be found in system
-libsymengine_version = "0.3.0"
-libsymengine_soversion = join(split(libsymengine_version, ".")[1:2], ".")
-
-if is_windows()
-   libsymengine_soname = "symengine-$(libsymengine_soversion).dll"
-elseif is_apple()
-   libsymengine_soname = "libsymengine.$(libsymengine_soversion).dylib"
-else
-   libsymengine_soname = "libsymengine.so.$(libsymengine_soversion)"
+for product in all_products
+    locate(product, verbose=true)
 end
 
-# Use the dummy name libsymengine-dummy to avoid finding libsymengine.so
-# We only want to find the versioned library
-libdep = library_dependency("libsymengine_dummy", aliases=[libsymengine_soname])
-
-path = abspath(dirname(@__FILE__), "usr")
-if is_windows()
-    isdir(path) || mkdir(path)
-    if Sys.WORD_SIZE == 64
-        suffix = "x86_64"
-    else
-        suffix = "x86"
-    end
-    url = "https://github.com/symengine/symengine/releases/download/"
-    url *= "v$(libsymengine_version)/symengine-$(libsymengine_version)-binaries-msvc-$(suffix).tar.bz2"
-    provides(Binaries, URI(url), libdep, unpacked_dir="symengine-$(libsymengine_version)/bin")
-else
-    env = Symbol(Conda.ROOTENV)
-    EnvManagerType = Conda.EnvManager{env}
-    # Conda's method will install miniconda to check that a package exists.
-    # This will indicate to BinDeps that the packages for this env exists unconditionally.
-    BinDeps.package_available(m::EnvManagerType) = true
-    # Adding the channel to conda will install miniconda even if conda is not the chosen LibraryProvider
-    # Override the command for install in this env so that channels are added.
-    function BinDeps.generate_steps(dep::BinDeps.LibraryDependency, manager::EnvManagerType, opts)
-        Conda.add_channel("conda-forge", env)
-        Conda.add("$(manager.packages[1])", env)
-    end
-    provides(EnvManagerType, "symengine=$(libsymengine_version)", [libdep])
-end
-
-@BinDeps.install Dict([(:libsymengine_dummy, :libsymengine)])
+# Write out a deps.jl file that will contain mappings for our products
+write_deps_file(joinpath(@__DIR__, "deps.jl"), all_products)
