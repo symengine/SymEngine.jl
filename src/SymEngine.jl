@@ -37,6 +37,7 @@ else
     _finalizer(f, o) = finalizer(o, f)
 end
 
+include("exceptions.jl")
 include("types.jl")
 include("ctypes.jl")
 include("display.jl")

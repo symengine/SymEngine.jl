@@ -47,7 +47,8 @@ end
 
 function convert(::Type{Basic}, s::String)
     a = Basic()
-    ccall((:basic_parse, libsymengine), Nothing, (Ref{Basic}, Ptr{Int8}), a, s)
+    b = ccall((:basic_parse, libsymengine), Cuint, (Ref{Basic}, Ptr{Int8}), a, s)
+    throw_if_error(b, s)
     return a
 end
 
