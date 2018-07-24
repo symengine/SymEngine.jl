@@ -59,9 +59,9 @@ fn_map = Dict(
 
 map_fn(key, fn_map) = haskey(fn_map, key) ? fn_map[key] : Symbol(lowercase(string(key)))
 
-function convert(::Type{Expr}, ex::Basic)
+function _convert(::Type{Expr}, ex::Basic)
     fn = get_symengine_class(ex)
-    
+
     if fn == :Symbol
         return Symbol(toString(ex))
     elseif (fn in number_types) || (fn == :Constant)
@@ -70,7 +70,20 @@ function convert(::Type{Expr}, ex::Basic)
 
     as = get_args(ex)
 
-    Expr(:call, map_fn(fn, fn_map), [convert(Expr,a) for a in as]...)
+    Expr(:call, map_fn(fn, fn_map), [_convert(Expr,a) for a in as]...)
+end
+
+
+function convert(::Type{Expr}, ex::Basic)
+    fn = get_symengine_class(ex)
+
+    if fn == :Symbol
+        return Expr(:call, :*, Symbol(toString(ex)), 1)
+    elseif (fn in number_types) || (fn == :Constant)
+        return Expr(:call, :*, N(ex), 1)
+    end
+
+    return _convert(Expr, ex)
 end
 
 function convert(::Type{Expr}, m::AbstractArray{Basic, 2})
