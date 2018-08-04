@@ -121,6 +121,24 @@ function lambdify(ex, vars=[])
     lambdify(body, vars)
 end
 
+function lambdify(ex::Basic, vars=[]; cse=false)
+    if length(vars) == 0
+        vars = free_symbols(ex)
+    end
+    if !cse
+        body = convert(Expr, ex)
+        return lambdify(body, vars)
+    end
+    replace_syms, replace_exprs, new_exprs = SymEngine.cse(ex)
+    body_args = []
+    for (i, j) in zip(replace_syms, replace_exprs)
+        append!(body_args, [Expr(:(=), Symbol(toString(i)), convert(Expr, j))])
+    end
+    append!(body_args, [convert(Expr, new_exprs[0])])
+    body = Expr(:block, body_args...)
+    lambdify(body, vars)
+end
+
 lambdify(ex::BasicType, vars=[]) = lambdify(Basic(ex), vars)
 
 function lambdify(ex::Expr, vars)
