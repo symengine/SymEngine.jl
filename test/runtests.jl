@@ -127,6 +127,7 @@ A = [x 2; x 1]
 A = [x 2]
 @test lambdify(A, [x])(1) == [1 2]
 @test lambdify(A)(1) == [1 2]
+@test isa(convert.(Expr, [0 x x+1]), Array{Expr})
 
 ## N
 for val in samples
