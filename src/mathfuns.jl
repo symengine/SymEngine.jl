@@ -57,6 +57,11 @@ for (meth, libnm) in [
 end
 Base.abs2(x::SymEngine.Basic) = abs(x)^2
 
+if get_symbol(:basic_atan2) != C_NULL
+    import Base.atan2
+    IMPLEMENT_TWO_ARG_FUNC(:(Base.atan2), :atan2)
+end
+
 # export not import
 for  (meth, libnm) in [
                        (:lambertw,:lambertw),   # in add-on packages, not base
