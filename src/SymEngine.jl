@@ -8,7 +8,7 @@ import Compat: String, unsafe_string, @compat, denominator, numerator, invokelat
 export Basic, symbols, @vars, @funs, SymFunction
 export free_symbols, get_args
 export ascii_art
-export subs, lambdify, N
+export subs, lambdify, N, cse
 export series
 
 const deps_file = joinpath(dirname(@__FILE__), "..", "deps", "deps.jl")
@@ -43,9 +43,9 @@ include("ctypes.jl")
 include("display.jl")
 include("mathops.jl")
 include("mathfuns.jl")
+include("simplify.jl")
 include("subs.jl")
 include("numerics.jl")
-include("simplify.jl")
 include("calculus.jl")
 include("recipes.jl")
 include("dense-matrix.jl")

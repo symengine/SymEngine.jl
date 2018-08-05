@@ -56,9 +56,9 @@ function Base.length(s::CVecBasic)
     ccall((:vecbasic_size, libsymengine), UInt, (Ptr{Cvoid},), s.ptr)
 end
 
-function Base.getindex(s::CVecBasic, n::UInt)
+function Base.getindex(s::CVecBasic, n)
     result = Basic()
-    ccall((:vecbasic_get, libsymengine), Nothing, (Ptr{Cvoid}, UInt, Ref{Basic}), s.ptr, n, result)
+    ccall((:vecbasic_get, libsymengine), Nothing, (Ptr{Cvoid}, UInt, Ref{Basic}), s.ptr, UInt(n), result)
     result
 end
 
@@ -66,6 +66,10 @@ function Base.convert(::Type{Vector}, x::CVecBasic)
     n = Base.length(x)
     [x[i-1] for i in 1:n]
 end
+
+Base.start(s::CVecBasic) = 0
+Base.done(s::CVecBasic, i) = (i == Base.length(s))
+Base.next(s::CVecBasic, i) = s[i], i+1
 
 ## CMapBasicBasic
 mutable struct CMapBasicBasic

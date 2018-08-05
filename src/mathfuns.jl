@@ -109,6 +109,7 @@ function Base.convert(::Type{CVecBasic}, x::Vector{T}) where T
 end
 
 Base.convert(::Type{CVecBasic}, x...) = Base.convert(CVecBasic, collect(promote(x...)))
+Base.convert(::Type{CVecBasic}, x::CVecBasic) = x
 
 mutable struct SymFunction
     name::String
