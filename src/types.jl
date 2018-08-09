@@ -249,7 +249,7 @@ function free_symbols(ex::Basic)
     convert(Vector, syms)
 end
 free_symbols(ex::BasicType) = free_symbols(Basic(ex))
-_flat(A) = mapreduce(x->isa(x,Array) ? _flat(x) : x, vcat, Basic[], A)  # from rosetta code example
+_flat(A) = mapreduce(x->isa(x,Array) ? _flat(x) : x, vcat, A, init=Basic[])  # from rosetta code example
 free_symbols(exs::Array{T}) where {T<:SymbolicType}  = unique(_flat([free_symbols(ex) for ex in exs]))
 free_symbols(exs::Tuple) =  unique(_flat([free_symbols(ex) for ex in exs]))
 

@@ -16,7 +16,7 @@ function get_error(error_code::Cuint, str=nothing)
     elseif error_code == 4
         return DomainError()
     elseif error_code == 5
-        return ParseError(str)
+        return Meta.ParseError(str)
     else
         return ErrorException("Unexpected SymEngine error code")
     end
