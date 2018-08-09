@@ -31,9 +31,9 @@ diff(b1::SymbolicType, b2::SymbolicType, b3::SymbolicType, b4::SymbolicType, b5.
     diff(b1, (b2,b3,b4,b5...))
 
 ## mixed partials
-diff(ex::SymbolicType, bs::Tuple) = reduce((ex, x) -> diff(ex, x), ex, bs)
+diff(ex::SymbolicType, bs::Tuple) = reduce((ex, x) -> diff(ex, x), bs, init=ex)
 diff(ex::SymbolicType, bs::Tuple, ns::Tuple) =
-    reduce((ex, x) -> diff(ex, x[1],x[2]), ex, zip(bs, ns))
+    reduce((ex, x) -> diff(ex, x[1],x[2]), zip(bs, ns), init=ex)
 
 diff(b1::SymbolicType, x::Union{String,Symbol}) = diff(b1, Basic(x))
 

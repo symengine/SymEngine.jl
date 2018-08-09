@@ -24,7 +24,7 @@ M[1,1] = x
 @test all(M * 3 .== A * 3)
 @test all(M + M .== A + A)
 @test all(M * M .== A * A)
-@test all(M' .== A')
+@test all(transpose(M) .== transpose(A))
 
 # generic det
 @test prod([subs(det(M) - det(A), x, i) == 0 for i in 2:10]) == true

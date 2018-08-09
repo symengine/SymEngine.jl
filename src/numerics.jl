@@ -167,6 +167,8 @@ convert(::Type{Complex{T}}, x::Basic) where {T <: Real}    = convert(Complex{T},
 
 # Constructors no longer fall back to `convert` methods
 Base.Int64(x::Basic) = convert(Int64, x)
+Base.Int32(x::Basic) = convert(Int32, x)
+Base.Float32(x::Basic) = convert(Float32, x)
 Base.Float64(x::Basic) = convert(Float64, x)
 Base.BigInt(x::Basic) = convert(BigInt, x)
 Base.Real(x::Basic) = convert(Real, x)

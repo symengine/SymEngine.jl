@@ -23,13 +23,13 @@ for (url, hash) in dependencies
     download_verify(url, hash, tmp_file)
     contents = read(tmp_file, String)
     m = Module(:__anon__)
-    products = eval(m, quote
+    Core.eval(m, quote
         using BinaryProvider
         function write_deps_file(path, products) end
         ARGS = [$prefix]
-        include_string($(contents))
-        products
     end)
+    Base.include_string(m, contents)
+    products = Core.eval(m, :(products))
     append!(all_products, products)
 end
 
