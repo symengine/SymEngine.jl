@@ -10,6 +10,9 @@ export free_symbols, get_args
 export ascii_art
 export subs, lambdify, N, cse
 export series
+if VERSION >= v"1.0.0-rc1"
+    export expand
+end
 
 const deps_file = joinpath(dirname(@__FILE__), "..", "deps", "deps.jl")
 const deps_in_file = joinpath(dirname(@__FILE__), "..", "deps", "deps.jl.in")

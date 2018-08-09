@@ -1,3 +1,5 @@
+using SpecialFunctions
+
 function IMPLEMENT_ONE_ARG_FUNC(meth, symnm; lib=:basic_)
      @eval begin
         function ($meth)(b::SymbolicType)
@@ -21,39 +23,41 @@ end
 
 ## import from base one argument functions
 ## these are from cwrapper.cpp, one arg func
-for (meth, libnm) in [
-                      (:abs,:abs),
-                      (:sin,:sin),
-                      (:cos,:cos),
-                      (:tan,:tan),
-                      (:csc,:csc),
-                      (:sec,:sec),
-                      (:cot,:cot),
-                      (:asin,:asin),
-                      (:acos,:acos),
-                      (:asec,:asec),
-                      (:acsc,:acsc),
-                      (:atan,:atan),
-                      (:acot,:acot),
-                      (:sinh,:sinh),
-                      (:cosh,:cosh),
-                      (:tanh,:tanh),
-                      (:csch,:csch),
-                      (:sech,:sech),
-                      (:coth,:coth),
-                      (:asinh,:asinh),
-                      (:acosh,:acosh),
-                      (:asech,:asech),
-                      (:acsch,:acsch),
-                      (:atanh,:atanh),
-                      (:acoth,:acoth),
-                      (:gamma,:gamma),
-                      (:log,:log),
-                      (:sqrt,:sqrt),
-                      (:exp,:exp),
+for (meth, libnm, modu) in [
+                      (:abs,:abs,:Base),
+                      (:sin,:sin,:Base),
+                      (:cos,:cos,:Base),
+                      (:tan,:tan,:Base),
+                      (:csc,:csc,:Base),
+                      (:sec,:sec,:Base),
+                      (:cot,:cot,:Base),
+                      (:asin,:asin,:Base),
+                      (:acos,:acos,:Base),
+                      (:asec,:asec,:Base),
+                      (:acsc,:acsc,:Base),
+                      (:atan,:atan,:Base),
+                      (:acot,:acot,:Base),
+                      (:sinh,:sinh,:Base),
+                      (:cosh,:cosh,:Base),
+                      (:tanh,:tanh,:Base),
+                      (:csch,:csch,:Base),
+                      (:sech,:sech,:Base),
+                      (:coth,:coth,:Base),
+                      (:asinh,:asinh,:Base),
+                      (:acosh,:acosh,:Base),
+                      (:asech,:asech,:Base),
+                      (:acsch,:acsch,:Base),
+                      (:atanh,:atanh,:Base),
+                      (:acoth,:acoth,:Base),
+                      (:gamma,:gamma,:SpecialFunctions),
+                      (:log,:log,:Base),
+                      (:sqrt,:sqrt,:Base),
+                      (:exp,:exp,:Base),
+                      (:eta,:dirichlet_eta,:SpecialFunctions),
+                      (:zeta,:zeta,:SpecialFunctions),
                       ]
-    eval(Expr(:import, :Base, meth))
-    IMPLEMENT_ONE_ARG_FUNC(:(Base.$meth), libnm)
+    eval(Expr(:import, modu, meth))
+    IMPLEMENT_ONE_ARG_FUNC(:($modu.$meth), libnm)
 end
 Base.abs2(x::SymEngine.Basic) = abs(x)^2
 
@@ -65,8 +69,6 @@ end
 # export not import
 for  (meth, libnm) in [
                        (:lambertw,:lambertw),   # in add-on packages, not base
-                       (:eta,:dirichlet_eta),
-                       (:zeta,:zeta),
                        ]
     IMPLEMENT_ONE_ARG_FUNC(meth, libnm)
     eval(Expr(:export, meth))
