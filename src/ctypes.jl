@@ -67,9 +67,19 @@ function Base.convert(::Type{Vector}, x::CVecBasic)
     [x[i-1] for i in 1:n]
 end
 
-Base.start(s::CVecBasic) = 0
-Base.done(s::CVecBasic, i) = (i == Base.length(s))
-Base.next(s::CVecBasic, i) = s[i], i+1
+start(s::CVecBasic) = 0
+done(s::CVecBasic, i) = (i == Base.length(s))
+next(s::CVecBasic, i) = s[i], i+1
+if VERSION < v"0.7.0-rc1"
+    Base.start(s::CVecBasic) = start(s)
+    Base.done(s::CVecBasic, i) = done(s, i)
+    Base.next(s::CVecBasic, i) = next(s, i)
+else
+    function Base.iterate(s::CVecBasic, i=start(s))
+        done(s, i) && return nothing
+        next(s, i)
+    end
+end
 
 ## CMapBasicBasic
 mutable struct CMapBasicBasic
