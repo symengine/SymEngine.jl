@@ -178,7 +178,6 @@ float(x::Basic) = float(N(x))
 
 # trunc, flooor, ceil, round, rem, mod, cld, fld,
 isfinite(x::Basic) = x-x == 0
-isnan(x::Basic) = isnan(N(x))
 const nan = Basic(0) / 0
 isnan(x::Basic) = ( x == nan )
 isinf(x::Basic) = !isnan(x) & !isfinite(x)
