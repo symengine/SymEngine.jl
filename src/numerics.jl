@@ -178,8 +178,7 @@ float(x::Basic) = float(N(x))
 
 # trunc, flooor, ceil, round, rem, mod, cld, fld,
 isfinite(x::Basic) = x-x == 0
-const nan = Basic(0) / 0
-isnan(x::Basic) = ( x == nan )
+isnan(x::Basic) = ( x == NAN )
 isinf(x::Basic) = !isnan(x) & !isfinite(x)
 isless(x::Basic, y::Basic) = isless(N(x), N(y))
 
