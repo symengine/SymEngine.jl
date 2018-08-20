@@ -138,6 +138,9 @@ for val in [π, γ, e, φ, catalan]
     @test N(Basic(val)) == val
 end
 
+@test !isnan(x)
+@test isnan(Basic(0)/0)
+
 ## generic linear algebra
 x = symbols("x")
 A = [x 2; x 1]
