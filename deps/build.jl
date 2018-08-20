@@ -1,17 +1,17 @@
 using BinaryProvider
 
 dependencies = Dict(
-    "https://github.com/isuruf/GMPBuilder/releases/download/v6.1.2-1/build_GMP.v6.1.2.jl" =>
-        "9bd8d9078c2a9c9a6451f6850ec45c925727afc395b5e4740153707826cd7439",
+    "https://github.com/JuliaMath/GMPBuilder/releases/download/v6.1.2-2/build_GMP.v6.1.2.jl" =>
+        "91b2197c4d2209985b2c156e04f3fc11e4beff633cd86bb0053bfefe71cdfba6",
 
-    "https://github.com/JuliaMath/MPFRBuilder/releases/download/v4.0.1/build.jl" =>
-        "36ed4f47426eea41a2576f1c57b4dbbef552c42eea819f8e6c590d394fef049b",
+    "https://github.com/JuliaMath/MPFRBuilder/releases/download/v4.0.1-3/build_MPFR.v4.0.1.jl" =>
+        "40f3d06abf45b571b23135a079d66827282e587be15d540874bb45dac163e2c7",
 
-    "https://github.com/isuruf/MPCBuilder/releases/download/v1.1.0/build_mpc.v1.1.0.jl" =>
-        "d800a46181c40fe046dfd51bf0357393bb58e2475b6082065ad0756971ad82eb",
+    "https://github.com/isuruf/MPCBuilder/releases/download/v1.1.0-2/build_MPC.v1.1.0.jl" =>
+        "85cac0057832da9c9d965531e9a1bada7150032aea4dbead59ff76e95bbdc47f",
 
-    "https://github.com/symengine/SymEngineBuilder/releases/download/v0.3.0/build_SymEngine.v0.3.0.jl" =>
-        "cd98583c98c386bc8273ae24efb0ab537f365a115d03342b17623d1ebfde5e6a",
+    "https://github.com/symengine/SymEngineBuilder/releases/download/v0.3.0-2/build_SymEngine.v0.3.0.jl" =>
+        "664b7df2b2e173625fa5742aa194e63392692489b73e6ba4005dcbf661093c9d",
 )
 
 prefix = joinpath(@__DIR__, "symengine-0.3")
