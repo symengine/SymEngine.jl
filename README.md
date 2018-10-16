@@ -110,7 +110,7 @@ julia> subs(a^2+(b-2)^2, a=>2, b=>3)
 Peforms differentiation
 
 ```julia
-julia> diff(a + 2(b+2)^2 + 2a + 3(a+1), b)`
+julia> diff(a + 2(b+2)^2 + 2a + 3(a+1), b)
 4*(2 + b)
 ```
 
