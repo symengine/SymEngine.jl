@@ -25,7 +25,7 @@ for (url, hash) in dependencies
     m = Module(:__anon__)
     Core.eval(m, quote
         using BinaryProvider
-        function write_deps_file(path, products) end
+        function write_deps_file(path, products; verbose=true) end
         ARGS = [$prefix]
     end)
     Base.include_string(m, contents)
