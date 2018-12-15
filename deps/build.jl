@@ -15,11 +15,11 @@ dependencies = Dict(
 )
 
 if Sys.iswindows()
-    dependencies["https://github.com/symengine/SymEngineBuilder/releases/download/v0.3.0-2/build_SymEngine.v0.3.0.jl"]
-        = "664b7df2b2e173625fa5742aa194e63392692489b73e6ba4005dcbf661093c9d"
+    dependencies["https://github.com/symengine/SymEngineBuilder/releases/download/v0.3.0-2/build_SymEngine.v0.3.0.jl"] =
+        "664b7df2b2e173625fa5742aa194e63392692489b73e6ba4005dcbf661093c9d"
 else
-    dependencies["https://github.com/symengine/SymEngineBuilder/releases/download/v0.3.0-3/build_SymEngine.v0.3.0.jl"]
-        = "c6122fbb9ef8198f413c645e66a251593d50a19414528d21f14d4a53ca5e299d"
+    dependencies["https://github.com/symengine/SymEngineBuilder/releases/download/v0.3.0-3/build_SymEngine.v0.3.0.jl"] =
+        "c6122fbb9ef8198f413c645e66a251593d50a19414528d21f14d4a53ca5e299d"
 end
 
 prefix = joinpath(@__DIR__, "symengine-0.3")
