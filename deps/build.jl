@@ -42,6 +42,7 @@ for (name, url, hash) in dependencies
     Base.include_string(m, contents)
     products = Core.eval(m, :(products))
     Core.eval(m, quote
+        Compat.Libdl.dlopen(joinpath($new_prefix, "lib", string("lib", $name)))
         for p in products
             path = locate(p)
             Compat.Libdl.dlopen_e(path)
