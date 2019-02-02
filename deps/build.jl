@@ -26,6 +26,7 @@ all_products = LibraryProduct[]
 m = Module(:__anon__)
 Core.eval(m, quote
     using BinaryProvider
+    using Compat
     function write_deps_file(path, products; verbose=true) end
 end
 )
@@ -40,6 +41,12 @@ for (name, url, hash) in dependencies
     end)
     Base.include_string(m, contents)
     products = Core.eval(m, :(products))
+    Core.eval(m, quote
+        for p in products
+            path = locate(p)
+            Compat.Libdl.dlopen_e(path)
+        end
+    end)
     append!(all_products, products)
 end
 
