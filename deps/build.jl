@@ -23,15 +23,19 @@ prefix = joinpath(@__DIR__, "symengine-0.3")
 downloads_dir = joinpath(prefix, "downloads")
 all_products = LibraryProduct[]
 
+m = Module(:__anon__)
+Core.eval(m, quote
+    using BinaryProvider
+    function write_deps_file(path, products; verbose=true) end
+end
+)
+
 for (name, url, hash) in dependencies
     tmp_file = joinpath(downloads_dir, "build_$hash.jl")
     download_verify(url, hash, tmp_file)
     contents = read(tmp_file, String)
     new_prefix = joinpath(prefix, name)
-    m = Module(:__anon__)
     Core.eval(m, quote
-        using BinaryProvider
-        function write_deps_file(path, products; verbose=true) end
         ARGS = [$new_prefix]
     end)
     Base.include_string(m, contents)
