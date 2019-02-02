@@ -14,7 +14,10 @@ dependencies = [
         "c6122fbb9ef8198f413c645e66a251593d50a19414528d21f14d4a53ca5e299d"),
 ]
 
+libdir = "lib"
+
 if Sys.iswindows()
+    libdir = "bin"
     dependencies[4]= ("symengine", "0.3.0", "https://github.com/symengine/SymEngineBuilder/releases/download/v0.3.0-2/build_SymEngine.v0.3.0.jl",
         "664b7df2b2e173625fa5742aa194e63392692489b73e6ba4005dcbf661093c9d")
 end
@@ -24,12 +27,12 @@ downloads_dir = joinpath(@__DIR__, "downloads")
 
 all_products = LibraryProduct[]
 
-if !isdir(joinpath(prefix, "lib"))
-    mkpath(joinpath(prefix, "lib"))
+if !isdir(joinpath(prefix, libdir))
+    mkpath(joinpath(prefix, libdir))
 end
 
 for (name, version, url, hash) in dependencies
-    product = LibraryProduct(joinpath(prefix, "lib"), String[string("lib", name)], Symbol(string("lib", name)))
+    product = LibraryProduct(joinpath(prefix, libdir), String[string("lib", name)], Symbol(string("lib", name)))
     push!(all_products, product)
 
     if !satisfied(product)
@@ -44,8 +47,8 @@ for (name, version, url, hash) in dependencies
             ARGS = [$tmp_prefix]
         end)
         Base.include_string(m, contents)
-        for file in readdir(joinpath(tmp_prefix, "lib"))
-            cp(joinpath(tmp_prefix, "lib", file), joinpath(prefix, "lib", file), force=true)
+        for file in readdir(joinpath(tmp_prefix, libdir))
+            cp(joinpath(tmp_prefix, libdir, file), joinpath(prefix, libdir, file), force=true)
         end
     end
     @info(locate(product))
