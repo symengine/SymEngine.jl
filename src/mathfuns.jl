@@ -56,7 +56,7 @@ for (meth, libnm, modu) in [
                       (:eta,:dirichlet_eta,:SpecialFunctions),
                       (:zeta,:zeta,:SpecialFunctions),
                       ]
-    eval(Expr(:import, modu, meth))
+    eval(:(import $modu.$meth))
     IMPLEMENT_ONE_ARG_FUNC(:($modu.$meth), libnm)
 end
 Base.abs2(x::SymEngine.Basic) = abs(x)^2
@@ -78,7 +78,7 @@ end
 Base.cbrt(a::SymbolicType) = a^(1//3)
 
 for (meth, fn) in [(:sind, :sin), (:cosd, :cos), (:tand, :tan), (:secd, :sec), (:cscd, :csc), (:cotd, :cot)]
-    eval(Expr(:import, :Base, meth))
+    eval(:(import Base.$meth))
     @eval begin
         $(meth)(a::SymbolicType) = $(fn)(a*PI/180)
     end
@@ -91,7 +91,7 @@ for (meth, libnm) in [(:gcd, :gcd),
                       (:div, :quotient),
                       (:mod, :mod_f),
                       ]
-    eval(Expr(:import, :Base, meth))
+    eval(:(import Base.$meth))
     IMPLEMENT_TWO_ARG_FUNC(:(Base.$meth), libnm, lib=:ntheory_)
 end
 
