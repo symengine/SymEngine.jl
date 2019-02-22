@@ -3,9 +3,8 @@
 [![Build Status](https://travis-ci.org/symengine/SymEngine.jl.svg?branch=master)](https://travis-ci.org/symengine/SymEngine.jl)
 [![Build status](https://ci.appveyor.com/api/projects/status/github/symengine/symengine.rb?branch=master&svg=true)](https://ci.appveyor.com/project/isuruf/symengine-jl-pj80f/branch/master)
 
-[![SymEngine](http://pkg.julialang.org/badges/SymEngine_0.4.svg)](http://pkg.julialang.org/?pkg=SymEngine)
-[![SymEngine](http://pkg.julialang.org/badges/SymEngine_0.5.svg)](http://pkg.julialang.org/?pkg=SymEngine)
 [![SymEngine](http://pkg.julialang.org/badges/SymEngine_0.6.svg)](http://pkg.julialang.org/?pkg=SymEngine)
+[![SymEngine](http://pkg.julialang.org/badges/SymEngine_0.7.svg)](http://pkg.julialang.org/?pkg=SymEngine)
 
 Julia Wrappers for SymEngine, a fast symbolic manipulation library, written in C++.
 
@@ -111,7 +110,7 @@ julia> subs(a^2+(b-2)^2, a=>2, b=>3)
 Peforms differentiation
 
 ```julia
-julia> diff(a + 2(b+2)^2 + 2a + 3(a+1), b)`
+julia> diff(a + 2(b+2)^2 + 2a + 3(a+1), b)
 4*(2 + b)
 ```
 

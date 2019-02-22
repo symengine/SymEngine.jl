@@ -1,8 +1,10 @@
+using SpecialFunctions
+
 function IMPLEMENT_ONE_ARG_FUNC(meth, symnm; lib=:basic_)
      @eval begin
         function ($meth)(b::SymbolicType)
             a = Basic()
-            ccall(($(string(lib,symnm)), libsymengine), Void, (Ptr{Basic}, Ptr{Basic}), &a, &b)
+            ccall(($(string(lib,symnm)), libsymengine), Nothing, (Ref{Basic}, Ref{Basic}), a, b)
             return a
         end
     end
@@ -13,7 +15,7 @@ function IMPLEMENT_TWO_ARG_FUNC(meth, symnm; lib=:basic_)
         function ($meth)(b1::SymbolicType, b2::Number)
             a = Basic()
             b1, b2 = promote(b1, b2)
-            ccall(($(string(lib,symnm)), libsymengine), Void, (Ptr{Basic}, Ptr{Basic}, Ptr{Basic}), &a, &b1, &b2)
+            ccall(($(string(lib,symnm)), libsymengine), Nothing, (Ref{Basic}, Ref{Basic}, Ref{Basic}), a, b1, b2)
             return a
         end
     end
@@ -21,57 +23,62 @@ end
 
 ## import from base one argument functions
 ## these are from cwrapper.cpp, one arg func
-for (meth, libnm) in [
-                      (:abs,:abs),
-                      (:sin,:sin),
-                      (:cos,:cos),
-                      (:tan,:tan),
-                      (:csc,:csc),
-                      (:sec,:sec),
-                      (:cot,:cot),
-                      (:asin,:asin),
-                      (:acos,:acos),
-                      (:asec,:asec),
-                      (:acsc,:acsc),
-                      (:atan,:atan),
-                      (:acot,:acot),
-                      (:sinh,:sinh),
-                      (:cosh,:cosh),
-                      (:tanh,:tanh),
-                      (:csch,:csch),
-                      (:sech,:sech),
-                      (:coth,:coth),
-                      (:asinh,:asinh),
-                      (:acosh,:acosh),
-                      (:asech,:asech),
-                      (:acsch,:acsch),
-                      (:atanh,:atanh),
-                      (:acoth,:acoth),
-                      (:zeta,:zeta),
-                      (:gamma,:gamma),
-                      (:eta,:dirichlet_eta),
-                      (:log,:log),
-                      (:sqrt,:sqrt),
-                      (:exp,:exp),
+for (meth, libnm, modu) in [
+                      (:abs,:abs,:Base),
+                      (:sin,:sin,:Base),
+                      (:cos,:cos,:Base),
+                      (:tan,:tan,:Base),
+                      (:csc,:csc,:Base),
+                      (:sec,:sec,:Base),
+                      (:cot,:cot,:Base),
+                      (:asin,:asin,:Base),
+                      (:acos,:acos,:Base),
+                      (:asec,:asec,:Base),
+                      (:acsc,:acsc,:Base),
+                      (:atan,:atan,:Base),
+                      (:acot,:acot,:Base),
+                      (:sinh,:sinh,:Base),
+                      (:cosh,:cosh,:Base),
+                      (:tanh,:tanh,:Base),
+                      (:csch,:csch,:Base),
+                      (:sech,:sech,:Base),
+                      (:coth,:coth,:Base),
+                      (:asinh,:asinh,:Base),
+                      (:acosh,:acosh,:Base),
+                      (:asech,:asech,:Base),
+                      (:acsch,:acsch,:Base),
+                      (:atanh,:atanh,:Base),
+                      (:acoth,:acoth,:Base),
+                      (:gamma,:gamma,:SpecialFunctions),
+                      (:log,:log,:Base),
+                      (:sqrt,:sqrt,:Base),
+                      (:exp,:exp,:Base),
+                      (:eta,:dirichlet_eta,:SpecialFunctions),
+                      (:zeta,:zeta,:SpecialFunctions),
                       ]
-    eval(Expr(:import, :Base, meth))
-    IMPLEMENT_ONE_ARG_FUNC(meth, libnm)
+    eval(:(import $modu.$meth))
+    IMPLEMENT_ONE_ARG_FUNC(:($modu.$meth), libnm)
 end
 Base.abs2(x::SymEngine.Basic) = abs(x)^2
 
+if get_symbol(:basic_atan2) != C_NULL
+    import Base.atan2
+    IMPLEMENT_TWO_ARG_FUNC(:(Base.atan2), :atan2)
+end
+
 # export not import
 for  (meth, libnm) in [
-                       (:lambertw,:lambertw)   # in add-on packages, not base
+                       (:lambertw,:lambertw),   # in add-on packages, not base
                        ]
-    IMPLEMENT_ONE_ARG_FUNC(meth, libnm)    
+    IMPLEMENT_ONE_ARG_FUNC(meth, libnm)
     eval(Expr(:export, meth))
 end
 
 ## add these in until they are wrapped
 Base.cbrt(a::SymbolicType) = a^(1//3)
-                  
+
 for (meth, fn) in [(:sind, :sin), (:cosd, :cos), (:tand, :tan), (:secd, :sec), (:cscd, :csc), (:cotd, :cot)]
-    eval(Expr(:import, :Base, meth))
+    eval(:(import Base.$meth))
     @eval begin
         $(meth)(a::SymbolicType) = $(fn)(a*PI/180)
     end
@@ -84,8 +91,8 @@ for (meth, libnm) in [(:gcd, :gcd),
                       (:div, :quotient),
                       (:mod, :mod_f),
                       ]
-    eval(Expr(:import, :Base, meth))
-    IMPLEMENT_TWO_ARG_FUNC(meth, libnm, lib=:ntheory_)    
+    eval(:(import Base.$meth))
+    IMPLEMENT_TWO_ARG_FUNC(:(Base.$meth), libnm, lib=:ntheory_)
 end
 
 Base.binomial(n::Basic, k::Number) = binomial(N(n), N(k))  #ntheory_binomial seems wrong
@@ -95,35 +102,36 @@ Base.factorial(n::SymbolicType, k) = factorial(N(n), N(k))
 ## but not (:fibonacci,:fibonacci), (:lucas, :lucas) (Basic type is not the signature)
 for (meth, libnm) in [(:nextprime,:nextprime)
                       ]
-    IMPLEMENT_ONE_ARG_FUNC(meth, libnm, lib=:ntheory_)    
+    IMPLEMENT_ONE_ARG_FUNC(meth, libnm, lib=:ntheory_)
     eval(Expr(:export, meth))
 end
 
-function Base.convert{T}(::Type{CVecBasic}, x::Vector{T})
+function Base.convert(::Type{CVecBasic}, x::Vector{T}) where T
     vec = CVecBasic()
     for i in x
        b::Basic = Basic(i)
-       ccall((:vecbasic_push_back, libsymengine), Void, (Ptr{Void}, Ptr{Basic}), vec.ptr, &b)
+       ccall((:vecbasic_push_back, libsymengine), Nothing, (Ptr{Cvoid}, Ref{Basic}), vec.ptr, b)
     end
     return vec
 end
 
 Base.convert(::Type{CVecBasic}, x...) = Base.convert(CVecBasic, collect(promote(x...)))
+Base.convert(::Type{CVecBasic}, x::CVecBasic) = x
 
-type SymFunction
+mutable struct SymFunction
     name::String
 end
 
 SymFunction(s::Symbol) = SymFunction(string(s))
 
-@compat function (f::SymFunction)(x::CVecBasic)
+function (f::SymFunction)(x::CVecBasic)
     a = Basic()
-    ccall((:function_symbol_set, libsymengine), Void, (Ptr{Basic}, Ptr{Int8}, Ptr{Void}), &a, f.name, x.ptr)
+    ccall((:function_symbol_set, libsymengine), Nothing, (Ref{Basic}, Ptr{Int8}, Ptr{Cvoid}), a, f.name, x.ptr)
     return a
 end
 
-@compat (f::SymFunction){T}(x::Vector{T}) = (f::SymFunction)(convert(CVecBasic, x))
-@compat (f::SymFunction)(x...) = (f::SymFunction)(convert(CVecBasic, x...))
+(f::SymFunction)(x::Vector{T}) where {T} = (f::SymFunction)(convert(CVecBasic, x))
+(f::SymFunction)(x...) = (f::SymFunction)(convert(CVecBasic, x...))
 
 macro funs(x...)
     q=Expr(:block)
