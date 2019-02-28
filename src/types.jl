@@ -256,19 +256,18 @@ free_symbols(exs::Tuple) =  unique(_flat([free_symbols(ex) for ex in exs]))
 "Return function symbols in an expression as a `Set`"
 function function_symbols(ex::Basic)
     syms = CSetBasic()
-    ccall((:basic_function_symbols, libsymengine), Void, (Ptr{Basic}, Ptr{Void}), &ex, syms.ptr)
+    ccall((:basic_function_symbols, libsymengine), Nothing, (Ptr{Cvoid}, Ref{Basic}), syms.ptr, ex)
     convert(Vector, syms)
 end
 function_symbols(ex::BasicType) = function_symbols(Basic(ex))
-function_symbols{T<:SymbolicType}(exs::Array{T})  = unique(_flat([function_symbols(ex) for ex in exs]))
-function_symbols(exs::Tuple) =  unique(_flat([function_symbols(ex) for ex in exs]))
+function_symbols(exs::Array{T}) where {T<:SymbolicType} = unique(_flat([function_symbols(ex) for ex in exs]))
+function_symbols(exs::Tuple) = unique(_flat([function_symbols(ex) for ex in exs]))
 
 "Return name of function symbol"
 function get_name(ex::Basic)
-    # Only works for function symbols
-    a = ccall((:function_symbol_get_name, libsymengine), Cstring, (Ptr{Basic}, ), &ex)
+    a = ccall((:function_symbol_get_name, libsymengine), Cstring, (Ref{Basic}, ), ex)
     string = unsafe_string(a)
-    ccall((:basic_str_free, libsymengine), Void, (Cstring, ), a)
+    ccall((:basic_str_free, libsymengine), Nothing, (Cstring, ), a)
     return string
 end
 
@@ -281,3 +280,11 @@ end
 
 ## so that Dicts will work
 Base.hash(ex::Basic) = ccall((:basic_hash, libsymengine), UInt, (Ref{Basic}, ), ex)
+
+function coeff(x::Basic, n::Basic, b::Basic)
+    c = Basic()
+    ccall((:basic_coeff, libsymengine), Nothing, (Ref{Basic}, Ref{Basic}, Ref{Basic}, Ref{Basic}), c, b, x, n)
+    return c
+end
+
+coeff(x::Basic, b::Basic) = coeff(x, one(Basic), b)
