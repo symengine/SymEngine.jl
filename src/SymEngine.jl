@@ -7,6 +7,7 @@ import Compat: String, unsafe_string, @compat, denominator, numerator, invokelat
 
 export Basic, symbols, @vars, @funs, SymFunction
 export free_symbols, function_symbols, get_name, get_args
+export coeff
 export ascii_art
 export subs, lambdify, N, cse
 export series
