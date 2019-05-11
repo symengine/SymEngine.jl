@@ -62,8 +62,13 @@ end
 Base.abs2(x::SymEngine.Basic) = abs(x)^2
 
 if get_symbol(:basic_atan2) != C_NULL
-    import Base.atan2
-    IMPLEMENT_TWO_ARG_FUNC(:(Base.atan2), :atan2)
+    if VERSION < VersionNumber(0,7)
+        import Base.atan2
+        IMPLEMENT_TWO_ARG_FUNC(:(Base.atan2), :atan2)
+    else
+        import Base.atan
+        IMPLEMENT_TWO_ARG_FUNC(:(Base.atan), :atan2)
+    end
 end
 
 # export not import
