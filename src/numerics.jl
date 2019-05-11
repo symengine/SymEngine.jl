@@ -36,48 +36,67 @@ function convert(::Type{Cdouble}, b::BasicType{Val{:RealDouble}})
     return ccall((:real_double_get_d, libsymengine), Cdouble, (Ref{Basic},), c)
 end
 
-function real(b::BasicType{Val{:ComplexDouble}})
-    c = Basic(b)
-    a = Basic()
-    ccall((:complex_double_real_part, libsymengine), Nothing, (Ref{Basic}, Ref{Basic}), a, c)
-    return a
-end
+if SymEngine.libversion >= VersionNumber("0.4.0")
 
-function imag(b::BasicType{Val{:ComplexDouble}})
-    c = Basic(b)
-    a = Basic()
-    ccall((:complex_double_imaginary_part, libsymengine), Nothing, (Ref{Basic}, Ref{Basic}), a, c)
-    return a
-end
+    function real(b::BasicComplexNumber)
+        c = Basic(b)
+        a = Basic()
+        ccall((:complex_base_real_part, libsymengine), Nothing, (Ref{Basic}, Ref{Basic}), a, c)
+        return a
+    end
 
-function real(b::BasicType{Val{:Complex}})
-    c = Basic(b)
-    a = Basic()
-    ccall((:complex_real_part, libsymengine), Nothing, (Ref{Basic}, Ref{Basic}), a, c)
-    return a
-end
+    function imag(b::BasicComplexNumber)
+        c = Basic(b)
+        a = Basic()
+        ccall((:complex_base_imaginary_part, libsymengine), Nothing, (Ref{Basic}, Ref{Basic}), a, c)
+        return a
+    end
 
-function imag(b::BasicType{Val{:Complex}})
-    c = Basic(b)
-    a = Basic()
-    ccall((:complex_imaginary_part, libsymengine), Nothing, (Ref{Basic}, Ref{Basic}), a, c)
-    return a
-end
+else
 
-function real(b::BasicType{Val{:ComplexMPC}})
-    c = Basic(b)
-    a = Basic()
-    ccall((:complex_mpc_real_part, libsymengine), Nothing, (Ref{Basic}, Ref{Basic}), a, c)
-    return a
-end
+    function real(b::BasicType{Val{:ComplexDouble}})
+        c = Basic(b)
+        a = Basic()
+        ccall((:complex_double_real_part, libsymengine), Nothing, (Ref{Basic}, Ref{Basic}), a, c)
+        return a
+    end
 
-function imag(b::BasicType{Val{:ComplexMPC}})
-    c = Basic(b)
-    a = Basic()
-    ccall((:complex_mpc_imaginary_part, libsymengine), Nothing, (Ref{Basic}, Ref{Basic}), a, c)
-    return a
-end
+    function imag(b::BasicType{Val{:ComplexDouble}})
+        c = Basic(b)
+        a = Basic()
+        ccall((:complex_double_imaginary_part, libsymengine), Nothing, (Ref{Basic}, Ref{Basic}), a, c)
+        return a
+    end
 
+    function real(b::BasicType{Val{:Complex}})
+        c = Basic(b)
+        a = Basic()
+        ccall((:complex_real_part, libsymengine), Nothing, (Ref{Basic}, Ref{Basic}), a, c)
+        return a
+    end
+
+    function imag(b::BasicType{Val{:Complex}})
+        c = Basic(b)
+        a = Basic()
+        ccall((:complex_imaginary_part, libsymengine), Nothing, (Ref{Basic}, Ref{Basic}), a, c)
+        return a
+    end
+
+    function real(b::BasicType{Val{:ComplexMPC}})
+        c = Basic(b)
+        a = Basic()
+        ccall((:complex_mpc_real_part, libsymengine), Nothing, (Ref{Basic}, Ref{Basic}), a, c)
+        return a
+    end
+
+    function imag(b::BasicType{Val{:ComplexMPC}})
+        c = Basic(b)
+        a = Basic()
+        ccall((:complex_mpc_imaginary_part, libsymengine), Nothing, (Ref{Basic}, Ref{Basic}), a, c)
+        return a
+    end
+
+end
 
 ##################################################
 # N
