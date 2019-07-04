@@ -6,7 +6,8 @@ import Base: show, convert, real, imag
 import Compat: String, unsafe_string, @compat, denominator, numerator, invokelatest, Cvoid, Nothing, MathConstants.γ, MathConstants.e, MathConstants.φ, MathConstants.catalan, LinearAlgebra, finalizer, Libdl, reduce, mapreduce
 
 export Basic, symbols, @vars, @funs, SymFunction
-export free_symbols, get_args
+export free_symbols, function_symbols, get_name, get_args
+export coeff
 export ascii_art
 export subs, lambdify, N, cse
 export series

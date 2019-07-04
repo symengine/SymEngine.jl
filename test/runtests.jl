@@ -217,3 +217,21 @@ f = SymFunction("f")
 @test string(g(x, y)) == "g(x, y)"
 @test string(h(x, y)) == "h(x, y)"
 
+if SymEngine.libversion >= VersionNumber("0.4.0")
+    # Function symbols
+    @funs f, g, h, s
+    @vars n, m
+    expr = Basic("f(n) + f(n+1) + g(m)^2 - 3*h(n)*s(n)^3")
+    @test function_symbols(expr) == [h(n), f(n), s(n), g(m), f(n+1)]
+    @test get_name(f(n+1)) == "f"
+    @test get_args(f(n+1)) == [n+1]
+    @test get_args(f(n, m^2)) == [n, m^2]
+
+    # Coefficients
+    @vars x y
+    expr = x^3 + 3*x^2*y + 3*x*y^2 + y^3 + 1
+    @test coeff(expr, x, Basic(3)) == 1
+    @test coeff(expr, x, Basic(2)) == 3*y
+    @test coeff(expr, x, Basic(1)) == 3*y^2
+    @test coeff(expr, x, Basic(0)) == y^3 + 1
+end
