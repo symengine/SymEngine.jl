@@ -10,16 +10,14 @@ dependencies = [
     ("mpc", "1.1.0", "https://github.com/isuruf/MPCBuilder/releases/download/v1.1.0-3/build_MPC.v1.1.0.jl",
         "c4ab6da81bf9a54e44aa5b8d372979a14af81bde06589c1fcb90521af3a29d2f"),
 
-    ("symengine", "0.4.0", "https://github.com/symengine/SymEngineBuilder/releases/download/v0.4.0-1/build_SymEngine.v0.4.0.jl",
-        "c95fd51e7df9888c252b6866b6dc1751e4d386bd49659f38fbac402a17253eac"),
+    ("symengine", "0.4.0", "https://github.com/symengine/SymEngineBuilder/releases/download/v0.4.0-3/build_SymEngine.v0.4.0.jl",
+        "97348aaf042e3c81b938ac665a0c81e02b5f4e5125d76cedcd2fc3c9dcb182df"),
 ]
 
 libdir = "lib"
 
 if Sys.iswindows()
     libdir = "bin"
-    dependencies[4]= ("symengine", "0.4.0", "https://github.com/symengine/SymEngineBuilder/releases/download/v0.4.0-2/build_SymEngine.v0.4.0.jl",
-        "c2fd66e47b3104aa2d57121e8252dc516a05eba8f3314b9d77ae768ca2f0d53b")
 end
 
 prefix = joinpath(@__DIR__, "libsymengine-0.4")
