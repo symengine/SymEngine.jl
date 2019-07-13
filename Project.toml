@@ -1,6 +1,6 @@
 name = "SymEngine"
 uuid = "123dc426-2d89-5057-bbad-38513e3affd8"
-version = "0.6.1"
+version = "0.7.0"
 
 [deps]
 BinaryProvider = "b99e7846-7c00-51b0-8f62-c81ae34c0232"
