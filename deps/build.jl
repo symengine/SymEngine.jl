@@ -18,11 +18,11 @@ libdir = "lib"
 
 if Sys.iswindows()
     libdir = "bin"
-#    dependencies[4]= ("symengine", "0.3.0", "https://github.com/symengine/SymEngineBuilder/releases/download/v0.3.0-2/build_SymEngine.v0.3.0.jl",
-#        "664b7df2b2e173625fa5742aa194e63392692489b73e6ba4005dcbf661093c9d")
+    dependencies[4]= ("symengine", "0.4.0", "https://github.com/symengine/SymEngineBuilder/releases/download/v0.4.0-2/build_SymEngine.v0.4.0.jl",
+        "c2fd66e47b3104aa2d57121e8252dc516a05eba8f3314b9d77ae768ca2f0d53b")
 end
 
-prefix = joinpath(@__DIR__, "libsymengine-0.3")
+prefix = joinpath(@__DIR__, "libsymengine-0.4")
 downloads_dir = joinpath(@__DIR__, "downloads")
 
 all_products = LibraryProduct[]
