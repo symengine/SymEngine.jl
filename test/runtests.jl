@@ -233,5 +233,7 @@ if SymEngine.libversion >= VersionNumber("0.4.0")
     @test coeff(expr, x, Basic(3)) == 1
     @test coeff(expr, x, Basic(2)) == 3*y
     @test coeff(expr, x, Basic(1)) == 3*y^2
-    @test coeff(expr, x, Basic(0)) == y^3 + 1
+    if SymEngine.libversion >= VersionNumber("0.5.0")
+        @test coeff(expr, x, Basic(0)) == y^3 + 1
+    end
 end
