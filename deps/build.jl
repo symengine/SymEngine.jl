@@ -10,8 +10,8 @@ dependencies = [
     ("mpc", "1.1.0", "https://github.com/isuruf/MPCBuilder/releases/download/v1.1.0-2/build_MPC.v1.1.0.jl",
         "85cac0057832da9c9d965531e9a1bada7150032aea4dbead59ff76e95bbdc47f"),
 
-    ("symengine", "0.4.0", "https://github.com/symengine/SymEngineBuilder/releases/download/v0.4.0/build_SymEngine.v0.4.0.jl",
-        "0c7609b8bf83408488feca71d6a368ccec5ed0c028cc49d847bff06f309217a0"),
+    ("symengine", "0.4.0", "https://github.com/symengine/SymEngineBuilder/releases/download/v0.4.0-1/build_SymEngine.v0.4.0.jl",
+        "c95fd51e7df9888c252b6866b6dc1751e4d386bd49659f38fbac402a17253eac"),
 ]
 
 libdir = "lib"
