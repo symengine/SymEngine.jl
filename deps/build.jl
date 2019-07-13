@@ -1,14 +1,14 @@
 using BinaryProvider
 
 dependencies = [
-    ("gmp", "6.1.2", "https://github.com/JuliaMath/GMPBuilder/releases/download/v6.1.2-2/build_GMP.v6.1.2.jl",
-        "91b2197c4d2209985b2c156e04f3fc11e4beff633cd86bb0053bfefe71cdfba6"),
+    ("gmp", "6.1.2", "https://github.com/JuliaPackaging/Yggdrasil/releases/download/GMP-v6.1.2-1/build_GMP.v6.1.2.jl",
+        "49205602a6121affc12e2c8039f21fd7fe079f328abaa9294d7cd804ac1769cb"),
 
-    ("mpfr", "4.0.1", "https://github.com/JuliaMath/MPFRBuilder/releases/download/v4.0.1-3/build_MPFR.v4.0.1.jl",
-        "40f3d06abf45b571b23135a079d66827282e587be15d540874bb45dac163e2c7"),
+    ("mpfr", "4.0.1", "https://github.com/JuliaPackaging/Yggdrasil/releases/download/MPFR-v4.0.2-0/build_MPFR.v4.0.2.jl",
+        "385b33639b808395e776832ab37708046f9fed2748ab283880371047768cb1d3"),
 
-    ("mpc", "1.1.0", "https://github.com/isuruf/MPCBuilder/releases/download/v1.1.0-2/build_MPC.v1.1.0.jl",
-        "85cac0057832da9c9d965531e9a1bada7150032aea4dbead59ff76e95bbdc47f"),
+    ("mpc", "1.1.0", "https://github.com/isuruf/MPCBuilder/releases/download/v1.1.0-3/build_MPC.v1.1.0.jl",
+        "c4ab6da81bf9a54e44aa5b8d372979a14af81bde06589c1fcb90521af3a29d2f"),
 
     ("symengine", "0.4.0", "https://github.com/symengine/SymEngineBuilder/releases/download/v0.4.0-1/build_SymEngine.v0.4.0.jl",
         "c95fd51e7df9888c252b6866b6dc1751e4d386bd49659f38fbac402a17253eac"),
