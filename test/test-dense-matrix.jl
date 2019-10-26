@@ -42,3 +42,7 @@ M = convert(CDenseMatrix, A)
 out = M \ b
 @test M * out - b == zeros(Basic, 3, 1)
 
+@testset "fallback test" begin
+    @test dense_matrix_eye(2,2,0) == Basic[1 0; 0 1]
+end
+
