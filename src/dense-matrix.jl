@@ -137,7 +137,7 @@ end
 
 function dense_matrix_eye(N::Int, M::Int, k::Int=0)
     s = CDenseMatrix()
-    ccall((:dense_matrix_eye, libsymengine), Nothing, (Ptr{Cvoid}, UInt, UInt, Int), result.ptr, UInt(N), UInt(M), k)
+    ccall((:dense_matrix_eye, libsymengine), Nothing, (Ptr{Cvoid}, UInt, UInt, Int), s.ptr, UInt(N), UInt(M), k)
     s
 end
 

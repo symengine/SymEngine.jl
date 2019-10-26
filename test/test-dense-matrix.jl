@@ -42,3 +42,5 @@ M = convert(CDenseMatrix, A)
 out = M \ b
 @test M * out - b == zeros(Basic, 3, 1)
 
+@test SymEngine.dense_matrix_eye(2,2,0) == Basic[1 0; 0 1]
+
