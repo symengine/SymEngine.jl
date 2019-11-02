@@ -17,6 +17,7 @@ let
     @vars w
 end
 @test_throws UndefVarError isdefined(w)
+@test_throws Exception show(Basic())
 
 a = x^2 + x/2 - x*y*5
 b = diff(a, x)
