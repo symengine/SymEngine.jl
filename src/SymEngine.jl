@@ -1,6 +1,6 @@
-using SymEngine_jll
-
 module SymEngine
+
+using SymEngine_jll
 
 import Base: show, convert, real, imag
 import Compat: String, unsafe_string, @compat, denominator, numerator, invokelatest, Cvoid, Nothing, MathConstants.γ, MathConstants.e, MathConstants.φ, MathConstants.catalan, LinearAlgebra, finalizer, Libdl, reduce, mapreduce
@@ -17,8 +17,6 @@ include("utils.jl")
 const have_mpfr = have_component("mpfr")
 const have_mpc = have_component("mpc")
 const libversion = get_libversion()
-
-finalizer(f, o) = finalizer(f, o)
 
 include("exceptions.jl")
 include("types.jl")
