@@ -6,7 +6,7 @@ end
 
 function CSetBasic()
     z = CSetBasic(ccall((:setbasic_new, libsymengine), Ptr{Cvoid}, ()))
-    _finalizer(CSetBasic_free, z)
+    finalizer(CSetBasic_free, z)
     z
 end
 
@@ -41,7 +41,7 @@ end
 
 function CVecBasic()
     z = CVecBasic(ccall((:vecbasic_new, libsymengine), Ptr{Cvoid}, ()))
-    _finalizer(CVecBasic_free, z)
+    finalizer(CVecBasic_free, z)
     z
 end
 
@@ -70,15 +70,9 @@ end
 start(s::CVecBasic) = 0
 done(s::CVecBasic, i) = (i == Base.length(s))
 next(s::CVecBasic, i) = s[i], i+1
-if VERSION < v"0.7.0-rc1"
-    Base.start(s::CVecBasic) = start(s)
-    Base.done(s::CVecBasic, i) = done(s, i)
-    Base.next(s::CVecBasic, i) = next(s, i)
-else
-    function Base.iterate(s::CVecBasic, i=start(s))
-        done(s, i) && return nothing
-        next(s, i)
-    end
+function Base.iterate(s::CVecBasic, i=start(s))
+    done(s, i) && return nothing
+    next(s, i)
 end
 
 ## CMapBasicBasic
@@ -88,7 +82,7 @@ end
 
 function CMapBasicBasic()
     z = CMapBasicBasic(ccall((:mapbasicbasic_new, libsymengine), Ptr{Cvoid}, ()))
-    _finalizer(CMapBasicBasic_free, z)
+    finalizer(CMapBasicBasic_free, z)
     z
 end
 
@@ -143,13 +137,13 @@ end
 
 function CDenseMatrix()
     z = CDenseMatrix(ccall((:dense_matrix_new, libsymengine), Ptr{Cvoid}, ()))
-    _finalizer(CDenseMatrix_free, z)
+    finalizer(CDenseMatrix_free, z)
     z
 end
 
 function CDenseMatrix(m::Int, n::Int)
     z = CDenseMatrix(ccall((:dense_matrix_new_rows_cols, libsymengine), Ptr{Cvoid}, (Int, Int), m, n))
-    _finalizer(CDenseMatrix_free, z)
+    finalizer(CDenseMatrix_free, z)
     z
 end
 

@@ -1,6 +1,3 @@
-if VERSION < v"1.0.0-rc1"
-    import Base.expand
-end
 IMPLEMENT_ONE_ARG_FUNC(:expand, :expand)
 
 if get_symbol(:basic_cse) != C_NULL
