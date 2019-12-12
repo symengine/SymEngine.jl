@@ -13,8 +13,6 @@ export subs, lambdify, N, cse
 export series
 export expand
 
-check_deps()
-
 include("utils.jl")
 const have_mpfr = have_component("mpfr")
 const have_mpc = have_component("mpc")
@@ -36,7 +34,6 @@ include("recipes.jl")
 include("dense-matrix.jl")
 
 function __init__()
-    check_deps()
     init_constants()
 end
 
