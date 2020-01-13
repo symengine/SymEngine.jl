@@ -279,7 +279,10 @@ function get_args(ex::Basic)
 end
 
 ## so that Dicts will work
-Base.hash(ex::Basic) = ccall((:basic_hash, libsymengine), UInt, (Ref{Basic}, ), ex)
+basic_hash(ex::Basic) = ccall((:basic_hash, libsymengine), UInt, (Ref{Basic}, ), ex)
+# similar definition as in Base for general objects
+Base.hash(ex::Basic, h::UInt) = Base.hash_uint(3h - basic_hash(ex))
+Base.hash(ex::BasicType, h::UInt) = hash(Basic(ex), h)
 
 function coeff(b::Basic, x::Basic, n::Basic)
     c = Basic()
