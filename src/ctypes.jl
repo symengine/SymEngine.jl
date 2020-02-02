@@ -120,7 +120,7 @@ function Base.getindex(s::CMapBasicBasic, k::Basic)
     result
 end
 
-function Base.setindex!(s::CMapBasicBasic, k::Basic, v::Basic)
+function Base.setindex!(s::CMapBasicBasic, v::Basic, k::Basic)
     ccall((:mapbasicbasic_insert, libsymengine), Nothing, (Ptr{Cvoid}, Ref{Basic}, Ref{Basic}), s.ptr, k, v)
 end
 
