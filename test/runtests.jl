@@ -104,7 +104,7 @@ for val in samples
     @test subs(ex, x, val) == val^2 + y^2
     @test subs(ex, (x, val)) == val^2 + y^2
     @test subs(ex, x => val) == val^2 + y^2
-    @test subs(ex, CMapMapBasic(Dict(x=>val))) == val^2 + y^2
+    @test subs(ex, SymEngine.CMapMapBasic(Dict(x=>val))) == val^2 + y^2
     @test subs(ex, Dict(x=>val)) == val^2 + y^2
 end
 # This probably results in a number of redundant tests (operator order).
