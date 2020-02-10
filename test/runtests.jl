@@ -1,7 +1,7 @@
 using SymEngine
 using Compat
 using Compat.Test
-import Compat: MathConstants.γ, MathConstants.e, MathConstants.φ, MathConstants.catalan
+import Compat: MathConstants.γ, MathConstants.e, MathConstants.φ, MathConstants.catalan, LinearAlgebra
 
 include("test-dense-matrix.jl")
 
@@ -62,6 +62,11 @@ ex = sin(x*y)
 @test diff(ex, x, y,x) == diff(diff(diff(ex,x), y), x)
 @test series(sin(x), x, 0, 2) == x
 @test series(sin(x), x, 0, 3) == x - x^3/6
+
+## linalgebra
+v = [ symbols("v_$i") for i=1:4 ]
+ex = Basic("v_1^2 + v_2^2 + v_3^2 + v_4^2")
+@test LinearAlgebra.dot(v,v) == ex
 
 ## ntheory
 @test mod(Basic(10), Basic(4)) == 2

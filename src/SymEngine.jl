@@ -51,6 +51,7 @@ include("simplify.jl")
 include("subs.jl")
 include("numerics.jl")
 include("calculus.jl")
+include("linalgebra.jl")
 include("recipes.jl")
 include("dense-matrix.jl")
 
