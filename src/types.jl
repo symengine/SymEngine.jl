@@ -16,7 +16,7 @@ mutable struct Basic  <: Number
     function Basic()
         z = new(C_NULL)
         ccall((:basic_new_stack, libsymengine), Nothing, (Ref{Basic}, ), z)
-        _finalizer(basic_free, z)
+        finalizer(basic_free, z)
         return z
     end
     function Basic(v::Ptr{Cvoid})
@@ -95,11 +95,7 @@ Basic(x::Basic) = x
 
 Base.promote_rule(::Type{Basic}, ::Type{S}) where {S<:Number} = Basic
 Base.promote_rule(::Type{S}, ::Type{Basic}) where {S<:Number} = Basic
-if VERSION > VersionNumber("0.7.0-DEV")
-    Base.promote_rule(::Type{S}, ::Type{Basic}) where {S<:AbstractIrrational} = Basic
-else
-    Base.promote_rule(::Type{S}, ::Type{Basic}) where {S<:Irrational} = Basic
-end
+Base.promote_rule(::Type{S}, ::Type{Basic}) where {S<:AbstractIrrational} = Basic
 
 ## Class ID
 get_type(s::Basic) = ccall((:basic_get_type, libsymengine), UInt, (Ref{Basic},), s)
@@ -210,11 +206,7 @@ Base.promote_rule(::Type{S}, ::Type{T} ) where {T<:BasicType, S<:Number} = T
 # to intersperse BasicType and Basic in math ops
 Base.promote_rule(::Type{T}, ::Type{Basic} ) where {T<:BasicType} = T
 Base.promote_rule( ::Type{Basic}, ::Type{T} ) where {T<:BasicType} = T
-if VERSION > VersionNumber("0.7.0-DEV")
-    Base.promote_rule(::Type{S}, ::Type{T}) where {S<:AbstractIrrational, T<:BasicType} = T
-else
-    Base.promote_rule(::Type{S}, ::Type{T}) where {S<:Irrational, T<:BasicType} = T
-end
+Base.promote_rule(::Type{S}, ::Type{T}) where {S<:AbstractIrrational, T<:BasicType} = T
 
 ## needed for mathops
 convert(::Type{T}, val::Number) where {T<:BasicType} = T(Basic(val))
