@@ -50,14 +50,26 @@ One can see that values are grouped, but no expansion is done.
 
 ### Working with vector and matrix variables
 
-#### Defining matricies of variables
+### Defining vectors of variables
+
+A vector of variables can be defined using list comprehension and string interpolation.
+
+```julia
+julia> [symbols("α_$i") for i in 1:3]
+3-element Array{SymEngine.Basic,1}:
+ α_1
+ α_2
+ α_3
+```
+
+#### Defining matrices of variables
 
 Some times one might want to define a matrix of variables.
 One can use a matrix comprehension, and string interpolation to create a matrix of variables.
 
 ```julia
 julia> W = [symbols("W_$i$j") for i in 1:3, j in 1:4]
-3×4 Array{SymEngine.Basic,2}:
+3×4 Array{Basic,2}:
  W_11  W_12  W_13  W_14
  W_21  W_22  W_23  W_24
  W_31  W_32  W_33  W_34
@@ -69,7 +81,7 @@ Now using the matrix we can perform matrix operations:
 
 ```julia
 julia> W*[1.0, 2.0, 3.0, 4.0]
-3-element Array{SymEngine.Basic,1}:
+3-element Array{Basic,1}:
  1.0*W_11 + 2.0*W_12 + 3.0*W_13 + 4.0*W_14
  1.0*W_21 + 2.0*W_22 + 3.0*W_23 + 4.0*W_24
  1.0*W_31 + 2.0*W_32 + 3.0*W_33 + 4.0*W_34
