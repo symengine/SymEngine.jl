@@ -50,7 +50,7 @@ One can see that values are grouped, but no expansion is done.
 
 ### Working with vector and matrix variables
 
-### Defining vectors of vaiables
+### Defining vectors of variables
 
 A vector of variables can be defined using list comprehension and string interpolation.
 
