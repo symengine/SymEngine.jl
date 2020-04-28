@@ -2,8 +2,9 @@ module SymEngine
 
 using SymEngine_jll
 
-import Base: show, convert, real, imag
-import Compat: String, unsafe_string, @compat, denominator, numerator, invokelatest, Cvoid, Nothing, MathConstants.γ, MathConstants.e, MathConstants.φ, MathConstants.catalan, LinearAlgebra, finalizer, Libdl, reduce, mapreduce
+import Base: show, convert, real, imag, MathConstants.γ, MathConstants.e, MathConstants.φ, MathConstants.catalan, invokelatest
+import Compat: String, unsafe_string, @compat, denominator, numerator, Cvoid, Nothing, finalizer, reduce, mapreduce
+import LinearAlgebra, Libdl
 
 export Basic, symbols, @vars, @funs, SymFunction
 export free_symbols, function_symbols, get_name, get_args

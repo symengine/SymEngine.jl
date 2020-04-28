@@ -160,8 +160,11 @@ Base.ones(::Type{CDenseMatrix}, r::Int, c::Int) = dense_matrix_ones(r-1, c-1)
 
 ## basic functions
 LinearAlgebra.det(s::CDenseMatrix) = dense_matrix_det(s)
+LinearAlgebra.det(s::Array{Basic,2}) = dense_matrix_det(CDenseMatrix(s))
 Base.inv(s::CDenseMatrix) = dense_matrix_inv(s)
+Base.inv(s::Array{Basic,2}) =  Array{Basic,2}(dense_matrix_inv(CDenseMatrix(s)))
 Base.transpose(s::CDenseMatrix) = dense_matrix_transpose(s)
+Base.transpose(s::Array{Basic,2}) = Array{Basic,2}(dense_matrix_transpose(CDenseMatrix(s)))
 
 LinearAlgebra.factorize(M::CDenseMatrix) = factorize(convert(Matrix, M))
 
@@ -174,6 +177,7 @@ function LinearAlgebra.lu(a::CDenseMatrix)
     l, u = dense_matrix_LU(a)
     convert(Matrix, l), convert(Matrix, u), Matrix{Basic}(LinearAlgebra.I, size(l)[1], size(l)[1])
 end
+LinearAlgebra.lu(a::Array{Basic,2}) = LinearAlgebra.lu(CDenseMatrix(a))
 
 
 # solve using LU_solve
