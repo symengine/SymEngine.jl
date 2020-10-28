@@ -6,7 +6,7 @@
 [![SymEngine](http://pkg.julialang.org/badges/SymEngine_0.6.svg)](http://pkg.julialang.org/?pkg=SymEngine)
 [![SymEngine](http://pkg.julialang.org/badges/SymEngine_0.7.svg)](http://pkg.julialang.org/?pkg=SymEngine)
 
-Julia Wrappers for SymEngine, a fast symbolic manipulation library, written in C++.
+Julia Wrappers for [SymEngine](https://github.com/symengine/symengine), a fast symbolic manipulation library, written in C++.
 
 ## Installation
 
