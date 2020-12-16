@@ -1,7 +1,9 @@
 # SymEngine.jl
 
-[![Build Status](https://travis-ci.org/symengine/SymEngine.jl.svg?branch=master)](https://travis-ci.org/symengine/SymEngine.jl)
+[![Build Status](https://github.com/symengine/SymEngine.jl/workflows/CI/badge.svg)](https://github.com/symengine/SymEngine.jl/actions)
 [![Build status](https://ci.appveyor.com/api/projects/status/github/symengine/symengine.rb?branch=master&svg=true)](https://ci.appveyor.com/project/isuruf/symengine-jl-pj80f/branch/master)
+[![Codecov](http://codecov.io/github/symengine/SymEngine.jl/coverage.svg?branch=master)](http://codecov.io/github/symengine/SymEngine.jl?branch=master)
+[![Coveralls](https://coveralls.io/repos/symengine/SymEngine.jl/badge.svg?branch=master&service=github)](https://coveralls.io/github/symengine/SymEngine.jl?branch=master)
 
 [![SymEngine](http://pkg.julialang.org/badges/SymEngine_0.6.svg)](http://pkg.julialang.org/?pkg=SymEngine)
 [![SymEngine](http://pkg.julialang.org/badges/SymEngine_0.7.svg)](http://pkg.julialang.org/?pkg=SymEngine)
@@ -20,7 +22,7 @@ julia> Pkg.add("SymEngine")
 
 ### Working with scalar variables
 
-#### Defining variables 
+#### Defining variables
 
 One can define variables in a few ways. The following three examples are equivalent.
 
@@ -128,4 +130,4 @@ julia> diff(a + 2(b+2)^2 + 2a + 3(a+1), b)
 
 ## License
 
-`SymEngine.jl` is licensed under MIT open source license. 
+`SymEngine.jl` is licensed under MIT open source license.
