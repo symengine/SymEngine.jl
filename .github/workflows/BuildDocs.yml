@@ -1,8 +1,4 @@
-on:
-  push:
-    branches:
-      - main
-      - master
+on: [push, pull_request]
 
 name: Make Julia API Docs with Documenter
 
@@ -19,6 +15,7 @@ jobs:
       - name: Build Docs
         run: julia --project=docs/ docs/make.jl
       - name: Deploy Documentation
+        if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' }}
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
