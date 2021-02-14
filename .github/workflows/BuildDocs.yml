@@ -15,7 +15,7 @@ jobs:
       - name: Build Docs
         run: julia --project=docs/ docs/make.jl
       - name: Deploy Documentation
-        if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' }}
+        if: ${{ (github.ref == 'refs/heads/main' && github.repository == 'Symengine/symengine.jl') || (github.ref == 'refs/heads/master' && github.repository == 'Symengine/symengine.jl')}}
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
