@@ -1,0 +1,22 @@
+on: [push, pull_request]
+
+name: Make Julia API Docs with Documenter
+
+jobs:
+  BuildDocs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: julia-actions/setup-julia@latest
+        with:
+          version: '1.3'
+      - name: Install dependencies
+        run: julia --project=docs/ -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd()));                             Pkg.instantiate()'
+      - name: Build Docs
+        run: julia --project=docs/ docs/make.jl
+      - name: Deploy Documentation
+        if: ${{ (github.ref == 'refs/heads/main' && github.repository == 'Symengine/symengine.jl') || (github.ref == 'refs/heads/master' && github.repository == 'Symengine/symengine.jl')}}
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs/build
