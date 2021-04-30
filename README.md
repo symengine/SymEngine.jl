@@ -100,7 +100,7 @@ julia> expand(a + 2(b+2)^2 + 2a + 3(a+1))
 
 #### `subs`
 
-Performs subsitution.
+Performs substitution.
 
 ```julia
 julia> subs(a^2+(b-2)^2, b=>a)
