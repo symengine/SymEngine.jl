@@ -4,7 +4,8 @@ function IMPLEMENT_ONE_ARG_FUNC(meth, symnm; lib=:basic_)
      @eval begin
         function ($meth)(b::SymbolicType)
             a = Basic()
-            ccall(($(string(lib,symnm)), libsymengine), Nothing, (Ref{Basic}, Ref{Basic}), a, b)
+            err_code = ccall(($(string(lib,symnm)), libsymengine), Cuint, (Ref{Basic}, Ref{Basic}), a, b)
+            throw_if_error(err_code, $meth)
             return a
         end
     end
@@ -15,7 +16,8 @@ function IMPLEMENT_TWO_ARG_FUNC(meth, symnm; lib=:basic_)
         function ($meth)(b1::SymbolicType, b2::Number)
             a = Basic()
             b1, b2 = promote(b1, b2)
-            ccall(($(string(lib,symnm)), libsymengine), Nothing, (Ref{Basic}, Ref{Basic}, Ref{Basic}), a, b1, b2)
+            err_code = ccall(($(string(lib,symnm)), libsymengine), Cuint, (Ref{Basic}, Ref{Basic}, Ref{Basic}), a, b1, b2)
+            throw_if_error(err_code, $meth)
             return a
         end
     end

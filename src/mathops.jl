@@ -13,7 +13,8 @@ for (op, libnm) in ((:+, :add), (:-, :sub), (:*, :mul), (:/, :div), (://, :div),
     @eval begin
         function ($op)(b1::Basic, b2::Basic)
             a = Basic()
-            ccall($tup, Nothing, (Ref{Basic}, Ref{Basic}, Ref{Basic}), a, b1, b2)
+            err_code = ccall($tup, Cuint, (Ref{Basic}, Ref{Basic}, Ref{Basic}), a, b1, b2)
+            throw_if_error(err_code, $(string(libnm)))
             return a
         end
         ($op)(b1::BasicType, b2::BasicType) = ($op)(Basic(b1), Basic(b2))
