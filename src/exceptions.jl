@@ -14,7 +14,7 @@ function get_error(error_code::Cuint, str=nothing)
     elseif error_code == 3
         return ErrorException("Not implemented SymEngine feature")
     elseif error_code == 4
-        return DomainError()
+        return DomainError(str)
     elseif error_code == 5
         return Meta.ParseError(str)
     else
