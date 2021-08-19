@@ -240,3 +240,8 @@ if SymEngine.libversion >= VersionNumber("0.4.0")
         @test coeff(expr, x, Basic(0)) == y^3 + 1
     end
 end
+
+# Check that infinities are handled correctly
+@test_throws DomainError exp(zoo)
+@test_throws DomainError sin(zoo)
+@test_throws DomainError sin(oo)
