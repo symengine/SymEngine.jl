@@ -151,9 +151,9 @@ function N(b::BasicType)
     out = evalf(b)
     imag(out) == Basic(0.0) ? real(out) : out
 end
-        
 
-##  Conversions SymEngine -> Julia 
+
+##  Conversions SymEngine -> Julia
 function as_numer_denom(x::Basic)
     a, b = Basic(), Basic()
     ccall((:basic_as_numer_denom, libsymengine), Nothing, (Ref{Basic}, Ref{Basic}, Ref{Basic}), a, b, x)
@@ -174,6 +174,11 @@ imag(x::BasicType{Val{:RealDouble}}) = Basic(0)
 imag(x::BasicType{Val{:RealMPFR}}) = Basic(0)
 imag(x::BasicType{Val{:Rational}}) = Basic(0)
 imag(x::SymEngine.BasicType) = throw(InexactError())
+
+# Because of the definitions above, `real(x) == x` for `x::Basic`
+# such as `x = symbols("x")`. Thus, it is consistent to define the
+# fallback
+Base.conj(x::Basic) = x
 
 ## define convert(T, x) methods leveraging N()
 convert(::Type{Float64}, x::Basic)           = convert(Float64, N(evalf(x, 53, true)))
@@ -203,7 +208,7 @@ isless(x::Basic, y::Basic) = isless(N(x), N(y))
 
 
 ## These should have support in symengine-wrapper, but currently don't
-trunc(x::Basic, args...) = Basic(trunc(N(x), args...))  
+trunc(x::Basic, args...) = Basic(trunc(N(x), args...))
 trunc(::Type{T},x::Basic, args...) where {T <: Integer} = convert(T, trunc(x,args...))
 
 ceil(x::Basic) = Basic(ceil(N(x)))
