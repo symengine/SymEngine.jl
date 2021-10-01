@@ -246,3 +246,12 @@ end
 @test_throws DomainError sin(zoo)
 @test_throws DomainError sin(oo)
 @test_throws DomainError subs(sin(log(y - y/x)), x => 1)
+
+# Some basic checks for complex numbers
+@testset "Complex numbers" begin
+    for T in (Int, Float64, BigFloat)
+        j = one(T) * IM
+        @test j == imag(j) * IM
+        @test conj(j) == -j
+    end
+end
