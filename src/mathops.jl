@@ -27,6 +27,12 @@ end
 -(b::SymbolicType) = 0 - b
 \(b1::SymbolicType, b2::SymbolicType) = b2 / b1
 
+# In contrast to other standard operations such as `+`, `*`, `-`, and `/`,
+# Julia doesn't implement a general fallback of `//` for `Number`s promoting
+# the input arguments. Thus, we implement this here explicitly.
+Base.:(//)(b1::SymbolicType, b2::Number) = //(promote(b1, b2)...)
+Base.:(//)(b1::Number, b2::SymbolicType) = //(promote(b1, b2)...)
+
 
 ## ## constants
 Base.zero(x::Basic) = Basic(0)
