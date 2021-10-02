@@ -248,6 +248,7 @@ expr = x^3 + 3*x^2*y + 3*x*y^2 + y^3 + 1
 @test_throws DomainError sin(zoo)
 @test_throws DomainError sin(oo)
 @test_throws DomainError subs(sin(log(y - y/x)), x => 1)
+@test_throws DomainError exp(zoo+x)/exp(x)
 
 # Some basic checks for complex numbers
 @testset "Complex numbers" begin
