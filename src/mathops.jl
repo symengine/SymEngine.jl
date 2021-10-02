@@ -1,4 +1,4 @@
-import Base: +, -, ^, /, //, \, *, ==
+import Base: +, -, ^, /, //, \, *, ==, sum
 
 ## equality
 function ==(b1::SymbolicType, b2::SymbolicType)
@@ -27,6 +27,21 @@ end
 -(b::SymbolicType) = 0 - b
 \(b1::SymbolicType, b2::SymbolicType) = b2 / b1
 
+function sum(v::CVecBasic)
+    a = Basic()
+    err_code = ccall((:basic_add_vec, libsymengine), Cuint, (Ref{Basic}, Ptr{Cvoid}), a, v.ptr)
+    throw_if_error(err_code, "add_vec")
+    return a
+end
+
++(b1::Basic, b2::Basic, b3::Basic, bs...) = sum(convert(CVecBasic, [b1, b2, b3, bs...]))
++(b1::Basic, b2::Basic, b3, bs...) = +(Basic(b1), Basic(b2), Basic(b3), bs...)
++(b1, b2::Basic, b3::Basic, bs...) = +(Basic(b1), Basic(b2), Basic(b3), bs...)
++(b1::Basic, b2, b3::Basic, bs...) = +(Basic(b1), Basic(b2), Basic(b3), bs...)
+
++(b1::Basic, b2, b3, bs...) = +(Basic(b1), Basic(b2), Basic(b3), bs...)
++(b1, b2::Basic, b3, bs...) = +(Basic(b1), Basic(b2), Basic(b3), bs...)
++(b1, b2, b3::Basic, bs...) = +(Basic(b1), Basic(b2), Basic(b3), bs...)
 
 ## ## constants
 Base.zero(x::Basic) = Basic(0)

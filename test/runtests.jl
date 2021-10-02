@@ -27,6 +27,12 @@ c = x + Rational(1, 5)
 c = expand(c * 5)
 @test c == 5*x + 1
 
+c = sum(convert(SymEngine.CVecBasic, [x, x, 1]))
+@test c == 2*x + 1
+@test x + x + 1 == 2*x + 1
+@test x + 1 + 1 == x + 2
+@test 1 + x + 1 == x + 2
+
 c = x ^ 5
 @test diff(c, x) == 5 * x ^ 4
 
