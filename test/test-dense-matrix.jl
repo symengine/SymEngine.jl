@@ -1,9 +1,9 @@
 using Test
 using SymEngine
-import LinearAlgebra: lu, det, zeros
+import LinearAlgebra: lu, det, zeros, dot
 CDenseMatrix = SymEngine.CDenseMatrix
 
-@vars x
+@vars x y
 
 # constructors
 A = [x 1 2; 3 x 4; 5 6 x]
@@ -44,3 +44,6 @@ out = M \ b
 
 @test SymEngine.dense_matrix_eye(2,2,0) == Basic[1 0; 0 1]
 
+# dot product
+@test dot(x, x) == x^2
+@test dot([1, x, 0], [y, -2, 1]) == y - 2x

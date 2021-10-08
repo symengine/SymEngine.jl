@@ -27,6 +27,12 @@ c = x + Rational(1, 5)
 c = expand(c * 5)
 @test c == 5*x + 1
 
+c = sum(convert(SymEngine.CVecBasic, [x, x, 1]))
+@test c == 2*x + 1
+@test x + x + 1 == 2*x + 1
+@test x + 1 + 1 == x + 2
+@test 1 + x + 1 == x + 2
+
 c = x ^ 5
 @test diff(c, x) == 5 * x ^ 4
 
@@ -224,29 +230,35 @@ f = SymFunction("f")
 @test string(g(x, y)) == "g(x, y)"
 @test string(h(x, y)) == "h(x, y)"
 
-if SymEngine.libversion >= VersionNumber("0.4.0")
-    # Function symbols
-    @funs f, g, h, s
-    @vars n, m
-    expr = Basic("f(n) + f(n+1) + g(m)^2 - 3*h(n)*s(n)^3")
-    @test function_symbols(expr) == [h(n), f(n), s(n), g(m), f(n+1)]
-    @test get_name(f(n+1)) == "f"
-    @test get_args(f(n+1)) == [n+1]
-    @test get_args(f(n, m^2)) == [n, m^2]
+# Function symbols
+@funs f, g, h, s
+@vars n, m
+expr = Basic("f(n) + f(n+1) + g(m)^2 - 3*h(n)*s(n)^3")
+@test function_symbols(expr) == [h(n), f(n), s(n), g(m), f(n+1)]
+@test get_name(f(n+1)) == "f"
+@test get_args(f(n+1)) == [n+1]
+@test get_args(f(n, m^2)) == [n, m^2]
 
-    # Coefficients
-    @vars x y
-    expr = x^3 + 3*x^2*y + 3*x*y^2 + y^3 + 1
-    @test coeff(expr, x, Basic(3)) == 1
-    @test coeff(expr, x, Basic(2)) == 3*y
-    @test coeff(expr, x, Basic(1)) == 3*y^2
-    if SymEngine.libversion >= VersionNumber("0.5.0")
-        @test coeff(expr, x, Basic(0)) == y^3 + 1
-    end
-end
+# Coefficients
+@vars x y
+expr = x^3 + 3*x^2*y + 3*x*y^2 + y^3 + 1
+@test coeff(expr, x, Basic(3)) == 1
+@test coeff(expr, x, Basic(2)) == 3*y
+@test coeff(expr, x, Basic(1)) == 3*y^2
+@test coeff(expr, x, Basic(0)) == y^3 + 1
 
 # Check that infinities are handled correctly
 @test_throws DomainError exp(zoo)
 @test_throws DomainError sin(zoo)
 @test_throws DomainError sin(oo)
 @test_throws DomainError subs(sin(log(y - y/x)), x => 1)
+@test_throws DomainError exp(zoo+x)/exp(x)
+
+# Some basic checks for complex numbers
+@testset "Complex numbers" begin
+    for T in (Int, Float64, BigFloat)
+        j = one(T) * IM
+        @test j == imag(j) * IM
+        @test conj(j) == -j
+    end
+end
