@@ -27,6 +27,13 @@ end
 -(b::SymbolicType) = 0 - b
 \(b1::SymbolicType, b2::SymbolicType) = b2 / b1
 
+# In contrast to other standard operations such as `+`, `*`, `-`, and `/`,
+# Julia doesn't implement a general fallback of `//` for `Number`s promoting
+# the input arguments. Thus, we implement this here explicitly.
+Base.:(//)(b1::SymbolicType, b2::Number) = //(promote(b1, b2)...)
+Base.:(//)(b1::Number, b2::SymbolicType) = //(promote(b1, b2)...)
+
+
 function sum(v::CVecBasic)
     a = Basic()
     err_code = ccall((:basic_add_vec, libsymengine), Cuint, (Ref{Basic}, Ptr{Cvoid}), a, v.ptr)
@@ -42,6 +49,7 @@ end
 +(b1::Basic, b2, b3, bs...) = +(Basic(b1), Basic(b2), Basic(b3), bs...)
 +(b1, b2::Basic, b3, bs...) = +(Basic(b1), Basic(b2), Basic(b3), bs...)
 +(b1, b2, b3::Basic, bs...) = +(Basic(b1), Basic(b2), Basic(b3), bs...)
+
 
 ## ## constants
 Base.zero(x::Basic) = Basic(0)

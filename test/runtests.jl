@@ -48,6 +48,10 @@ println()
 show(b)
 println()
 
+@test 1 // x == 1 / x
+@test x // 2 == (1//2) * x
+@test x // y == x / y
+
 
 ## mathfuns
 @test abs(Basic(-1)) == 1
