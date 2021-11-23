@@ -13,7 +13,7 @@ SymEngine_jll = "3428059b-622b-5399-b16f-d347a77089a4"
 [compat]
 Compat = "0.63.0, 1, 2, 3"
 RecipesBase = "0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 1.0"
-SpecialFunctions = "0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.10, 1"
+SpecialFunctions = "0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.10, 1, 2"
 SymEngine_jll = "0.8"
 julia = "1.3"
 
