@@ -54,7 +54,7 @@ end
 function prod(v::CVecBasic)
     a = Basic()
     err_code = ccall((:basic_mul_vec, libsymengine), Cuint, (Ref{Basic}, Ptr{Cvoid}), a, v.ptr)
-    throw_if_error(err_code, "add_mul")
+    throw_if_error(err_code, "mul_vec")
     return a
 end
 
