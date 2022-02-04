@@ -33,6 +33,14 @@ c = sum(convert(SymEngine.CVecBasic, [x, x, 1]))
 @test x + 1 + 1 == x + 2
 @test 1 + x + 1 == x + 2
 
+c = prod(convert(SymEngine.CVecBasic, [x, x, 2]))
+@test c == 2*x^2
+@test x * x * 2 == 2*x^2
+@test x * 2 * 3 == 6 * x
+@test 2 * 3 * x == 6 * x
+@test 2 * x * 3 == 6 * x
+
+
 c = x ^ 5
 @test diff(c, x) == 5 * x ^ 4
 
