@@ -68,7 +68,6 @@ end
 *(b1, b2, b3::Basic, bs...) = *(Basic(b1), Basic(b2), Basic(b3), bs...)
 
 
-
 ## ## constants
 Base.zero(x::Basic) = Basic(0)
 Base.zero(::Type{T}) where {T<:Basic} = Basic(0)
