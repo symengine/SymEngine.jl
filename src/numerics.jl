@@ -217,8 +217,8 @@ ceil(::Type{T},x::Basic) where {T <: Integer} = convert(T, ceil(x))
 floor(x::Basic) = Basic(floor(N(x)))
 floor(::Type{T},x::Basic) where {T <: Integer} = convert(T, floor(x))
 
-round(x::Basic) = Basic(round(N(x)))
-round(::Type{T},x::Basic) where {T <: Integer} = convert(T, round(x))
+round(x::Basic; kwargs...) = Basic(round(N(x); kwargs...))
+round(::Type{T},x::Basic; kwargs...) where {T <: Integer} = convert(T, round(x; kwargs...))
 
 prec(x::BasicType{Val{:RealMPFR}}) = ccall((:real_mpfr_get_prec, libsymengine), Clong, (Ref{Basic},), x)
 
