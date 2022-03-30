@@ -262,3 +262,6 @@ expr = x^3 + 3*x^2*y + 3*x*y^2 + y^3 + 1
         @test conj(j) == -j
     end
 end
+
+@test round(Basic(3.14)) == 3.0
+@test round(Basic(3.14); digits=1) == 3.1
