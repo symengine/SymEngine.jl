@@ -39,7 +39,7 @@ c = prod(convert(SymEngine.CVecBasic, [x, x, 2]))
 @test x * 2 * 3 == 6 * x
 @test 2 * 3 * x == 6 * x
 @test 2 * x * 3 == 6 * x
-
+@test 3 * 2 * x == 6 * x
 
 c = x ^ 5
 @test diff(c, x) == 5 * x ^ 4
