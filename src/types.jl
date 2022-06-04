@@ -283,3 +283,23 @@ function coeff(b::Basic, x::Basic, n::Basic)
 end
 
 coeff(b::Basic, x::Basic) = coeff(b, x, one(Basic))
+
+function Serialization.serialize(s::Serialization.AbstractSerializer, m::Basic)
+	Serialization.serialize_type(s, typeof(m))
+	
+	size = Ref{UInt64}(0)
+	serialized = ccall((:basic_dumps, libsymengine), 
+		Ptr{Int8}, (Ref{Basic}, Ptr{UInt64}), m, size)
+	julia_serialized_str = unsafe_string(serialized, size[])
+	write(s.io, julia_serialized_str)
+end
+
+function Serialization.deserialize(s::Serialization.AbstractSerializer, ::Type{Basic})
+	ser_str = read(s.io, String)
+	
+	a = Basic()
+	res = ccall((:basic_loads, libsymengine), 
+		Cuint, (Ref{Basic}, Ptr{Int8}, UInt64), a, ser_str, length(ser_str))
+	throw_if_error(res, ser_str)
+	return a
+end
