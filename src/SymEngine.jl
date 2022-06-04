@@ -4,6 +4,7 @@ using SymEngine_jll
 
 import Base: show, convert, real, imag, MathConstants.γ, MathConstants.e, MathConstants.φ, MathConstants.catalan, invokelatest
 import Compat: String, unsafe_string, @compat, denominator, numerator, Cvoid, Nothing, finalizer, reduce, mapreduce
+import Serialization
 import LinearAlgebra, Libdl
 
 export Basic, symbols, @vars, @funs, SymFunction

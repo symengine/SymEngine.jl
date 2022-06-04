@@ -1,6 +1,7 @@
 using SymEngine
 using Compat
 using Test
+using Serialization
 import Base: MathConstants.γ, MathConstants.e, MathConstants.φ, MathConstants.catalan
 
 include("test-dense-matrix.jl")
@@ -273,3 +274,20 @@ end
 
 @test round(Basic(3.14)) == 3.0
 @test round(Basic(3.14); digits=1) == 3.1
+
+function is_serialization_correct(expr :: Basic)
+	iobuf = IOBuffer()
+	serialize(iobuf, expr)
+	seek(iobuf, 0)
+	deserialized = deserialize(iobuf)
+	close(iobuf)
+	return expr == deserialized
+end
+
+@vars x y
+@testset "Serialization and deserialization" begin
+	@test is_serialization_correct(Basic(1.0))
+	@test is_serialization_correct(Basic(pi))
+	@test is_serialization_correct(Basic(x + y))
+	@test is_serialization_correct(Basic(sin(cos(pi*x + y)) + y^2))
+end
