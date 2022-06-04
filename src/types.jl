@@ -300,6 +300,6 @@ function Serialization.deserialize(s::Serialization.AbstractSerializer, ::Type{B
 	a = Basic()
 	res = ccall((:basic_loads, libsymengine), 
 		Cuint, (Ref{Basic}, Ptr{Int8}, UInt64), a, ser_str, length(ser_str))
-	throw_if_error(res, ser_str)
+	throw_if_error(res)
 	return a
 end
