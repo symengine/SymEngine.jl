@@ -290,4 +290,13 @@ end
 	@test is_serialization_correct(Basic(pi))
 	@test is_serialization_correct(Basic(x + y))
 	@test is_serialization_correct(Basic(sin(cos(pi*x + y)) + y^2))
+
+	# Complex type test
+	iobuf = IOBuffer()
+	data = [x+y, x+y]
+	serialize(iobuf, data)
+	seek(iobuf, 0)
+	deserialized = deserialize(iobuf)
+	close(iobuf)
+	@test deserialized == data
 end
