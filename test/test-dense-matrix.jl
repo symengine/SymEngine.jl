@@ -51,8 +51,8 @@ out = M \ b
 @testset "dense matrix" begin
     @vars a b c d x y
     A = [a b; c d]
-    b = [x, y]
-    res = A \ b
-    @test res == [(x - b*(y - c*x/a)/(d - b*c/a))/a
+    B = [x, y]
+    res = A \ B
+    @test res == [(x - b*(y - c*x/a)/(d - b*c/a))/a,
            (y - c*x/a)/(d - b*c/a)]
 end
