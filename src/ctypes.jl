@@ -86,7 +86,7 @@ function CMapBasicBasic()
     z
 end
 
-function CMapBasicBasic(dict::Dict)
+function CMapBasicBasic(dict::AbstractDict)
     c = CMapBasicBasic()
     for (key, value) in dict
         c[Basic(key)] = Basic(value)
@@ -118,7 +118,7 @@ function Base.setindex!(s::CMapBasicBasic, v::Basic, k::Basic)
     ccall((:mapbasicbasic_insert, libsymengine), Nothing, (Ptr{Cvoid}, Ref{Basic}, Ref{Basic}), s.ptr, k, v)
 end
 
-Base.convert(::Type{CMapBasicBasic}, x::Dict{Any, Any}) = CMapBasicBasic(x)
+Base.convert(::Type{CMapBasicBasic}, x::AbstractDict) = CMapBasicBasic(x)
 
 ## Dense matrix
 

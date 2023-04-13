@@ -29,7 +29,7 @@ function subs(ex::T, d::CMapBasicBasic) where T<:SymbolicType
     return s
 end
 
-subs(ex::T, d::Dict) where {T<:SymbolicType} = subs(ex, CMapBasicBasic(d))
+subs(ex::T, d::AbstractDict) where {T<:SymbolicType} = subs(ex, CMapBasicBasic(d))
 subs(ex::T, y::Tuple{S, Any}) where {T <: SymbolicType, S<:SymbolicType} = subs(ex, y[1], y[2])
 subs(ex::T, y::Tuple{S, Any}, args...) where {T <: SymbolicType, S<:SymbolicType} = subs(subs(ex, y), args...)
 subs(ex::T, d::Pair...) where {T <: SymbolicType} = subs(ex, [(p.first, p.second) for p in d]...)
@@ -41,7 +41,7 @@ function (ex::Basic)(args...)
   xs = free_symbols(ex)
   subs(ex, collect(zip(xs, args))...)
 end
-(ex::Basic)(x::Dict) = subs(ex, x)
+(ex::Basic)(x::AbstractDict) = subs(ex, x)
 (ex::Basic)(x::Pair...) = subs(ex, x...)
 
 
