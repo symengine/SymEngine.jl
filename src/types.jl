@@ -96,6 +96,7 @@ Basic(x::Basic) = x
 Base.promote_rule(::Type{Basic}, ::Type{S}) where {S<:Number} = Basic
 Base.promote_rule(::Type{S}, ::Type{Basic}) where {S<:Number} = Basic
 Base.promote_rule(::Type{S}, ::Type{Basic}) where {S<:AbstractIrrational} = Basic
+Base.promote_rule(::Type{Bool}, ::Type{Basic}) = Basic
 
 ## Class ID
 get_type(s::Basic) = ccall((:basic_get_type, libsymengine), UInt, (Ref{Basic},), s)
