@@ -58,14 +58,14 @@ function prod(v::CVecBasic)
     return a
 end
 
-*(b1::Basic, b2::Basic, b3::Basic, bs...) = prod(convert(CVecBasic, [b1, b2, b3, bs...]))
-*(b1::Basic, b2::Basic, b3, bs...) = *(Basic(b1), Basic(b2), Basic(b3), bs...)
-*(b1, b2::Basic, b3::Basic, bs...) = *(Basic(b1), Basic(b2), Basic(b3), bs...)
-*(b1::Basic, b2, b3::Basic, bs...) = *(Basic(b1), Basic(b2), Basic(b3), bs...)
+*(b1::Basic, b2::Basic, b3::Basic, bs::Vararg{Number, N}) where {N} = prod(convert(CVecBasic, [b1, b2, b3, bs...]))
+*(b1::Basic, b2::Basic, b3::Number, bs::Vararg{Number, N}) where {N} = *(Basic(b1), Basic(b2), Basic(b3), bs...)
+*(b1::Number, b2::Basic, b3::Basic, bs::Vararg{Number, N}) where {N} = *(Basic(b1), Basic(b2), Basic(b3), bs...)
+*(b1::Basic, b2::Number, b3::Basic, bs::Vararg{Number, N}) where {N} = *(Basic(b1), Basic(b2), Basic(b3), bs...)
 
-*(b1::Basic, b2, b3, bs...) = *(Basic(b1), Basic(b2), Basic(b3), bs...)
-*(b1, b2::Basic, b3, bs...) = *(Basic(b1), Basic(b2), Basic(b3), bs...)
-*(b1, b2, b3::Basic, bs...) = *(Basic(b1), Basic(b2), Basic(b3), bs...)
+*(b1::Basic, b2::Number, b3::Number, bs::Vararg{Number, N}) where {N} = *(Basic(b1), Basic(b2), Basic(b3), bs...)
+*(b1::Number, b2::Basic, b3::Number, bs::Vararg{Number, N}) where {N} = *(Basic(b1), Basic(b2), Basic(b3), bs...)
+*(b1::Number, b2::Number, b3::Basic, bs::Vararg{Number, N}) where {N} = *(Basic(b1), Basic(b2), Basic(b3), bs...)
 
 
 ## ## constants
