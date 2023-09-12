@@ -98,6 +98,7 @@ for (meth, libnm) in [(:gcd, :gcd),
 end
 
 Base.binomial(n::Basic, k::Number) = binomial(N(n), N(k))  #ntheory_binomial seems wrong
+Base.binomial(n::Basic, k::Integer) = binomial(N(n), N(k))  #Fix dispatch ambiguity / MethodError
 Base.rem(a::SymbolicType, b::SymbolicType) = a - (a ÷ b) * b
 Base.factorial(n::SymbolicType, k) = factorial(N(n), N(k))
 
