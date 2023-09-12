@@ -37,7 +37,7 @@ for (meth, libnm, modu) in [
                       (:acos,:acos,:Base),
                       (:asec,:asec,:Base),
                       (:acsc,:acsc,:Base),
-                      (:atan,:atan,:Base),
+    (:atan,:atan,:Base),
                       (:acot,:acot,:Base),
                       (:sinh,:sinh,:Base),
                       (:cosh,:cosh,:Base),
@@ -51,11 +51,17 @@ for (meth, libnm, modu) in [
                       (:acsch,:acsch,:Base),
                       (:atanh,:atanh,:Base),
                       (:acoth,:acoth,:Base),
-                      (:gamma,:gamma,:SpecialFunctions),
                       (:log,:log,:Base),
-                      (:sqrt,:sqrt,:Base),
-                      (:exp,:exp,:Base),
+    (:sqrt,:sqrt,:Base),
+    (:cbrt,:cbrt,:Base),
+    (:exp,:exp,:Base),
+    (:floor,:floor,:Base),
+    (:ceil, :ceiling,:Base),
+    (:erf, :erf, :SpecialFunctions),
+    (:erfc, :erfc, :SpecialFunctions),
                       (:eta,:dirichlet_eta,:SpecialFunctions),
+    (:gamma,:gamma,:SpecialFunctions),
+    (:loggamma,:loggamma,:SpecialFunctions),
                       (:zeta,:zeta,:SpecialFunctions),
                       ]
     eval(:(import $modu.$meth))
@@ -69,15 +75,18 @@ if get_symbol(:basic_atan2) != C_NULL
 end
 
 # export not import
-for  (meth, libnm) in [
-                       (:lambertw,:lambertw),   # in add-on packages, not base
+for  (meth, libnm) in [ # in add-on packages, not base
+                        (:lambertw,:lambertw),
+                        (:lowergamma, :lowergamma),
+                        (:uppergamma, :uppergamma),
+                        (:polygamma, :polygamma)
                        ]
     IMPLEMENT_ONE_ARG_FUNC(meth, libnm)
     eval(Expr(:export, meth))
 end
 
 ## add these in until they are wrapped
-Base.cbrt(a::SymbolicType) = a^(1//3)
+#Base.cbrt(a::SymbolicType) = a^(1//3)
 
 for (meth, fn) in [(:sind, :sin), (:cosd, :cos), (:tand, :tan), (:secd, :sec), (:cscd, :csc), (:cotd, :cot)]
     eval(:(import Base.$meth))
@@ -85,6 +94,8 @@ for (meth, fn) in [(:sind, :sin), (:cosd, :cos), (:tand, :tan), (:secd, :sec), (
         $(meth)(a::SymbolicType) = $(fn)(a*PI/180)
     end
 end
+
+# XXX add beta 2 arg
 
 
 ## Number theory module from cppwrapper
