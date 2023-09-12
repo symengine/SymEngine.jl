@@ -26,32 +26,32 @@ end
 ## import from base one argument functions
 ## these are from cwrapper.cpp, one arg func
 for (meth, libnm, modu) in [
-                      (:abs,:abs,:Base),
-                      (:sin,:sin,:Base),
-                      (:cos,:cos,:Base),
-                      (:tan,:tan,:Base),
-                      (:csc,:csc,:Base),
-                      (:sec,:sec,:Base),
-                      (:cot,:cot,:Base),
-                      (:asin,:asin,:Base),
-                      (:acos,:acos,:Base),
-                      (:asec,:asec,:Base),
-                      (:acsc,:acsc,:Base),
+    (:abs,:abs,:Base),
+    (:sin,:sin,:Base),
+    (:cos,:cos,:Base),
+    (:tan,:tan,:Base),
+    (:csc,:csc,:Base),
+    (:sec,:sec,:Base),
+    (:cot,:cot,:Base),
+    (:asin,:asin,:Base),
+    (:acos,:acos,:Base),
+    (:asec,:asec,:Base),
+    (:acsc,:acsc,:Base),
     (:atan,:atan,:Base),
-                      (:acot,:acot,:Base),
-                      (:sinh,:sinh,:Base),
-                      (:cosh,:cosh,:Base),
-                      (:tanh,:tanh,:Base),
-                      (:csch,:csch,:Base),
-                      (:sech,:sech,:Base),
-                      (:coth,:coth,:Base),
-                      (:asinh,:asinh,:Base),
-                      (:acosh,:acosh,:Base),
-                      (:asech,:asech,:Base),
-                      (:acsch,:acsch,:Base),
-                      (:atanh,:atanh,:Base),
-                      (:acoth,:acoth,:Base),
-                      (:log,:log,:Base),
+    (:acot,:acot,:Base),
+    (:sinh,:sinh,:Base),
+    (:cosh,:cosh,:Base),
+    (:tanh,:tanh,:Base),
+    (:csch,:csch,:Base),
+    (:sech,:sech,:Base),
+    (:coth,:coth,:Base),
+    (:asinh,:asinh,:Base),
+    (:acosh,:acosh,:Base),
+    (:asech,:asech,:Base),
+    (:acsch,:acsch,:Base),
+    (:atanh,:atanh,:Base),
+    (:acoth,:acoth,:Base),
+    (:log,:log,:Base),
     (:sqrt,:sqrt,:Base),
     (:cbrt,:cbrt,:Base),
     (:exp,:exp,:Base),
@@ -59,11 +59,11 @@ for (meth, libnm, modu) in [
     (:ceil, :ceiling,:Base),
     (:erf, :erf, :SpecialFunctions),
     (:erfc, :erfc, :SpecialFunctions),
-                      (:eta,:dirichlet_eta,:SpecialFunctions),
+    (:eta,:dirichlet_eta,:SpecialFunctions),
     (:gamma,:gamma,:SpecialFunctions),
     (:loggamma,:loggamma,:SpecialFunctions),
-                      (:zeta,:zeta,:SpecialFunctions),
-                      ]
+    (:zeta,:zeta,:SpecialFunctions),
+]
     eval(:(import $modu.$meth))
     IMPLEMENT_ONE_ARG_FUNC(:($modu.$meth), libnm)
 end
@@ -85,13 +85,17 @@ for  (meth, libnm) in [ # in add-on packages, not base
     eval(Expr(:export, meth))
 end
 
-## add these in until they are wrapped
-#Base.cbrt(a::SymbolicType) = a^(1//3)
-
+# d functions
 for (meth, fn) in [(:sind, :sin), (:cosd, :cos), (:tand, :tan), (:secd, :sec), (:cscd, :csc), (:cotd, :cot)]
     eval(:(import Base.$meth))
     @eval begin
         $(meth)(a::SymbolicType) = $(fn)(a*PI/180)
+    end
+end
+for (meth, fn) in [(:asind, :asin), (:acosd, :acos), (:atand, :atan), (:asecd, :asec), (:acscd, :acsc), (:acotd, :acot)]
+    eval(:(import Base.$meth))
+    @eval begin
+        $(meth)(a::SymbolicType) = $(fn)(a) * 180/PI
     end
 end
 
