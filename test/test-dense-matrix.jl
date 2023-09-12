@@ -47,3 +47,12 @@ out = M \ b
 # dot product
 @test dot(x, x) == x^2
 @test dot([1, x, 0], [y, -2, 1]) == y - 2x
+
+@testset "dense matrix" begin
+    @vars a b c d x y
+    A = [a b; c d]
+    B = [x, y]
+    res = A \ B
+    @test res == [(x - b*(y - c*x/a)/(d - b*c/a))/a,
+           (y - c*x/a)/(d - b*c/a)]
+end
