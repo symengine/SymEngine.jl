@@ -1,4 +1,5 @@
 using SymEngine
+using SpecialFunctions
 using Compat
 using Test
 using Serialization
@@ -19,6 +20,13 @@ let
 end
 @test_throws UndefVarError isdefined(w)
 @test_throws Exception show(Basic())
+
+# test @vars constructions
+@vars a, b[0:4], c(), d=>"D"
+@test length(b) == 5
+@test isa(c, SymFunction)
+@test repr(d) == "D"
+
 
 a = x^2 + x/2 - x*y*5
 b = diff(a, x)
@@ -77,6 +85,65 @@ repr("text/plain", b) == 1/2 + 2*x - 5*y
 @test sin(PI) == 0
 @test subs(sin(x), x, pi) == 0
 @test sind(Basic(30)) == 1 // 2
+
+# symbolic functions
+@testset "mathfuns" begin
+    @vars a, b
+    @testset for fn ∈ (sin, cos, tan,
+                       csc, sec, cot,
+                       asin, acos, atan,
+                       acsc, asec, acot,
+                       sinh, cosh, tan,
+                       csch, sech, coth,
+                       asinh, acosh, atanh,
+                       acsch, asech, acoth,
+                       sind, cosd, tand,
+                       cscd, secd, cotd,
+                       asind, acosd, atand,
+                       acscd, asecd, acotd,
+                       abs, log, exp,
+                       sqrt, cbrt,
+                       floor, ceil,
+                       erf, erfc,  gamma
+                       )
+        @test isa(fn(a), Basic)
+        u = fn(Basic(1/2))
+        N(u) # can evaluate
+    end
+
+    # evalf fails on these
+    for fn ∈ ( lambertw, eta, loggamma, zeta)
+        @test isa(fn(a), Basic)
+        u = fn(Basic(1/2))
+        @test_broken N(u)
+    end
+
+    # two arg work on numeric values, not symbols
+    u, v  = Basic(10), Basic(3)
+
+    @test_broken gcd(a*b, a^2) == a
+    @test gcd(u, v) == 1
+
+    @test_broken lcm(a, a*b) == a*b
+    @test lcm(u, v) == 30
+
+    @test_throws DivideError div(a,b)
+    @test div(u, v) == 3
+
+    @test_throws DivideError mod(a,b)
+    @test mod(u, v) == 1
+
+    @test_throws DivideError rem(a,b)
+    @test rem(u, v) == 1
+
+    @test_throws DivideError divrem(a,b)
+    @test divrem(u, v) == (3, 1)
+
+    @test binomial(u, v) == binomial(10,3)
+
+    @test nextprime(u) == 11
+end
+
 
 ## calculus
 x,y = symbols("x y")

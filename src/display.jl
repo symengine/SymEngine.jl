@@ -13,7 +13,6 @@ end
 Base.show(io::IO, b::SymbolicType) = print(io, toString(b))
 
 
-
 " show symengine logo "
 mutable struct AsciiArt x end
 function ascii_art()

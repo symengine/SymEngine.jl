@@ -60,10 +60,12 @@ function parsedecl(expr)
         return SymDecl(expr)
 
     # @vars x::assumptions, where assumption = assumptionkw | (assumptionkw...)
+    #= no assumptions in SymEngine
     elseif isa(expr, Expr) && expr.head == :(::)
         symexpr, assumptions = expr.args
         assumptions = isa(assumptions, Symbol) ? [assumptions] : assumptions.args
         return AssumptionsDecl(assumptions, parsedecl(symexpr))
+    =#
 
     # @vars x=>"name"
     elseif isa(expr, Expr) && expr.head == :call && expr.args[1] == :(=>)

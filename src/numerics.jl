@@ -200,7 +200,7 @@ Base.Real(x::Basic) = convert(Real, x)
 ## For generic programming in Julia
 float(x::Basic) = float(N(x))
 
-# trunc, flooor, ceil, round, rem, mod, cld, fld,
+# trunc, round, rem, mod, cld, fld,
 isfinite(x::Basic) = x-x == 0
 isnan(x::Basic) = ( x == NAN )
 isinf(x::Basic) = !isnan(x) & !isfinite(x)
@@ -211,11 +211,6 @@ isless(x::Basic, y::Basic) = isless(N(x), N(y))
 trunc(x::Basic, args...) = Basic(trunc(N(x), args...))
 trunc(::Type{T},x::Basic, args...) where {T <: Integer} = convert(T, trunc(x,args...))
 
-ceil(x::Basic) = Basic(ceil(N(x)))
-ceil(::Type{T},x::Basic) where {T <: Integer} = convert(T, ceil(x))
-
-floor(x::Basic) = Basic(floor(N(x)))
-floor(::Type{T},x::Basic) where {T <: Integer} = convert(T, floor(x))
 
 round(x::Basic; kwargs...) = Basic(round(N(x); kwargs...))
 round(::Type{T},x::Basic; kwargs...) where {T <: Integer} = convert(T, round(x; kwargs...))

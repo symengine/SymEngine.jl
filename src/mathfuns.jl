@@ -76,10 +76,7 @@ end
 
 # export not import
 for  (meth, libnm) in [ # in add-on packages, not base
-                        (:lambertw,:lambertw),
-                        (:lowergamma, :lowergamma),
-                        (:uppergamma, :uppergamma),
-                        (:polygamma, :polygamma)
+                        (:lambertw,:lambertw)
                        ]
     IMPLEMENT_ONE_ARG_FUNC(meth, libnm)
     eval(Expr(:export, meth))
@@ -99,8 +96,6 @@ for (meth, fn) in [(:asind, :asin), (:acosd, :acos), (:atand, :atan), (:asecd, :
     end
 end
 
-# XXX add beta 2 arg
-
 
 ## Number theory module from cppwrapper
 for (meth, libnm) in [(:gcd, :gcd),
@@ -112,7 +107,8 @@ for (meth, libnm) in [(:gcd, :gcd),
     IMPLEMENT_TWO_ARG_FUNC(:(Base.$meth), libnm, lib=:ntheory_)
 end
 
-Base.binomial(n::Basic, k::Number) = binomial(N(n), N(k))  #ntheory_binomial seems wrong
+#import Base: binomial; IMPLEMENT_TWO_ARG_FUNC(:binomial, :binomial, lib=:ntheory_ ) #ntheory_binomial seems wrong
+Base.binomial(n::Basic, k::Number) = binomial(N(n), N(k))
 Base.rem(a::SymbolicType, b::SymbolicType) = a - (a ÷ b) * b
 Base.factorial(n::SymbolicType, k) = factorial(N(n), N(k))
 
@@ -122,6 +118,7 @@ for (meth, libnm) in [(:nextprime,:nextprime)
     IMPLEMENT_ONE_ARG_FUNC(meth, libnm, lib=:ntheory_)
     eval(Expr(:export, meth))
 end
+
 
 function Base.convert(::Type{CVecBasic}, x::Vector{T}) where T
     vec = CVecBasic()

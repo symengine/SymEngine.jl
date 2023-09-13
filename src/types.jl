@@ -145,9 +145,9 @@ end
 ## Follow, somewhat, the python names: symbols to construct symbols, @vars
 
 """
-Macro to define 1 or more variables in the main workspace.
+    @vars x y[1:5] z()
 
-Symbolic values are defined with `_symbol`. This is a convenience
+Macro to define 1 or more variables or symbolic function
 
 Example
 ```
@@ -181,19 +181,6 @@ function _gensyms(xs...)
     Expr(:block, defs..., :(tuple($(map(esc,syms)...))))
 end
 
-# macro vars(x...)
-#     q=Expr(:block)
-#     if length(x) == 1 && isa(x[1],Expr)
-#         @assert x[1].head === :tuple "@syms expected a list of symbols"
-#         x = x[1].args
-#     end
-#     for s in x
-#         @assert isa(s,Symbol) "@syms expected a list of symbols"
-#         push!(q.args, Expr(:(=), esc(s), Expr(:call, :(SymEngine._symbol), Expr(:quote, s))))
-#     end
-#     push!(q.args, Expr(:tuple, map(esc, x)...))
-#     q
-# end
 
 
 ## We also have a wrapper type that can be used to control dispatch
