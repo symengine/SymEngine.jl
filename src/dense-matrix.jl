@@ -175,7 +175,10 @@ Also: lufact(a, val{:false}) for non-pivoting lu factorization
 """
 function LinearAlgebra.lu(a::CDenseMatrix)
     l, u = dense_matrix_LU(a)
-    convert(Matrix, l), convert(Matrix, u), Matrix{Basic}(LinearAlgebra.I, size(l)[1], size(l)[1])
+    L, U = convert(Matrix, l), convert(Matrix, u)
+    n = size(L, 1)
+    L[1:n+1:end] .-= one(eltype(L))
+    return LinearAlgebra.LU(L + U, collect(1:n), 0)
 end
 LinearAlgebra.lu(a::Array{Basic,2}) = LinearAlgebra.lu(CDenseMatrix(a))
 
