@@ -4,6 +4,7 @@ using Test
 using Serialization
 import Base: MathConstants.γ, MathConstants.e, MathConstants.φ, MathConstants.catalan
 
+VERSION >= v"1.9" && include("test-SymbolicUtils.jl")
 include("test-dense-matrix.jl")
 
 x = symbols("x")
