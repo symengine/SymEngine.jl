@@ -109,6 +109,7 @@ end
 
 #import Base: binomial; IMPLEMENT_TWO_ARG_FUNC(:binomial, :binomial, lib=:ntheory_ ) #ntheory_binomial seems wrong
 Base.binomial(n::Basic, k::Number) = binomial(N(n), N(k))
+Base.binomial(n::Basic, k::Integer) = binomial(N(n), N(k))  #Fix dispatch ambiguity / MethodError
 Base.rem(a::SymbolicType, b::SymbolicType) = a - (a ÷ b) * b
 Base.factorial(n::SymbolicType, k) = factorial(N(n), N(k))
 
