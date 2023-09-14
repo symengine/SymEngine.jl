@@ -11,6 +11,12 @@ Serialization = "9e88b42a-f829-5b0c-bbe9-9e923198166b"
 SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
 SymEngine_jll = "3428059b-622b-5399-b16f-d347a77089a4"
 
+[weakdeps]
+SymbolicUtils = "d1185830-fcd6-423d-90d6-eec64667417b"
+
+[extensions]
+SymEngineSymbolicUtilsExt = "SymbolicUtils"
+
 [compat]
 Compat = "0.63.0, 1, 2, 3, 4"
 RecipesBase = "0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 1.0"
@@ -20,6 +26,7 @@ julia = "1.6"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+SymbolicUtils = "d1185830-fcd6-423d-90d6-eec64667417b"
 
 [targets]
-test = ["Test"]
+test = ["SymbolicUtils", "Test"]
