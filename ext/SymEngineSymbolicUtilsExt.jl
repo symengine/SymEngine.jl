@@ -37,6 +37,7 @@ Check if x represents an expression tree. If returns true, it will be assumed th
 function SymbolicUtils.istree(x::SymEngine.SymbolicType)
     cls = SymEngine.get_symengine_class(x)
     cls == :Symbol && return false
+    cls == :Constant && return false
     any(==(cls), SymEngine.number_types) && return false
     return true
 end
