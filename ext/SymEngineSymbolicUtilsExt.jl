@@ -37,6 +37,7 @@ Check if x represents an expression tree. If returns true, it will be assumed th
 function SymbolicUtils.istree(x::SymEngine.SymbolicType)
     cls = SymEngine.get_symengine_class(x)
     cls == :Symbol && return false
+    cls == :Constant && return false
     any(==(cls), SymEngine.number_types) && return false
     return true
 end
@@ -72,32 +73,19 @@ end
 
 # Needed for some simplification routines
 # a total order <ₑ
-import SymbolicUtils: <ₑ, isterm, isadd, ismul, issym, cmp_mul_adds, cmp_term_term
+import SymbolicUtils: <ₑ, isterm, isadd, ismul, issym, get_degrees, monomial_lt, _arglen
 function SymbolicUtils.:<ₑ(a::SymEngine.Basic, b::SymEngine.Basic)
-    if isterm(a) && !isterm(b)
-        return false
-    elseif isterm(b) && !isterm(a)
-        return true
-    elseif (isadd(a) || ismul(a)) && (isadd(b) || ismul(b))
-        return cmp_mul_adds(a, b)
-    elseif issym(a) && issym(b)
-        nameof(a) < nameof(b)
-    elseif !istree(a) && !istree(b)
-        T = typeof(a)
-        S = typeof(b)
-        if T == S
-            is_number(a) && is_number(b) && return N(a) < N(b)
-            return hash(a) < hash(b)
+    da, db = get_degrees(a), get_degrees(b)
+    fw = monomial_lt(da, db)
+    bw = monomial_lt(db, da)
+    if fw === bw && !isequal(a, b)
+        if _arglen(a) == _arglen(b)
+            return (operation(a), arguments(a)...,) <ₑ (operation(b), arguments(b)...,)
         else
-            return name(T) < nameof(S)
+            return _arglen(a) < _arglen(b)
         end
-        #return T===S ? (T <: Number ? isless(a, b) : hash(a) < hash(b)) : nameof(T) < nameof(S)
-    elseif istree(b) && !istree(a)
-        return true
-    elseif istree(a) && istree(b)
-        return cmp_term_term(a,b)
     else
-        return !(b <ₑ a)
+        return fw
     end
 end
 
