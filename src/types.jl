@@ -145,28 +145,42 @@ end
 ## Follow, somewhat, the python names: symbols to construct symbols, @vars
 
 """
-Macro to define 1 or more variables in the main workspace.
+    @vars x y[1:5] z()
 
-Symbolic values are defined with `_symbol`. This is a convenience
+Macro to define 1 or more variables or symbolic function
 
 Example
 ```
 @vars x y z
+@vars x[1:4]
+@vars u(), x
 ```
+
 """
-macro vars(x...)
-    q=Expr(:block)
-    if length(x) == 1 && isa(x[1],Expr)
-        @assert x[1].head === :tuple "@syms expected a list of symbols"
-        x = x[1].args
+macro vars(xs...)
+    # If the user separates declaration with commas, the top-level expression is a tuple
+    if length(xs) == 1 && isa(xs[1], Expr) && xs[1].head == :tuple
+        _gensyms(xs[1].args...)
+    elseif length(xs) > 0
+        _gensyms(xs...)
     end
-    for s in x
-        @assert isa(s,Symbol) "@syms expected a list of symbols"
-        push!(q.args, Expr(:(=), esc(s), Expr(:call, :(SymEngine._symbol), Expr(:quote, s))))
-    end
-    push!(q.args, Expr(:tuple, map(esc, x)...))
-    q
 end
+
+function _gensyms(xs...)
+    asstokw(a) = Expr(:kw, esc(a), true)
+
+    # Each declaration is parsed and generates a declaration using `symbols`
+    symdefs = map(xs) do expr
+        decl = parsedecl(expr)
+        symname = sym(decl)
+        symname, gendecl(decl)
+    end
+    syms, defs = collect(zip(symdefs...))
+
+    # The macro returns a tuple of Symbols that were declared
+    Expr(:block, defs..., :(tuple($(map(esc,syms)...))))
+end
+
 
 
 ## We also have a wrapper type that can be used to control dispatch
@@ -305,4 +319,3 @@ function Serialization.deserialize(s::Serialization.AbstractSerializer, ::Type{B
 	throw_if_error(res)
 	return a
 end
-
