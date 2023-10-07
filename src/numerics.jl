@@ -1,4 +1,4 @@
-import Base: convert, real, imag, float, eps
+import Base: convert, real, imag, float, eps, conj
 import Base: isfinite, isnan, isinf, isless
 import Base: trunc, ceil, floor, round
 
@@ -177,8 +177,9 @@ imag(x::SymEngine.BasicType) = throw(InexactError())
 
 # Because of the definitions above, `real(x) == x` for `x::Basic`
 # such as `x = symbols("x")`. Thus, it is consistent to define the
-# fallback
-Base.conj(x::Basic) = 2 * real(x) - x
+conj(x::Basic) = Basic(conj(SymEngine.BasicType(x)))
+# To allow future extension, we define the fallback on `BasicType``.
+conj(x::BasicType) = 2 * real(x.x) - x.x
 
 ## define convert(T, x) methods leveraging N()
 convert(::Type{Float64}, x::Basic)           = convert(Float64, N(evalf(x, 53, true)))
