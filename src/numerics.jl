@@ -4,6 +4,7 @@ import Base: trunc, ceil, floor, round
 
 
 function evalf(b::Basic, bits::Integer=53, real::Bool=false)
+    !isfinite(b) && return b
     c = Basic()
     bits > 53 && real && (have_mpfr || throw(ArgumentError("libsymengine has to be compiled with MPFR for this feature")))
     bits > 53 && !real && (have_mpc || throw(ArgumentError("libsymengine has to be compiled with MPC for this feature")))
@@ -133,7 +134,11 @@ N(b::BasicType{Val{:Rational}}) = Rational(N(numerator(b)), N(denominator(b))) #
 N(b::BasicType{Val{:RealDouble}}) = convert(Cdouble, b)
 N(b::BasicType{Val{:RealMPFR}}) = convert(BigFloat, b)
 N(b::BasicType{Val{:NaN}}) = NaN
-N(b::BasicType{Val{:Infty}}) = (string(b) == "-inf") ? -Inf : Inf
+function N(b::BasicType{Val{:Infty}})
+    b == oo && return Inf
+    b == -oo && return -Inf
+    b == zoo && return Complex(Inf, Inf)
+end
 
 ## Mapping of SymEngine Constants into julia values
 constant_map = Dict("pi" => π, "eulergamma" => γ, "exp(1)" => e, "catalan" => catalan,
