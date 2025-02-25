@@ -26,38 +26,44 @@ end
 ## import from base one argument functions
 ## these are from cwrapper.cpp, one arg func
 for (meth, libnm, modu) in [
-                      (:abs,:abs,:Base),
-                      (:sin,:sin,:Base),
-                      (:cos,:cos,:Base),
-                      (:tan,:tan,:Base),
-                      (:csc,:csc,:Base),
-                      (:sec,:sec,:Base),
-                      (:cot,:cot,:Base),
-                      (:asin,:asin,:Base),
-                      (:acos,:acos,:Base),
-                      (:asec,:asec,:Base),
-                      (:acsc,:acsc,:Base),
-                      (:atan,:atan,:Base),
-                      (:acot,:acot,:Base),
-                      (:sinh,:sinh,:Base),
-                      (:cosh,:cosh,:Base),
-                      (:tanh,:tanh,:Base),
-                      (:csch,:csch,:Base),
-                      (:sech,:sech,:Base),
-                      (:coth,:coth,:Base),
-                      (:asinh,:asinh,:Base),
-                      (:acosh,:acosh,:Base),
-                      (:asech,:asech,:Base),
-                      (:acsch,:acsch,:Base),
-                      (:atanh,:atanh,:Base),
-                      (:acoth,:acoth,:Base),
-                      (:gamma,:gamma,:SpecialFunctions),
-                      (:log,:log,:Base),
-                      (:sqrt,:sqrt,:Base),
-                      (:exp,:exp,:Base),
-                      (:eta,:dirichlet_eta,:SpecialFunctions),
-                      (:zeta,:zeta,:SpecialFunctions),
-                      ]
+    (:abs,:abs,:Base),
+    (:sin,:sin,:Base),
+    (:cos,:cos,:Base),
+    (:tan,:tan,:Base),
+    (:csc,:csc,:Base),
+    (:sec,:sec,:Base),
+    (:cot,:cot,:Base),
+    (:asin,:asin,:Base),
+    (:acos,:acos,:Base),
+    (:asec,:asec,:Base),
+    (:acsc,:acsc,:Base),
+    (:atan,:atan,:Base),
+    (:acot,:acot,:Base),
+    (:sinh,:sinh,:Base),
+    (:cosh,:cosh,:Base),
+    (:tanh,:tanh,:Base),
+    (:csch,:csch,:Base),
+    (:sech,:sech,:Base),
+    (:coth,:coth,:Base),
+    (:asinh,:asinh,:Base),
+    (:acosh,:acosh,:Base),
+    (:asech,:asech,:Base),
+    (:acsch,:acsch,:Base),
+    (:atanh,:atanh,:Base),
+    (:acoth,:acoth,:Base),
+    (:log,:log,:Base),
+    (:sqrt,:sqrt,:Base),
+    (:cbrt,:cbrt,:Base),
+    (:exp,:exp,:Base),
+    (:floor,:floor,:Base),
+    (:ceil, :ceiling,:Base),
+    (:erf, :erf, :SpecialFunctions),
+    (:erfc, :erfc, :SpecialFunctions),
+    (:eta,:dirichlet_eta,:SpecialFunctions),
+    (:gamma,:gamma,:SpecialFunctions),
+    (:loggamma,:loggamma,:SpecialFunctions),
+    (:zeta,:zeta,:SpecialFunctions),
+]
     eval(:(import $modu.$meth))
     IMPLEMENT_ONE_ARG_FUNC(:($modu.$meth), libnm)
 end
@@ -69,20 +75,24 @@ if get_symbol(:basic_atan2) != C_NULL
 end
 
 # export not import
-for  (meth, libnm) in [
-                       (:lambertw,:lambertw),   # in add-on packages, not base
+for  (meth, libnm) in [ # in add-on packages, not base
+                        (:lambertw,:lambertw)
                        ]
     IMPLEMENT_ONE_ARG_FUNC(meth, libnm)
     eval(Expr(:export, meth))
 end
 
-## add these in until they are wrapped
-Base.cbrt(a::SymbolicType) = a^(1//3)
-
+# d functions
 for (meth, fn) in [(:sind, :sin), (:cosd, :cos), (:tand, :tan), (:secd, :sec), (:cscd, :csc), (:cotd, :cot)]
     eval(:(import Base.$meth))
     @eval begin
         $(meth)(a::SymbolicType) = $(fn)(a*PI/180)
+    end
+end
+for (meth, fn) in [(:asind, :asin), (:acosd, :acos), (:atand, :atan), (:asecd, :asec), (:acscd, :acsc), (:acotd, :acot)]
+    eval(:(import Base.$meth))
+    @eval begin
+        $(meth)(a::SymbolicType) = $(fn)(a) * 180/PI
     end
 end
 
@@ -97,7 +107,8 @@ for (meth, libnm) in [(:gcd, :gcd),
     IMPLEMENT_TWO_ARG_FUNC(:(Base.$meth), libnm, lib=:ntheory_)
 end
 
-Base.binomial(n::Basic, k::Number) = binomial(N(n), N(k))  #ntheory_binomial seems wrong
+#import Base: binomial; IMPLEMENT_TWO_ARG_FUNC(:binomial, :binomial, lib=:ntheory_ ) #ntheory_binomial seems wrong
+Base.binomial(n::Basic, k::Number) = binomial(N(n), N(k))
 Base.binomial(n::Basic, k::Integer) = binomial(N(n), N(k))  #Fix dispatch ambiguity / MethodError
 Base.rem(a::SymbolicType, b::SymbolicType) = a - (a ÷ b) * b
 Base.factorial(n::SymbolicType, k) = factorial(N(n), N(k))
@@ -108,6 +119,7 @@ for (meth, libnm) in [(:nextprime,:nextprime)
     IMPLEMENT_ONE_ARG_FUNC(meth, libnm, lib=:ntheory_)
     eval(Expr(:export, meth))
 end
+
 
 function Base.convert(::Type{CVecBasic}, x::Vector{T}) where T
     vec = CVecBasic()
