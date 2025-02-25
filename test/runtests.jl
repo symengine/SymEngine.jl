@@ -207,6 +207,8 @@ z,flt, rat, ima, cplx = btypes = [Basic(1), Basic(1.23), Basic(3//5), Basic(2im)
 @test convert(Rational{Int}, rat) == 3//5
 @test convert(Complex{Int}, ima) == 2im
 @test convert(Complex{Int}, cplx) == 1 + 2im
+@test isinf(convert(Float64, oo))
+@test isnan(convert(Float64, NAN))
 
 @test_throws InexactError convert(Int, flt)
 @test_throws InexactError convert(Int, rat)
