@@ -2,6 +2,14 @@ using Test
 using SymEngine
 import SymbolicUtils: simplify, @rule, @acrule, Chain, Fixpoint
 
+import TermInterface
+@testset "TermInterface" begin
+    @vars x
+    @test !TermInterface.iscall(x)
+    @test TermInterface.iscall(x^2)
+    @test TermInterface.operation(sin(x)) == sin
+    @test TermInterface.arguments(sin(x)) == [x]
+end
 
 @testset "SymbolicUtils" begin
     # from SymbolicUtils.jl docs
