@@ -5,7 +5,8 @@ import Base: diff
 ## what is the rest of the interface. This does:
 ## diff(ex, x, n)      f^(n)
 ## diff(ex, x, y, ...) f_{xy...}  # also diff(ex, (x,y))
-## no support for diff(ex, x,n1, y,n2, ...), but can do diff(ex, (x,y), (n1, n2))
+## Support for diff(ex, x,n1, y,n2, ...),
+## but can also do diff(ex, (x,y), (n1, n2))
 
 function diff(b1::SymbolicType, b2::BasicType{Val{:Symbol}})
     a = Basic()
@@ -24,12 +25,21 @@ function diff(b1::SymbolicType, b2::SymbolicType, n::Integer=1)
     n > 1 && return diff(diff(b1, BasicType(b2)), BasicType(b2), n-1)
 end
 
-function diff(b1::SymbolicType, b2::SymbolicType, b3::SymbolicType)
-    isa(BasicType(b3), BasicType{Val{:Integer}}) ? diff(b1, b2, N(b3)) : diff(b1, (b2, b3))
+function diff(b1::SymbolicType, b2::SymbolicType, n::Integer, xs...)
+    diff(diff(b1,b2,n), xs...)
 end
 
-diff(b1::SymbolicType, b2::SymbolicType, b3::SymbolicType, b4::SymbolicType, b5...) =
-    diff(b1, (b2,b3,b4,b5...))
+function diff(b1::SymbolicType, b2::SymbolicType, b3::SymbolicType)
+    if isa(BasicType(b3), BasicType{Val{:Integer}})
+        diff(b1, b2, N(b3))
+    else
+        diff(b1, (b2, b3))
+    end
+end
+
+function diff(b1::SymbolicType, b2::SymbolicType, b3::SymbolicType, bs...)
+    diff(diff(b1,b2,b3), bs...)
+end
 
 ## mixed partials
 diff(ex::SymbolicType, bs::Tuple) = reduce((ex, x) -> diff(ex, x), bs, init=ex)

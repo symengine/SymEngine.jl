@@ -63,10 +63,11 @@ c = Basic(-5)
 @test abs(c) == 5
 @test abs(c) != 4
 
-show(a)
-println()
-show(b)
-println()
+# test show
+a = x^2 + x/2 - x*y*5
+b = diff(a, x)
+repr("text/plain", a) == (1/2)*x - 5*x*y + x^2
+repr("text/plain", b) == 1/2 + 2*x - 5*y
 
 @test 1 // x == 1 / x
 @test x // 2 == (1//2) * x
@@ -89,7 +90,11 @@ ex = sin(x*y)
 @test diff(ex, x, 2) == diff(diff(ex,x), x)
 @test diff(ex, x, n) == diff(diff(ex,x), x)
 @test diff(ex, x, y) == diff(diff(ex,x), y)
-@test diff(ex, x, y,x) == diff(diff(diff(ex,x), y), x)
+@test diff(ex, x, y, x) == diff(diff(diff(ex,x), y), x)
+@test diff(ex, x, 2, y, 3) == diff(ex, x,x,y,y,y)
+@test diff(ex, x, n, y, 3) == diff(ex, x,x,y,y,y)
+@test diff(ex, x, 2, y, x) == diff(ex, x,x,x,y)
+(@allocated diff(x^10, x,12)) , (@allocated diff(x^10, x, 120))
 @test series(sin(x), x, 0, 2) == x
 @test series(sin(x), x, 0, 3) == x - x^3/6
 
