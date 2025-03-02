@@ -285,6 +285,15 @@ expr = x^3 + 3*x^2*y + 3*x*y^2 + y^3 + 1
     end
 end
 
+@test real(Basic(1.5)) == 1.5
+@test isa(real(2 + 3IM), Basic)
+@test real(2 + 3IM) == 2
+
+@test imag(Basic(1.5)) == 0
+@test isa(imag(2 + 3IM), Basic)
+@test imag(2 + 3IM) == Basic(3)
+
+
 @test round(Basic(3.14)) == 3.0
 @test round(Basic(3.14); digits=1) == 3.1
 

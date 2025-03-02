@@ -169,16 +169,31 @@ as_numer_denom(x::BasicType) = as_numer_denom(Basic(x))
 denominator(x::SymbolicType) = as_numer_denom(x)[2]
 numerator(x::SymbolicType)   = as_numer_denom(x)[1]
 
-## Complex
+## Complex; real, imag for :Complex defined elsewhere via ccall
+# MethodError if x not a number type.
 real(x::Basic) = Basic(real(SymEngine.BasicType(x)))
-real(x::SymEngine.BasicType) = x
+real(x::BasicType{Val{:Integer}}) = x
+real(x::BasicType{Val{:RealDouble}}) = x
+real(x::BasicType{Val{:RealMPFR}}) = x
+real(x::BasicType{Val{:Rational}}) = x
+function real(x::BasicType{Val{:Constant}})
+    any(==(x), (PI, E, EulerGamma, Catalan, oo, NAN)) && return Basic(x)
+    x == IM && return zero(x)
+    x == zoo && return oo
+end
+
 
 imag(x::Basic) = Basic(imag(SymEngine.BasicType(x)))
 imag(x::BasicType{Val{:Integer}}) = Basic(0)
 imag(x::BasicType{Val{:RealDouble}}) = Basic(0)
 imag(x::BasicType{Val{:RealMPFR}}) = Basic(0)
 imag(x::BasicType{Val{:Rational}}) = Basic(0)
-imag(x::SymEngine.BasicType) = throw(InexactError())
+function imag(x::BasicType{Val{:Constant}})
+    any(==(x), (PI, E, EulerGamma, Catalan, oo, NAN)) && return zero(x)
+    x == IM && return one(x)
+    x == zoo && return oo
+end
+
 
 # Because of the definitions above, `real(x) == x` for `x::Basic`
 # such as `x = symbols("x")`. Thus, it is consistent to define the
