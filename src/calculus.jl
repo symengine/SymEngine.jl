@@ -19,6 +19,7 @@ diff(b1::SymbolicType, b2::BasicType) =
 function diff(b1::SymbolicType, b2::SymbolicType, n::Integer=1)
     n < 0 && throw(DomainError("n must be non-negative integer"))
     n==0 && return b1
+    iszero(b1) && return b1
     n==1 && return diff(b1, BasicType(b2))
     n > 1 && return diff(diff(b1, BasicType(b2)), BasicType(b2), n-1)
 end
