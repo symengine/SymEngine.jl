@@ -196,6 +196,14 @@ x,y,z = symbols("x y z")
 @test Set(free_symbols(x*y)) == Set([x,y])
 @test Set(free_symbols(x*y^z)) != Set([x,y])
 
+# call without specifying variables
+@vars x y
+z = x(2)
+@test x(2) == 2
+@test (x*y^2)(1,2) == subs(x*y^2, x=>1, y=>2) == (x*y^2)(x=>1, y=>2)
+@test z() == 2
+@test z(1) == 2
+
 ## check that callable symengine expressions can be used as functions for duck-typed functions
 @vars x
 function simple_newton(f, fp, x0)
