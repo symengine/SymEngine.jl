@@ -172,6 +172,7 @@ numerator(x::SymbolicType)   = as_numer_denom(x)[1]
 ## Complex; real, imag for :Complex defined elsewhere via ccall
 # MethodError if x not a number type.
 real(x::Basic) = Basic(real(SymEngine.BasicType(x)))
+real(x::BasicType{Val{:Symbol}}) = x # issue #273 has issue here
 real(x::BasicType{Val{:Integer}}) = x
 real(x::BasicType{Val{:RealDouble}}) = x
 real(x::BasicType{Val{:RealMPFR}}) = x
