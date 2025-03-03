@@ -94,7 +94,6 @@ ex = sin(x*y)
 @test diff(ex, x, 2, y, 3) == diff(ex, x,x,y,y,y)
 @test diff(ex, x, n, y, 3) == diff(ex, x,x,y,y,y)
 @test diff(ex, x, 2, y, x) == diff(ex, x,x,x,y)
-(@allocated diff(x^10, x,12)) , (@allocated diff(x^10, x, 120))
 @test series(sin(x), x, 0, 2) == x
 @test series(sin(x), x, 0, 3) == x - x^3/6
 
