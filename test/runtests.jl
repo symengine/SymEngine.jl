@@ -185,6 +185,24 @@ A = [x 2; x 1]
 x,y,z = symbols("x y z")
 @test length(SymEngine.free_symbols([x*y, y,z])) == 3
 
+# is/has/free symbol(s)
+@vars x y z
+@test SymEngine.is_symbol(x)
+@test !SymEngine.is_symbol(x(2))
+@test !SymEngine.is_symbol(x^2)
+@test SymEngine.has_symbol(x^2, x)
+@test SymEngine.has_symbol(sin(sin(sin(x))), x)
+@test !SymEngine.has_symbol(x^2, y)
+@test Set(free_symbols(x*y)) == Set([x,y])
+@test Set(free_symbols(x*y^z)) != Set([x,y])
+
+# call without specifying variables
+@vars x y
+z = x(2)
+@test x(2) == 2
+@test (x*y^2)(1,2) == subs(x*y^2, x=>1, y=>2) == (x*y^2)(x=>1, y=>2)
+@test z() == 2
+@test z(1) == 2
 
 ## check that callable symengine expressions can be used as functions for duck-typed functions
 @vars x
