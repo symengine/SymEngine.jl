@@ -110,6 +110,15 @@ for (meth, libnm) in [(:nextprime,:nextprime)
     eval(Expr(:export, meth))
 end
 
+"Return coefficient of `x^n` term, `x` a symbol"
+function coeff(b::Basic, x, n)
+    c = Basic()
+    out = ccall((:basic_coeff, libsymengine), Nothing,
+                (Ref{Basic},Ref{Basic},Ref{Basic},Ref{Basic}),
+                c,b,Basic(x), Basic(n))
+    c
+end
+
 function Base.convert(::Type{CVecBasic}, x::Vector{T}) where T
     vec = CVecBasic()
     for i in x

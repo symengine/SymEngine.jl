@@ -233,13 +233,13 @@ BasicTrigFunction =  Union{[SymEngine.BasicType{Val{i}} for i in trig_types]...}
 
 ###
 "Is expression a symbol"
-is_symbol(x::Basic) = is_symbol(BasicType(x))
-is_symbol(x::BasicType{Val{:Symbol}}) = true
-is_symbol(x::BasicType) = false
-
+function is_symbol(x::SymbolicType)
+    res = ccall((:is_a_Symbol, libsymengine), Cuint, (Ref{Basic},), x)
+    Bool(convert(Int,res))
+end
 
 "Does expression contain the symbol"
-function has_symbol(ex::Basic, x::Basic)
+function has_symbol(ex::SymbolicType, x::SymbolicType)
     is_symbol(x) || throw(ArgumentError("Not a symbol"))
     res = ccall((:basic_has_symbol, libsymengine), Cuint, (Ref{Basic},Ref{Basic}),  ex, x)
     Bool(convert(Int, res))
