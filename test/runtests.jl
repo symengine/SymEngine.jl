@@ -136,6 +136,7 @@ for val in samples
     @test subs(ex, x => val) == val^2 + y^2
     @test subs(ex, SymEngine.CMapBasicBasic(Dict(x=>val))) == val^2 + y^2
     @test subs(ex, Dict(x=>val)) == val^2 + y^2
+    @test subs(ex) == ex
 end
 # This probably results in a number of redundant tests (operator order).
 for val1 in samples, val2 in samples
