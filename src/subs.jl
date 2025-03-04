@@ -38,11 +38,12 @@ subs(ex::T, d::Pair...) where {T <: SymbolicType} = subs(ex, [(p.first, p.second
 ## Allow an expression to be called, as with ex(2). When there is more than one symbol, one can rely on order of `free_symbols` or
 ## be explicit by passing in pairs : `ex(x=>1, y=>2)` or a dict `ex(Dict(x=>1, y=>2))`.
 function (ex::Basic)(args...)
-  xs = free_symbols(ex)
-  subs(ex, collect(zip(xs, args))...)
+    xs = free_symbols(ex)
+    isempty(xs) && return ex
+    subs(ex, collect(zip(xs, args))...)
 end
 (ex::Basic)(x::AbstractDict) = subs(ex, x)
-(ex::Basic)(x::Pair...) = subs(ex, x...)
+(ex::Basic)(x::Pair, xs::Pair...) = subs(ex, x, xs...)
 
 
 ## Lambdify

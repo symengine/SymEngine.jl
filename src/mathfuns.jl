@@ -55,6 +55,7 @@ for (meth, libnm, modu) in [
                       (:log,:log,:Base),
                       (:sqrt,:sqrt,:Base),
                       (:exp,:exp,:Base),
+                      (:sign, :sign, :Base),
                       (:eta,:dirichlet_eta,:SpecialFunctions),
                       (:zeta,:zeta,:SpecialFunctions),
                       ]
