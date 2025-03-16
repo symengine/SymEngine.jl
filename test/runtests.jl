@@ -98,9 +98,13 @@ u,v,w = x(2.1), x(1), x(0)
 
 ## calculus
 x,y = symbols("x y")
+@test diff(log(x)) == 1/x
+@test diff(log(x),x) == 1/x
+@test_throws ArgumentError diff(log(x), x^2)
+
 n = Basic(2)
 ex = sin(x*y)
-@test diff(log(x),x) == 1/x
+@test_throws ArgumentError diff(ex)
 @test diff(ex, x) == y * cos(x*y)
 @test diff(ex, x, 2) == diff(diff(ex,x), x)
 @test diff(ex, x, n) == diff(diff(ex,x), x)
@@ -109,6 +113,7 @@ ex = sin(x*y)
 @test diff(ex, x, 2, y, 3) == diff(ex, x,x,y,y,y)
 @test diff(ex, x, n, y, 3) == diff(ex, x,x,y,y,y)
 @test diff(ex, x, 2, y, x) == diff(ex, x,x,x,y)
+
 @test series(sin(x), x, 0, 2) == x
 @test series(sin(x), x, 0, 3) == x - x^3/6
 
