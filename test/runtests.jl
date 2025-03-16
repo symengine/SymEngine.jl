@@ -81,6 +81,21 @@ repr("text/plain", b) == 1/2 + 2*x - 5*y
 @test subs(sin(x), x, pi) == 0
 @test sind(Basic(30)) == 1 // 2
 
+## predicates
+@vars x
+u,v,w = x(2.1), x(1), x(0)
+@test isreal(u)
+@test !isinteger(u)
+@test isinteger(v)
+@test isone(v)
+@test iszero(w)
+@test (@allocated isreal(u)) == 0
+@test (@allocated isinteger(v)) == 0
+@test (@allocated isone(x)) == 0
+@test (@allocated iszero(x)) == 0
+@test (@allocated isone(v)) > 0 # checking v==zero(v) value allocates
+@test (@allocated iszero(w)) > 0
+
 ## calculus
 x,y = symbols("x y")
 n = Basic(2)
@@ -189,6 +204,27 @@ A = [x 2; x 1]
 x,y,z = symbols("x y z")
 @test length(SymEngine.free_symbols([x*y, y,z])) == 3
 
+# is/has/free symbol(s)
+@vars x y z
+@test SymEngine.is_symbol(x)
+@test (@allocated SymEngine.is_symbol(x)) == 0
+@test !SymEngine.is_symbol(x(2))
+@test !SymEngine.is_symbol(x^2)
+@test SymEngine.has_symbol(x^2, x)
+@test SymEngine.has_symbol(x, x)
+@test @allocated(SymEngine.has_symbol(x, x)) == 0
+@test SymEngine.has_symbol(sin(sin(sin(x))), x)
+@test !SymEngine.has_symbol(x^2, y)
+@test Set(free_symbols(x*y)) == Set([x,y])
+@test Set(free_symbols(x*y^z)) != Set([x,y])
+
+# call without specifying variables
+@vars x y
+z = x(2)
+@test x(2) == 2
+@test (x*y^2)(1,2) == subs(x*y^2, x=>1, y=>2) == (x*y^2)(x=>1, y=>2)
+@test z() == 2
+@test z(1) == 2
 
 ## check that callable symengine expressions can be used as functions for duck-typed functions
 @vars x

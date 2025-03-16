@@ -212,6 +212,51 @@ isnan(x::Basic) = ( x == NAN )
 isinf(x::Basic) = !isnan(x) & !isfinite(x)
 isless(x::Basic, y::Basic) = isless(N(x), N(y))
 
+# is_a_functions
+# could use metaprogramming here
+is_a_Number(x::Basic) =
+    Bool(convert(Int, ccall((:is_a_Number, libsymengine),
+                            Cuint, (Ref{Basic},), x)))
+is_a_Integer(x::Basic) =
+    Bool(convert(Int, ccall((:is_a_Integer, libsymengine),
+                            Cuint, (Ref{Basic},), x)))
+is_a_Rational(x::Basic) =
+    Bool(convert(Int, ccall((:is_a_Rational, libsymengine),
+                            Cuint, (Ref{Basic},), x)))
+is_a_RealDouble(x::Basic) =
+    Bool(convert(Int, ccall((:is_a_RealDouble, libsymengine),
+                            Cuint, (Ref{Basic},), x)))
+is_a_RealMPFR(x::Basic) =
+    Bool(convert(Int, ccall((:is_a_RealMPFR, libsymengine),
+                            Cuint, (Ref{Basic},), x)))
+is_a_Complex(x::Basic) =
+    Bool(convert(Int, ccall((:is_a_Complex, libsymengine),
+                            Cuint, (Ref{Basic},), x)))
+is_a_ComplexDouble(x::Basic) =
+    Bool(convert(Int, ccall((:is_a_ComplexDouble, libsymengine),
+                            Cuint, (Ref{Basic},), x)))
+is_a_ComplexMPC(x::Basic) =
+    Bool(convert(Int, ccall((:is_a_ComplexMPC, libsymengine),
+                            Cuint, (Ref{Basic},), x)))
+
+Base.isinteger(x::Basic) = is_a_Integer(x)
+function Base.isreal(x::Basic)
+    is_a_Number(x) || return false
+    is_a_Integer(x) || is_a_Rational(x) || is_a_RealDouble(x) || is_a_RealMPFR(x)
+end
+
+# may not allocate; seems more idiomatic than default x == zero(x)
+function Base.iszero(x::Basic)
+    is_a_Number(x) || return false
+    x == zero(x)
+end
+
+function Base.isone(x::Basic)
+    is_a_Number(x) || return false
+    x == one(x)
+end
+
+
 
 ## These should have support in symengine-wrapper, but currently don't
 trunc(x::Basic, args...) = Basic(trunc(N(x), args...))

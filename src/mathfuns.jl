@@ -55,6 +55,7 @@ for (meth, libnm, modu) in [
                       (:log,:log,:Base),
                       (:sqrt,:sqrt,:Base),
                       (:exp,:exp,:Base),
+                      (:sign, :sign, :Base),
                       (:eta,:dirichlet_eta,:SpecialFunctions),
                       (:zeta,:zeta,:SpecialFunctions),
                       ]
@@ -107,6 +108,15 @@ for (meth, libnm) in [(:nextprime,:nextprime)
                       ]
     IMPLEMENT_ONE_ARG_FUNC(meth, libnm, lib=:ntheory_)
     eval(Expr(:export, meth))
+end
+
+"Return coefficient of `x^n` term, `x` a symbol"
+function coeff(b::Basic, x, n)
+    c = Basic()
+    out = ccall((:basic_coeff, libsymengine), Nothing,
+                (Ref{Basic},Ref{Basic},Ref{Basic},Ref{Basic}),
+                c,b,Basic(x), Basic(n))
+    c
 end
 
 function Base.convert(::Type{CVecBasic}, x::Vector{T}) where T
