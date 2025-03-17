@@ -8,14 +8,12 @@ import Base: diff
 ## Support for diff(ex, x,n1, y,n2, ...),
 ## but can also do diff(ex, (x,y), (n1, n2))
 
-function diff(b1::SymbolicType, b2::BasicType{Val{:Symbol}})
+function diff(b1::SymbolicType, b2::Basic)
+    is_symbol(b2) || throw(ArgumentError("Must differentiate with respect to a symbol"))
     a = Basic()
     ret = ccall((:basic_diff, libsymengine), Int, (Ref{Basic}, Ref{Basic}, Ref{Basic}), a, b1, b2)
     return a
 end
-
-diff(b1::SymbolicType, b2::BasicType) =
-    throw(ArgumentError("Second argument must be of Symbol type"))
 
 function diff(b1::SymbolicType, b2::SymbolicType, n::Integer=1)
     n < 0 && throw(DomainError("n must be non-negative integer"))
@@ -39,6 +37,19 @@ end
 function diff(b1::SymbolicType, b2::SymbolicType, b3::SymbolicType, bs...)
     diff(diff(b1,b2,b3), bs...)
 end
+
+function diff(b1::SymbolicType)
+    xs = free_symbols(b1)
+    n = length(xs)
+    n == 0 && return zero(b1)
+    n > 1 && throw(ArgumentError("More than one variable; one must be specified"))
+    diff(b1, only(xs))
+end
+
+## deprecate
+diff(b1::SymbolicType, b2::BasicType{Val{:Symbol}}) = diff(b1, Basic(b2))
+diff(b1::SymbolicType, b2::BasicType) =
+    throw(ArgumentError("Second argument must be of Symbol type"))
 
 ## mixed partials
 diff(ex::SymbolicType, bs::Tuple) = reduce((ex, x) -> diff(ex, x), bs, init=ex)
