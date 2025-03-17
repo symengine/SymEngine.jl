@@ -232,6 +232,14 @@ BasicTrigFunction =  Union{[SymEngine.BasicType{Val{i}} for i in trig_types]...}
 
 
 ###
+
+"Is expression constant"
+function is_constant(ex::Basic)
+    syms = CSetBasic()
+    ccall((:basic_free_symbols, libsymengine), Nothing, (Ref{Basic}, Ptr{Cvoid}), ex, syms.ptr)
+    Base.length(syms) == 0
+end
+
 "Is expression a symbol"
 function is_symbol(x::SymbolicType)
     res = ccall((:is_a_Symbol, libsymengine), Cuint, (Ref{Basic},), x)

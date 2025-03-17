@@ -4,7 +4,7 @@ import Base: trunc, ceil, floor, round
 
 
 function evalf(b::Basic, bits::Integer=53, real::Bool=false)
-    !isfinite(b) && return b
+    (b == oo || b == zoo || b == NAN) && return b
     c = Basic()
     bits > 53 && real && (have_mpfr || throw(ArgumentError("libsymengine has to be compiled with MPFR for this feature")))
     bits > 53 && !real && (have_mpc || throw(ArgumentError("libsymengine has to be compiled with MPC for this feature")))
@@ -99,10 +99,8 @@ function N(b::Basic)
     elseif b == GoldenRatio
         return φ
     else
-        fs = free_symbols(b)
-        if length(fs) > 0
+        is_constant(b) ||
             throw(ArgumentError("Object can have no free symbols"))
-        end
         out = evalf(b)
         imag(out) == Basic(0.0) ? N(real(out)) : N(out)
     end
