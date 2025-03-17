@@ -232,6 +232,18 @@ BasicTrigFunction =  Union{[SymEngine.BasicType{Val{i}} for i in trig_types]...}
 
 
 ###
+"Is expression a symbol"
+function is_symbol(x::SymbolicType)
+    res = ccall((:is_a_Symbol, libsymengine), Cuint, (Ref{Basic},), x)
+    Bool(convert(Int,res))
+end
+
+"Does expression contain the symbol"
+function has_symbol(ex::SymbolicType, x::SymbolicType)
+    is_symbol(x) || throw(ArgumentError("Not a symbol"))
+    res = ccall((:basic_has_symbol, libsymengine), Cuint, (Ref{Basic},Ref{Basic}),  ex, x)
+    Bool(convert(Int, res))
+end
 
 
 " Return free symbols in an expression as a `Set`"
@@ -305,4 +317,3 @@ function Serialization.deserialize(s::Serialization.AbstractSerializer, ::Type{B
 	throw_if_error(res)
 	return a
 end
-
