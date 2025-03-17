@@ -18,3 +18,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
+=============================================================================
+
+Some parts of src/decl.jl is from Symbolics.jl and SymPy.jl licensed under the
+same license with the copyrights
+
+Copyright (c) <2013> <j verzani>
+Copyright (c) 2021: Shashi Gowda, Yingbo Ma, Chris Rackauckas, Julia Computing.
