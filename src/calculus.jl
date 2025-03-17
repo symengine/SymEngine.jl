@@ -15,11 +15,13 @@ function diff(b1::SymbolicType, b2::Basic)
     return a
 end
 
-function diff(b1::SymbolicType, b2::SymbolicType, n::Integer=1)
+function diff(b1::SymbolicType, b2::SymbolicType, n::Integer)
     n < 0 && throw(DomainError("n must be non-negative integer"))
     n==0 && return b1
-    n==1 && return diff(b1, BasicType(b2))
-    n > 1 && return diff(diff(b1, BasicType(b2)), BasicType(b2), n-1)
+    x = Basic(b2)
+    ex =  diff(b1, x)
+    n==1 && return ex
+    return diff(ex, x, n-1)
 end
 
 function diff(b1::SymbolicType, b2::SymbolicType, n::Integer, xs...)
@@ -27,10 +29,12 @@ function diff(b1::SymbolicType, b2::SymbolicType, n::Integer, xs...)
 end
 
 function diff(b1::SymbolicType, b2::SymbolicType, b3::SymbolicType)
-    if isa(BasicType(b3), BasicType{Val{:Integer}})
-        diff(b1, b2, N(b3))
+    if isinteger(b3)
+        n = N(b3)::Int
+        diff(b1, b2, n)
     else
-        diff(b1, (b2, b3))
+        ex = diff(b1, b2)
+        diff(ex, b3)
     end
 end
 
