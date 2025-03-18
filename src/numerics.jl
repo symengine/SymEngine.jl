@@ -16,46 +16,40 @@ function evalf(b::Basic, bits::Integer=53, real::Bool=false)
     end
 end
 
-## Conversions from SymEngine -> Julia at the ccall level
-function convert(::Type{BigInt}, b::BasicType{Val{:Integer}})
-    _convert(BigInt, Basic(b))
-end
-
+## Conversions from SymEngine.Basic -> Julia at the ccall level
 function _convert(::Type{BigInt}, b::Basic)
+    is_a_Integer(b) || throw(ArgumentError("Not an integer"))
     a = BigInt()
     ccall((:integer_get_mpz, libsymengine), Nothing, (Ref{BigInt}, Ref{Basic}), a, b)
     return a
 end
 
-
-function convert(::Type{BigFloat}, b::BasicType{Val{:RealMPFR}})
-    _convert(BigInt, Basic(b))
+function _convert(::Type{Int}, b::Basic)
+    is_a_Integer(b) || throw(ArgumentError("Not an integer"))
+    ccall((:integer_get_si, libsymengine), Int, (Ref{Basic},), b)
 end
 
 function _convert(::Type{BigFloat}, b::Basic)
+    is_a_RealMPFR(b) || throw("Not a big value")
     a = BigFloat()
     ccall((:real_mpfr_get, libsymengine), Nothing, (Ref{BigFloat}, Ref{Basic}), a, b)
     return a
 end
 
-function convert(::Type{Cdouble}, b::BasicType{Val{:RealDouble}})
-    _convert(Cdouble, Basic(b))
-end
 function _convert(::Type{Cdouble}, b::Basic)
+    is_a_RealDouble(b) || throw(ArgumentError("Not a real double"))
     return ccall((:real_double_get_d, libsymengine), Cdouble, (Ref{Basic},), b)
 end
 
-function real(b::BasicComplexNumber)
-    c = Basic(b)
+function _real(b::Basic)
     a = Basic()
-    ccall((:complex_base_real_part, libsymengine), Nothing, (Ref{Basic}, Ref{Basic}), a, c)
+    ccall((:complex_base_real_part, libsymengine), Nothing, (Ref{Basic}, Ref{Basic}), a, b)
     return a
 end
 
-function imag(b::BasicComplexNumber)
-    c = Basic(b)
+function _imag(b::Basic)
     a = Basic()
-    ccall((:complex_base_imaginary_part, libsymengine), Nothing, (Ref{Basic}, Ref{Basic}), a, c)
+    ccall((:complex_base_imaginary_part, libsymengine), Nothing, (Ref{Basic}, Ref{Basic}), a, b)
     return a
 end
 
@@ -69,7 +63,6 @@ Convert a SymEngine numeric value into a Julian number
 N(a::Integer) = a
 N(a::Rational) = a
 N(a::Complex) = a
-#N(b::Basic) = N(BasicType(b))
 
 function N(b::Basic)
     if is_a_Integer(b)
@@ -126,13 +119,49 @@ function _N_Integer(b::Basic)
     end
 end
 
-_N_Rational(b::Basic)= Rational(N(numerator(b)), N(denominator(b))) # TODO: conditionally wrap rational_get_mpq from cwrapper.h
+# TODO: conditionally wrap rational_get_mpq from cwrapper.h
+_N_Rational(b::Basic) = Rational(N(numerator(b)), N(denominator(b)))
 _N_RealDouble(b::Basic) = _convert(Cdouble, b)
 _N_RealMPFR(b::Basic) = _convert(BigFloat, b)
 _N_NaN(b::Basic) = NaN
 _N_ComplexNumber(b::Basic) = complex(N(real(b)), N(imag(b)))
 
+## define convert(T, x) methods leveraging N()
+function convert(::Type{Float64}, x::Basic)
+    is_a_RealDouble(x) && return _convert(Cdouble, x)
+    convert(Float64, N(evalf(x, 53, true)))
+end
+function convert(::Type{BigFloat}, x::Basic)
+    is_a_RealMPFR(x) && return _convert(BigFloat, x)
+    convert(BigFloat, N(evalf(x, precision(BigFloat), true)))
+end
+function convert(::Type{Complex{Float64}}, x::Basic)
+    z = is_a_ComplexDouble(x) ? x : evalf(x, 53, false)
+    a,b = _real(x), _imag(x)
+    u,v = _convert(Cdouble, a), _convert(Cdouble, b)
+    return complex(u,v)
+end
+function convert(::Type{Complex{BigFloat}}, x::Basic)
+    z =  is_a_ComplexMPC(x) ? x : evalf(x, precision(BigFloat), false)
+    a,b = _real(z), _imag(z)
+    u,v = _convert(BigFloat, a), _convert(BigFloat, b)
+    return complex(u,v)
+end
+
+convert(::Type{Number}, x::Basic)            = x
+convert(::Type{T}, x::Basic) where {T <: Real}      = convert(T, N(x))
+convert(::Type{Complex{T}}, x::Basic) where {T <: Real}    = convert(Complex{T}, N(x))
+
+# Constructors no longer fall back to `convert` methods
+Base.Int64(x::Basic) = convert(Int64, x)
+Base.Int32(x::Basic) = convert(Int32, x)
+Base.Float32(x::Basic) = convert(Float32, x)
+Base.Float64(x::Basic) = convert(Float64, x)
+Base.BigInt(x::Basic) = convert(BigInt, x)
+Base.Real(x::Basic) = convert(Real, x)
+
 ## deprecate
+#N(b::Basic) = N(BasicType(b))
 function N(b::BasicType{Val{:Infty}})
     b == oo && return Inf
     b == -oo && return -Inf
@@ -156,7 +185,7 @@ function N(b::BasicType)
 end
 ## end deprecate
 
-##  Conversions SymEngine -> Julia
+##  p/q parts
 function as_numer_denom(x::Basic)
     a, b = Basic(), Basic()
     ccall((:basic_as_numer_denom, libsymengine), Nothing, (Ref{Basic}, Ref{Basic}, Ref{Basic}), a, b, x)
@@ -184,22 +213,28 @@ conj(x::Basic) = Basic(conj(SymEngine.BasicType(x)))
 # To allow future extension, we define the fallback on `BasicType``.
 conj(x::BasicType) = 2 * real(x.x) - x.x
 
-## define convert(T, x) methods leveraging N()
-convert(::Type{Float64}, x::Basic)           = convert(Float64, N(evalf(x, 53, true)))
-convert(::Type{BigFloat}, x::Basic)          = convert(BigFloat, N(evalf(x, precision(BigFloat), true)))
-convert(::Type{Complex{Float64}}, x::Basic)  = convert(Complex{Float64}, N(evalf(x, 53, false)))
-convert(::Type{Complex{BigFloat}}, x::Basic) = convert(Complex{BigFloat}, N(evalf(x, precision(BigFloat), false)))
-convert(::Type{Number}, x::Basic)            = x
-convert(::Type{T}, x::Basic) where {T <: Real}      = convert(T, N(x))
-convert(::Type{Complex{T}}, x::Basic) where {T <: Real}    = convert(Complex{T}, N(x))
+## convert from BasicType
+function convert(::Type{BigInt}, b::BasicType{Val{:Integer}})
+    _convert(BigInt, Basic(b))
+end
 
-# Constructors no longer fall back to `convert` methods
-Base.Int64(x::Basic) = convert(Int64, x)
-Base.Int32(x::Basic) = convert(Int32, x)
-Base.Float32(x::Basic) = convert(Float32, x)
-Base.Float64(x::Basic) = convert(Float64, x)
-Base.BigInt(x::Basic) = convert(BigInt, x)
-Base.Real(x::Basic) = convert(Real, x)
+function convert(::Type{BigFloat}, b::BasicType{Val{:RealMPFR}})
+    _convert(BigInt, Basic(b))
+end
+
+function convert(::Type{Cdouble}, b::BasicType{Val{:RealDouble}})
+    _convert(Cdouble, Basic(b))
+end
+
+## real/imag for BasicType
+function real(b::BasicComplexNumber)
+    _real(Basic(b))
+end
+
+function imag(b::BasicComplexNumber)
+    _imag(Basic(b))
+end
+
 
 ## For generic programming in Julia
 float(x::Basic) = float(N(x))
