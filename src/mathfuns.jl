@@ -51,18 +51,41 @@ for (meth, libnm, modu) in [
                       (:acsch,:acsch,:Base),
                       (:atanh,:atanh,:Base),
                       (:acoth,:acoth,:Base),
-                      (:gamma,:gamma,:SpecialFunctions),
                       (:log,:log,:Base),
                       (:sqrt,:sqrt,:Base),
                       (:exp,:exp,:Base),
                       (:sign, :sign, :Base),
-                      (:eta,:dirichlet_eta,:SpecialFunctions),
-                      (:zeta,:zeta,:SpecialFunctions),
+                      (:ceil, :ceiling, :Base),
+                      (:floor, :floor, :Base)
                       ]
     eval(:(import $modu.$meth))
     IMPLEMENT_ONE_ARG_FUNC(:($modu.$meth), libnm)
 end
+
+for (meth, libnm, modu) in [
+    (:gamma,:gamma,:SpecialFunctions),
+    (:loggamma,:loggamma,:SpecialFunctions),
+    (:eta,:dirichlet_eta,:SpecialFunctions),
+    (:zeta,:zeta,:SpecialFunctions),
+    (:erf, :erf, :SpecialFunctions),
+    (:erfc, :erfc, :SpecialFunctions)
+]
+    eval(:(import $modu.$meth))
+    IMPLEMENT_ONE_ARG_FUNC(:($modu.$meth), libnm)
+end
+
+for (meth, libnm, modu) in [
+    (:beta, :beta, :SpecialFunctions),
+    (:polygamma, :polygamma, :SpecialFunctions),
+    (:loggamma,:loggamma,:SpecialFunctions),
+    ]
+    eval(:(import $modu.$meth))
+    IMPLEMENT_TWO_ARG_FUNC(:($modu.$meth), libnm)
+end
+
 Base.abs2(x::SymEngine.Basic) = abs(x)^2
+
+
 
 if get_symbol(:basic_atan2) != C_NULL
     import Base.atan
