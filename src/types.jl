@@ -106,8 +106,25 @@ function get_class_from_id(id::UInt)
     str
 end
 
+# use value of `get_type` to index into a vector storing symbols
+function _get_symengine_classes()
+    d = Vector{Symbol}()
+    i = 0
+    while true
+      s = get_class_from_id(UInt(i))
+      if s == ""
+          break
+    end
+      push!(d, Symbol(s))
+      i+=1
+  end
+    return d
+end
+
+const symengine_classes = _get_symengine_classes()
+
 "Get SymEngine class of an object (e.g. 1=>:Integer, 1//2 =:Rational, sin(x) => :Sin, ..."
-get_symengine_class(s::Basic) = Symbol(get_class_from_id(get_type(s)))
+get_symengine_class(s::Basic) = symengine_classes[get_type(s) + 1]
 
 
 ## Construct symbolic objects
@@ -194,7 +211,7 @@ end
 ## and then
 ## meth(x::BasicType{Val{:Integer}}) = ... or
 ## meth(x::BasicNumber) = ...
-mutable struct BasicType{T} <: Number
+struct BasicType{T} <: Number
     x::Basic
 end
 
