@@ -1,7 +1,6 @@
 module SymEngineTermInterfaceExt
 
 import SymEngine
-import SymEngine: SymbolicType
 import TermInterface
 
 
@@ -24,6 +23,16 @@ import TermInterface
 λ(::Val{:Acsch}) = acsch; λ(::Val{:Asech}) = asech; λ(::Val{:Acoth}) = acoth
 λ(::Val{:Gamma}) = gamma; λ(::Val{:Zeta}) = zeta; λ(::Val{:LambertW}) = lambertw
 
+const julia_operations = Vector{Any}(missing, length(SymEngine.symengine_classes))
+for (i,s) ∈ enumerate(SymEngine.symengine_classes)
+    val = try
+        λ(Val(s))
+    catch err
+        missing
+    end
+    julia_operations[i] = val
+end
+
 #==
 Check if x represents an expression tree. If returns true, it will be assumed that operation(::T) and arguments(::T) methods are defined. Definining these three should allow use of SymbolicUtils.simplify on custom types. Optionally symtype(x) can be defined to return the expected type of the symbolic expression.
 ==#
@@ -40,7 +49,7 @@ TermInterface.isexpr(x::SymEngine.SymbolicType) = TermInterface.iscall(x)
 
 function TermInterface.operation(x::SymEngine.SymbolicType)
     TermInterface.iscall(x) || error("$(typeof(x)) doesn't have an operation!")
-    return λ(x)
+    return julia_operations[SymEngine.get_type(x) + 1]
 end
 
 function TermInterface.arguments(x::SymEngine.SymbolicType)
