@@ -8,20 +8,29 @@ import Base: diff
 ## Support for diff(ex, x,n1, y,n2, ...),
 ## but can also do diff(ex, (x,y), (n1, n2))
 
-function diff(b1::SymbolicType, b2::Basic)
+
+function diff!(a::Basic, b1::SymbolicType, b2::Basic)
     is_symbol(b2) || throw(ArgumentError("Must differentiate with respect to a symbol"))
-    a = Basic()
     ret = ccall((:basic_diff, libsymengine), Int, (Ref{Basic}, Ref{Basic}, Ref{Basic}), a, b1, b2)
     return a
 end
 
+function diff(b1::SymbolicType, b2::Basic)
+    a = Basic()
+    diff!(a, b1, b2)
+    a
+end
+
 function diff(b1::SymbolicType, b2::SymbolicType, n::Integer)
     n < 0 && throw(DomainError("n must be non-negative integer"))
-    n==0 && return b1
+    n == 0 && return b1
     x = Basic(b2)
-    ex =  diff(b1, x)
-    n==1 && return ex
-    return diff(ex, x, n-1)
+    out = Basic()
+    diff!(out, b1, x)
+    for _ in (n-1):-1:1
+        diff!(out, out, x)
+    end
+    out
 end
 
 function diff(b1::SymbolicType, b2::SymbolicType, n::Integer, xs...)
