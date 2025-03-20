@@ -63,43 +63,9 @@ N(a::Integer) = a
 N(a::Rational) = a
 N(a::Complex) = a
 
-function N(b::Basic)
-    if is_a_Integer(b)
-        return _N_Integer(b)
-    elseif is_a_Rational(b)
-        return _N_Rational(b)
-    elseif is_a_RealDouble(b)
-        return _N_RealDouble(b)
-    elseif is_a_RealMPFR(b)
-        return _N_RealMPFR(b)
-    elseif is_a_Complex(b) || is_a_ComplexDouble(b) || is_a_ComplexMPC(b)
-        return complex(N(real(b)), N(imag(b)))
-    elseif isnan(b)
-        return _N_NaN(b)
-    elseif b == oo
-        return Inf
-    elseif b == zoo
-        return Complex(Inf,Inf)
-    elseif b == PI
-        return π
-    elseif b == EulerGamma
-        return γ
-    elseif b == E
-        return ℯ
-    elseif b == Catalan
-        return catalan
-    elseif b == GoldenRatio
-        return φ
-    else
-        is_constant(b) ||
-            throw(ArgumentError("Object can have no free symbols"))
-        out = evalf(b)
-        imag(out) == Basic(0.0) ? N(real(out)) : N(out)
-    end
-end
+N(b::Basic) = N(b, Val{get_symengine_class(b)}())
 
-
-function _N_Integer(b::Basic)
+function N(b::Basic, ::Val{:Integer})
     a = _convert(BigInt, b)
     if (a.size > 1 || a.size < -1)
         return a
@@ -119,12 +85,51 @@ function _N_Integer(b::Basic)
 end
 
 # TODO: conditionally wrap rational_get_mpq from cwrapper.h
-_N_Rational(b::Basic) = Rational(N(numerator(b)), N(denominator(b)))
-_N_RealDouble(b::Basic) = _convert(Cdouble, b)
-_N_RealMPFR(b::Basic) = _convert(BigFloat, b)
-_N_NaN(b::Basic) = NaN
-_N_ComplexNumber(b::Basic) = complex(N(real(b)), N(imag(b)))
+N(b::Basic, ::Val{:Rational}) = Rational(N(numerator(b)), N(denominator(b)))
+N(b::Basic, ::Val{:RealDouble}) = _convert(Cdouble, b)
+N(b::Basic, ::Val{:RealMPFR}) = _convert(BigFloat, b)
+N(b::Basic, ::Val{:NaN}) = NaN
+N(b::Basic, ::Val{:Complex}) = complex(N(real(b)), N(imag(b)))
+N(b::Basic, ::Val{:ComplexDouble}) = complex(N(real(b)), N(imag(b)))
+N(b::Basic, ::Val{:ComplexMPC}) = complex(N(real(b)), N(imag(b)))
 
+function N(b::Basic, ::Val{:Infty})
+    if b == oo
+        return Inf
+    elseif b == zoo
+        return Complex(Inf,Inf)
+    elseif b == -oo
+        return -Inf
+    else
+        throw(ArgumentError("Unknown infinity symbol"))
+    end
+end
+
+function N(b::Basic, ::Val{:Constant})
+    if b == PI
+        return π
+    elseif b == EulerGamma
+        return γ
+    elseif b == E
+        return ℯ
+    elseif b == Catalan
+        return catalan
+    elseif b == GoldenRatio
+        return φ
+    else
+        throw(ArgumentError("Unknown constant"))
+    end
+end
+
+function N(b::Basic, v)
+    is_constant(b) ||
+        throw(ArgumentError("Object can have no free symbols"))
+    out = evalf(b)
+    imag(out) == Basic(0.0) ? N(real(out)) : N(out)
+end
+
+## deprecate N(::BasicType)
+N(b::BasicType{T}) where {T} = N(convert(Basic, b), T)
 
 ## define convert(T, x) methods leveraging N() when needed
 function convert(::Type{Float64}, x::Basic)
@@ -290,32 +295,6 @@ eps(::Type{BasicType{Val{:RealDouble}}}) = 2^-52
 eps(::Type{BasicType{Val{:ComplexDouble}}}) = 2^-52
 eps(x::BasicType{Val{:RealMPFR}}) = evalf(Basic(2), prec(x), true) ^ (-prec(x)+1)
 eps(x::BasicType{Val{:ComplexMPFR}}) = eps(real(x))
-
-
-
-## deprecate N(::BasicType)
-#N(b::Basic) = N(BasicType(b))
-function N(b::BasicType{Val{:Infty}})
-    b == oo && return Inf
-    b == -oo && return -Inf
-    b == zoo && return Complex(Inf, Inf)
-end
-
-## Mapping of SymEngine Constants into julia values
-constant_map = Dict("pi" => π, "eulergamma" => γ, "exp(1)" => e, "catalan" => catalan,
-                    "goldenratio" => φ)
-
-N(b::BasicType{Val{:Constant}}) = constant_map[toString(b)]
-
-function N(b::BasicType)
-    b = convert(Basic, b)
-    fs = free_symbols(b)
-    if length(fs) > 0
-        throw(ArgumentError("Object can have no free symbols"))
-    end
-    out = evalf(b)
-    imag(out) == Basic(0.0) ? real(out) : out
-end
 
 ## convert from BasicType
 function convert(::Type{BigInt}, b::BasicType{Val{:Integer}})
