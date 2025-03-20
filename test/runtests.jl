@@ -21,6 +21,12 @@ end
 @test_throws UndefVarError isdefined(w)
 @test_throws Exception show(Basic())
 
+# test @vars constructions
+@vars a, b[0:4], c(), d=>"D"
+@test length(b) == 5
+@test isa(c, SymFunction)
+@test repr(d) == "D"
+
 a = x^2 + x/2 - x*y*5
 b = diff(a, x)
 @test b == 2*x + 1//2 - 5*y
@@ -63,10 +69,8 @@ c = Basic(-5)
 @test abs(c) == 5
 @test abs(c) != 4
 
-show(a)
-println()
-show(b)
-println()
+repr("text/plain", a) == (1/2)*x - 5*x*y + x^2
+repr("text/plain", b) == 1/2 + 2*x - 5*y
 
 @test 1 // x == 1 / x
 @test x // 2 == (1//2) * x
@@ -151,6 +155,7 @@ for val in samples
     @test subs(ex, x => val) == val^2 + y^2
     @test subs(ex, SymEngine.CMapBasicBasic(Dict(x=>val))) == val^2 + y^2
     @test subs(ex, Dict(x=>val)) == val^2 + y^2
+    @test subs(ex) == ex
 end
 # This probably results in a number of redundant tests (operator order).
 for val1 in samples, val2 in samples
