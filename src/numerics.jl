@@ -63,9 +63,9 @@ N(a::Integer) = a
 N(a::Rational) = a
 N(a::Complex) = a
 
-N(b::Basic) = N(b, Val{get_symengine_class(b)}())
+N(b::Basic) = N(Val(get_symengine_class(b)), b)
 
-function N(b::Basic, ::Val{:Integer})
+function N(::Val{:Integer}, b::Basic)
     a = _convert(BigInt, b)
     if (a.size > 1 || a.size < -1)
         return a
@@ -85,15 +85,15 @@ function N(b::Basic, ::Val{:Integer})
 end
 
 # TODO: conditionally wrap rational_get_mpq from cwrapper.h
-N(b::Basic, ::Val{:Rational}) = Rational(N(numerator(b)), N(denominator(b)))
-N(b::Basic, ::Val{:RealDouble}) = _convert(Cdouble, b)
-N(b::Basic, ::Val{:RealMPFR}) = _convert(BigFloat, b)
-N(b::Basic, ::Val{:NaN}) = NaN
-N(b::Basic, ::Val{:Complex}) = complex(N(real(b)), N(imag(b)))
-N(b::Basic, ::Val{:ComplexDouble}) = complex(N(real(b)), N(imag(b)))
-N(b::Basic, ::Val{:ComplexMPC}) = complex(N(real(b)), N(imag(b)))
+N(::Val{:Rational},   b::Basic) = Rational(N(numerator(b)), N(denominator(b)))
+N(::Val{:RealDouble}, b::Basic) = _convert(Cdouble, b)
+N(::Val{:RealMPFR},   b::Basic) = _convert(BigFloat, b)
+N(::Val{:Complex},    b::Basic) = complex(N(real(b)), N(imag(b)))
+N(::Val{:ComplexMPC}, b::Basic) = complex(N(real(b)), N(imag(b)))
+N(::Val{:ComplexDouble}, b::Basic) = complex(N(real(b)), N(imag(b)))
 
-function N(b::Basic, ::Val{:Infty})
+N(::Val{:NaN},        b::Basic) = NaN
+function N(::Val{:Infty}, b::Basic)
     if b == oo
         return Inf
     elseif b == zoo
@@ -105,7 +105,7 @@ function N(b::Basic, ::Val{:Infty})
     end
 end
 
-function N(b::Basic, ::Val{:Constant})
+function N(::Val{:Constant}, b::Basic)
     if b == PI
         return π
     elseif b == EulerGamma
@@ -121,7 +121,7 @@ function N(b::Basic, ::Val{:Constant})
     end
 end
 
-function N(b::Basic, v)
+function N(::Val{<:Any}, b::Basic)
     is_constant(b) ||
         throw(ArgumentError("Object can have no free symbols"))
     out = evalf(b)
