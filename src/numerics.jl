@@ -63,9 +63,7 @@ N(a::Integer) = a
 N(a::Rational) = a
 N(a::Complex) = a
 
-# precomputing is more performant
-const symengine_classes_val = [Val(c) for c in SymEngine.symengine_classes]
-N(b::Basic) = N(symengine_classes_val[get_type(b) + 1], b)
+N(b::Basic) = N(get_symengine_class_val(b), b)
 
 function N(::Val{:Integer}, b::Basic)
     a = _convert(BigInt, b)

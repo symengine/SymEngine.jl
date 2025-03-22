@@ -122,9 +122,11 @@ function _get_symengine_classes()
 end
 
 const symengine_classes = _get_symengine_classes()
+const symengine_classes_val = [Val(c) for c in SymEngine.symengine_classes]
 
 "Get SymEngine class of an object (e.g. 1=>:Integer, 1//2 =:Rational, sin(x) => :Sin, ..."
 get_symengine_class(s::Basic) = symengine_classes[get_type(s) + 1]
+get_symengine_class_val(s::Basic) = symengine_classes_val[get_type(s) + 1]
 
 
 ## Construct symbolic objects
@@ -221,7 +223,7 @@ SymbolicType = Union{Basic, BasicType}
 convert(::Type{Basic}, x::BasicType) = x.x
 Basic(x::BasicType) = x.x
 
-BasicType(val::Basic) =  BasicType{Val{get_symengine_class(val)}}(val)
+BasicType(val::Basic) =  BasicType{get_symengine_class_val(val)}(val)
 convert(::Type{BasicType{T}}, val::Basic) where {T} = BasicType{Val{get_symengine_class(val)}}(val)
 # Needed for julia v0.4.7
 convert(::Type{T}, x::Basic) where {T<:BasicType} = BasicType(x)
