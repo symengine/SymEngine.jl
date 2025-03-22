@@ -122,9 +122,13 @@ function _get_symengine_classes()
 end
 
 const symengine_classes = _get_symengine_classes()
+const symengine_classes_val = [Val(c) for c in SymEngine.symengine_classes]
+const symengine_classes_val_type = [Val{c} for c in SymEngine.symengine_classes]
 
 "Get SymEngine class of an object (e.g. 1=>:Integer, 1//2 =:Rational, sin(x) => :Sin, ..."
 get_symengine_class(s::Basic) = symengine_classes[get_type(s) + 1]
+get_symengine_class_val(s::Basic) = symengine_classes_val[get_type(s) + 1]
+get_symengine_class_val_type(s::Basic) = symengine_classes_val_type[get_type(s) + 1]
 
 
 ## Construct symbolic objects
@@ -221,8 +225,9 @@ SymbolicType = Union{Basic, BasicType}
 convert(::Type{Basic}, x::BasicType) = x.x
 Basic(x::BasicType) = x.x
 
-BasicType(val::Basic) =  BasicType{Val{get_symengine_class(val)}}(val)
-convert(::Type{BasicType{T}}, val::Basic) where {T} = BasicType{Val{get_symengine_class(val)}}(val)
+BasicType(val::Basic) =  BasicType{get_symengine_class_val_type(val)}(val)
+convert(::Type{BasicType{T}}, val::Basic) where {T} =
+    BasicType{get_symengine_class_val_type(val)}(val)
 # Needed for julia v0.4.7
 convert(::Type{T}, x::Basic) where {T<:BasicType} = BasicType(x)
 
@@ -263,6 +268,14 @@ BasicTrigFunction =  Union{[SymEngine.BasicType{Val{i}} for i in trig_types]...}
 
 
 ###
+
+"Is expression constant"
+function is_constant(ex::Basic)
+    syms = CSetBasic()
+    ccall((:basic_free_symbols, libsymengine), Nothing, (Ref{Basic}, Ptr{Cvoid}), ex, syms.ptr)
+    Base.length(syms) == 0
+end
+
 "Is expression a symbol"
 function is_symbol(x::SymbolicType)
     res = ccall((:is_a_Symbol, libsymengine), Cuint, (Ref{Basic},), x)
