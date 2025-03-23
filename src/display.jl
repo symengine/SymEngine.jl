@@ -2,7 +2,7 @@
 function toString(b::SymbolicType)
     b = Basic(b)
     if b.ptr == C_NULL
-       error("Trying to print an uninitialized SymEngine Basic variable.")
+        return "<Unitialized Basic value>"
     end
     a = ccall((:basic_str_julia, libsymengine), Cstring, (Ref{Basic}, ), b)
     string = unsafe_string(a)

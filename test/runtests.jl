@@ -19,7 +19,7 @@ let
     @vars w
 end
 @test_throws UndefVarError isdefined(w)
-@test_throws Exception show(Basic())
+@test repr(Basic()) == "<Unitialized Basic value>"
 
 # test @vars constructions
 @vars a, b[0:4], c(), d=>"D"
@@ -353,4 +353,23 @@ end
 	deserialized = deserialize(iobuf)
 	close(iobuf)
 	@test deserialized == data
+end
+
+@vars a x y
+@testset "non-allocating methods" begin
+    SymEngine.sin!(a,x); SymEngine.cos!(a,x); SymEngine.abs!(a,x)
+    SymEngine.pow!(a,x,x);
+    SymEngine.add!(a,x,x);SymEngine.mul!(a,x,x)
+    SymEngine.sub!(a,x,x);SymEngine.div!(a,x,x)
+    @test (@allocations SymEngine.sin!(a,x)) == 0
+    @test (@allocations SymEngine.cos!(a,x)) == 0
+    @test (@allocations SymEngine.abs2!(a,x)) == 0
+    @test (@allocations SymEngine.pow!(a,x,x)) == 0
+
+    # still allocates 1 (or 2)
+    @test (@allocations SymEngine.add!(a,x,y)) < (@allocations x+y)
+    @test (@allocations SymEngine.sub!(a,x,y)) < (@allocations x-y)
+    @test (@allocations SymEngine.mul!(a,x,y)) < (@allocations x*y)
+    @test (@allocations SymEngine.div!(a,x,y)) < (@allocations x/y)
+
 end

@@ -1,4 +1,4 @@
-IMPLEMENT_ONE_ARG_FUNC(:expand, :expand)
+IMPLEMENT_ONE_ARG_FUNC(nothing, :expand, :expand)
 
 if get_symbol(:basic_cse) != C_NULL
     function cse(exprs...)

@@ -1,9 +1,17 @@
 using SpecialFunctions
 
-function IMPLEMENT_ONE_ARG_FUNC(meth, symnm; lib=:basic_)
+function IMPLEMENT_ONE_ARG_FUNC(modu, meth, symnm; lib=:basic_)
+    methbang = Symbol(meth, "!")
+    if isa(modu, Symbol)
+        meth = :($modu.$meth)
+    end
      @eval begin
         function ($meth)(b::SymbolicType)
             a = Basic()
+            ($methbang)(a,b)
+            a
+        end
+        function ($methbang)(a::Basic, b::SymbolicType)
             err_code = ccall(($(string(lib,symnm)), libsymengine), Cuint, (Ref{Basic}, Ref{Basic}), a, b)
             throw_if_error(err_code, $(string(meth)))
             return a
@@ -11,15 +19,25 @@ function IMPLEMENT_ONE_ARG_FUNC(meth, symnm; lib=:basic_)
     end
 end
 
-function IMPLEMENT_TWO_ARG_FUNC(meth, symnm; lib=:basic_)
+function IMPLEMENT_TWO_ARG_FUNC(modu, meth, symnm; lib=:basic_)
+    methbang = Symbol(meth, "!")
+    if isa(modu, Symbol)
+        meth = :($modu.$meth)
+    end
+
      @eval begin
         function ($meth)(b1::SymbolicType, b2::Number)
             a = Basic()
+            ($methbang)(a,b1,b2)
+            a
+        end
+         function ($methbang)(a::Basic, b1::SymbolicType, b2::Number)
             b1, b2 = promote(b1, b2)
             err_code = ccall(($(string(lib,symnm)), libsymengine), Cuint, (Ref{Basic}, Ref{Basic}, Ref{Basic}), a, b1, b2)
             throw_if_error(err_code, $(string(meth)))
             return a
         end
+
     end
 end
 
@@ -59,7 +77,7 @@ for (meth, libnm, modu) in [
                       (:floor, :floor, :Base)
                       ]
     eval(:(import $modu.$meth))
-    IMPLEMENT_ONE_ARG_FUNC(:($modu.$meth), libnm)
+    IMPLEMENT_ONE_ARG_FUNC(modu, meth, libnm)
 end
 
 for (meth, libnm, modu) in [
@@ -71,7 +89,7 @@ for (meth, libnm, modu) in [
     (:erfc, :erfc, :SpecialFunctions)
 ]
     eval(:(import $modu.$meth))
-    IMPLEMENT_ONE_ARG_FUNC(:($modu.$meth), libnm)
+    IMPLEMENT_ONE_ARG_FUNC(modu, meth, libnm)
 end
 
 for (meth, libnm, modu) in [
@@ -80,23 +98,32 @@ for (meth, libnm, modu) in [
     (:loggamma,:loggamma,:SpecialFunctions),
     ]
     eval(:(import $modu.$meth))
-    IMPLEMENT_TWO_ARG_FUNC(:($modu.$meth), libnm)
+    IMPLEMENT_TWO_ARG_FUNC(modu, meth, libnm)
 end
 
-Base.abs2(x::SymEngine.Basic) = abs(x)^2
-
+const TWO = Basic(2)
+function abs2!(a::Basic, x::Basic)
+    a = abs!(a, x)
+    a = pow!(a, x, TWO)
+    a
+end
+function Base.abs2(x::Basic)
+    a = Basic()
+    abs2!(a, x)
+    a
+end
 
 
 if get_symbol(:basic_atan2) != C_NULL
     import Base.atan
-    IMPLEMENT_TWO_ARG_FUNC(:(Base.atan), :atan2)
+    IMPLEMENT_TWO_ARG_FUNC(:Base, :atan, :atan2)
 end
 
 # export not import
 for  (meth, libnm) in [
                        (:lambertw,:lambertw),   # in add-on packages, not base
                        ]
-    IMPLEMENT_ONE_ARG_FUNC(meth, libnm)
+    IMPLEMENT_ONE_ARG_FUNC(nothing, meth, libnm)
     eval(Expr(:export, meth))
 end
 
@@ -118,7 +145,7 @@ for (meth, libnm) in [(:gcd, :gcd),
                       (:mod, :mod_f),
                       ]
     eval(:(import Base.$meth))
-    IMPLEMENT_TWO_ARG_FUNC(:(Base.$meth), libnm, lib=:ntheory_)
+    IMPLEMENT_TWO_ARG_FUNC(:Base, meth, libnm; lib=:ntheory_)
 end
 
 Base.binomial(n::Basic, k::Number) = binomial(N(n), N(k))  #ntheory_binomial seems wrong
@@ -129,18 +156,18 @@ Base.factorial(n::SymbolicType, k) = factorial(N(n), N(k))
 ## but not (:fibonacci,:fibonacci), (:lucas, :lucas) (Basic type is not the signature)
 for (meth, libnm) in [(:nextprime,:nextprime)
                       ]
-    IMPLEMENT_ONE_ARG_FUNC(meth, libnm, lib=:ntheory_)
+    IMPLEMENT_ONE_ARG_FUNC(nothing, meth, libnm, lib=:ntheory_)
     eval(Expr(:export, meth))
 end
 
 "Return coefficient of `x^n` term, `x` a symbol"
-function coeff(b::Basic, x, n)
-    c = Basic()
+function coeff!(a::Basic, b::Basic, x, n)
     out = ccall((:basic_coeff, libsymengine), Nothing,
                 (Ref{Basic},Ref{Basic},Ref{Basic},Ref{Basic}),
-                c,b,Basic(x), Basic(n))
-    c
+                a,b,Basic(x), Basic(n))
+    a
 end
+coeff(b::Basic, x, n) = coeff!(Basic(), b, x, n)
 
 function Base.convert(::Type{CVecBasic}, x::Vector{T}) where T
     vec = CVecBasic()

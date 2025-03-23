@@ -159,10 +159,13 @@ end
 
 
 ##  Conversions SymEngine -> Julia
-function as_numer_denom(x::Basic)
-    a, b = Basic(), Basic()
+function as_numer_denom!(a::Basic, b::Basic, x::Basic)
     ccall((:basic_as_numer_denom, libsymengine), Nothing, (Ref{Basic}, Ref{Basic}, Ref{Basic}), a, b, x)
     return a, b
+end
+function as_numer_denom(x::Basic)
+    a, b = Basic(), Basic()
+    as_numer_denom!(a,b,x)
 end
 
 as_numer_denom(x::BasicType) = as_numer_denom(Basic(x))
