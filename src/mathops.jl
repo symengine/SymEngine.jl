@@ -47,7 +47,7 @@ function sum!(a::Basic, v::CVecBasic)
 end
 function sum(v::CVecBasic)
     a = Basic()
-    sum!(a, b)
+    sum!(a, v)
 end
 
 +(b1::Basic, b2::Basic, b3::Basic, bs...) = sum(convert(CVecBasic, [b1, b2, b3, bs...]))
@@ -67,7 +67,7 @@ function prod!(a::Basic, v::CVecBasic)
 end
 function prod(v::CVecBasic)
     a = Basic()
-    prod!(a, b)
+    prod!(a, v)
 end
 
 *(b1::Basic, b2::Basic, b3::Basic, bs::Vararg{Number, N}) where {N} = prod(convert(CVecBasic, [b1, b2, b3, bs...]))

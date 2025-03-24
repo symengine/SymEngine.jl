@@ -101,8 +101,8 @@ for (meth, libnm, modu) in [
     IMPLEMENT_TWO_ARG_FUNC(modu, meth, libnm)
 end
 
-const TWO = Basic(2)
 function abs2!(a::Basic, x::Basic)
+    TWO = Basic(2) # put in init
     a = abs!(a, x)
     a = pow!(a, x, TWO)
     a
