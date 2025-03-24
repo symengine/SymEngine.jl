@@ -355,12 +355,12 @@ end
 	@test deserialized == data
 end
 
-@vars a x y
+@vars x y
+a = Basic()
 @testset "non-allocating(ish) methods" begin
-    SymEngine.sin!(a,x); SymEngine.cos!(a,x); SymEngine.abs!(a,x)
-    SymEngine.pow!(a,x,x);
-    SymEngine.add!(a,x,x);SymEngine.mul!(a,x,x)
-    SymEngine.sub!(a,x,x);SymEngine.div!(a,x,x)
+    sin(x), cos(x), abs(x)
+    x^x, x + x, x*x, x-x, x/x # warm up
+
     @test (@allocations SymEngine.sin!(a,x)) == 0
     @test (@allocations SymEngine.cos!(a,x)) == 0
     @test (@allocations SymEngine.pow!(a,x,x)) == 0
