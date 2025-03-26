@@ -301,7 +301,7 @@ function function_symbols(ex::Basic)
     function_symbols!(syms, ex)
     convert(Vector, syms)
 end
-function function_symbols!(syms, ex::Basic)
+function function_symbols!(syms::CSetBasic, ex::Basic)
     ccall((:basic_function_symbols, libsymengine), Nothing, (Ptr{Cvoid}, Ref{Basic}), syms.ptr, ex)
     syms
 end
