@@ -10,20 +10,6 @@
 ##
 ## To control dispatch, one might have `N(b::Basic) = N(BasicType(b))` and then define `N` for types of interest
 
-## Hold a reference to a SymEngine object
-mutable struct Basic  <: Number
-    ptr::Ptr{Cvoid}
-    function Basic()
-        z = new(C_NULL)
-        ccall((:basic_new_stack, libsymengine), Nothing, (Ref{Basic}, ), z)
-        finalizer(basic_free, z)
-        return z
-    end
-    function Basic(v::Ptr{Cvoid})
-        z = new(v)
-        return z
-    end
-end
 
 basic_free(b::Basic) = ccall((:basic_free_stack, libsymengine), Nothing, (Ref{Basic}, ), b)
 
