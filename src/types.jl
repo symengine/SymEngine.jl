@@ -283,7 +283,7 @@ function free_symbols(ex::Basic)
     free_symbols!(syms, ex)
     convert(Vector, syms)
 end
-function free_symbols!(syms, ex::Basic)
+function free_symbols!(syms::CSetBasic, ex::Basic)
     ccall((:basic_free_symbols, libsymengine), Nothing, (Ref{Basic}, Ptr{Cvoid}), ex, syms.ptr)
     syms
 end
