@@ -325,7 +325,7 @@ function get_args(ex::Basic)
     convert(Vector, args)
 end
 
-function get_args!(args, ex::Basic)
+function get_args!(args::CVecBasic, ex::Basic)
     ccall((:basic_get_args, libsymengine), Nothing, (Ref{Basic}, Ptr{Cvoid}), ex, args.ptr)
 end
 
