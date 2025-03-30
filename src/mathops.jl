@@ -83,7 +83,7 @@ Base.one(::Type{T}) where {T<:BasicType} = BasicType(Basic(1))
 ## Math constants
 ## no oo!
 
-for op in [:IM, :PI, :E, :EulerGamma, :Catalan, :oo, :zoo, :NAN]
+for op in [:IM, :PI, :E, :EulerGamma, :Catalan, :GoldenRatio, :oo, :zoo, :NAN]
     @eval begin
         const $op = Basic(C_NULL)
     end
@@ -108,6 +108,7 @@ function init_constants()
     @init_constant E E
     @init_constant EulerGamma EulerGamma
     @init_constant Catalan Catalan
+    @init_constant GoldenRatio GoldenRatio
     @init_constant oo infinity
     @init_constant zoo complex_infinity
     @init_constant NAN nan
