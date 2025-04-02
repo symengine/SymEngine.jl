@@ -19,7 +19,7 @@ let
     @vars w
 end
 @test_throws UndefVarError isdefined(w)
-@test_throws Exception show(Basic())
+@test repr(Basic()) == "<Unitialized Basic value>"
 
 # test @vars constructions
 @vars a, b[0:4], c(), d=>"D"
@@ -101,14 +101,22 @@ u,v,w = x(2.1), x(1), x(0)
 
 ## calculus
 x,y = symbols("x y")
+@test diff(log(x)) == 1/x
+@test diff(log(x),x) == 1/x
+@test_throws ArgumentError diff(log(x), x^2)
+
 n = Basic(2)
 ex = sin(x*y)
-@test diff(log(x),x) == 1/x
+@test_throws ArgumentError diff(ex)
 @test diff(ex, x) == y * cos(x*y)
 @test diff(ex, x, 2) == diff(diff(ex,x), x)
 @test diff(ex, x, n) == diff(diff(ex,x), x)
 @test diff(ex, x, y) == diff(diff(ex,x), y)
-@test diff(ex, x, y,x) == diff(diff(diff(ex,x), y), x)
+@test diff(ex, x, y, x) == diff(diff(diff(ex,x), y), x)
+@test diff(ex, x, 2, y, 3) == diff(ex, x,x,y,y,y)
+@test diff(ex, x, n, y, 3) == diff(ex, x,x,y,y,y)
+@test diff(ex, x, 2, y, x) == diff(ex, x,x,x,y)
+
 @test series(sin(x), x, 0, 2) == x
 @test series(sin(x), x, 0, 3) == x - x^3/6
 
@@ -406,3 +414,5 @@ end
 	close(iobuf)
 	@test deserialized == data
 end
+
+VERSION >= v"1.9.0" && include("test-allocations.jl")
