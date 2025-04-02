@@ -90,6 +90,9 @@ for op in [:IM, :PI, :E, :EulerGamma, :Catalan, :GoldenRatio, :oo, :zoo, :NAN]
     eval(Expr(:export, op))
 end
 
+True, False = Basic(C_NULL), Basic(C_NULL);
+export True, False
+
 macro init_constant(op, libnm)
     tup = (Base.Symbol("basic_const_$libnm"), libsymengine)
     alloc_tup = (:basic_new_stack, libsymengine)
@@ -112,14 +115,17 @@ function init_constants()
     @init_constant oo infinity
     @init_constant zoo complex_infinity
     @init_constant NAN nan
+    ccall((:bool_set_true, libsymengine), Nothing, (Ref{Basic},), True)
+    ccall((:bool_set_false, libsymengine), Nothing, (Ref{Basic},), False)
 end
 
-## ## Conversions
+## Conversions
 Base.convert(::Type{Basic}, x::Irrational{:π}) = PI
 Base.convert(::Type{Basic}, x::Irrational{:e}) = E
 Base.convert(::Type{Basic}, x::Irrational{:γ}) = EulerGamma
 Base.convert(::Type{Basic}, x::Irrational{:catalan}) = Catalan
 Base.convert(::Type{Basic}, x::Irrational{:φ}) = (1 + Basic(5)^Basic(1//2))/2
+Base.convert(::Type{Basic}, x::Bool) = x ? True : False
 Base.convert(::Type{BasicType}, x::Irrational) = BasicType(convert(Basic, x))
 
 ## Logical operators
