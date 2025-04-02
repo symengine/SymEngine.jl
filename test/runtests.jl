@@ -19,7 +19,7 @@ let
     @vars w
 end
 @test_throws UndefVarError isdefined(w)
-@test_throws Exception show(Basic())
+@test repr(Basic()) == "<Unitialized Basic value>"
 
 # test @vars constructions
 @vars a, b[0:4], c(), d=>"D"
@@ -414,3 +414,5 @@ end
 	close(iobuf)
 	@test deserialized == data
 end
+
+VERSION >= v"1.9.0" && include("test-allocations.jl")

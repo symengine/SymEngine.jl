@@ -8,13 +8,18 @@ end
 
 
 ## main ops
-for (op, libnm) in ((:+, :add), (:-, :sub), (:*, :mul), (:/, :div), (://, :div), (:^, :pow))
+for (op, libnm) in ((:+, :add), (:-, :sub), (:*, :mul), (:/, :div), (:^, :pow))
     tup = (Base.Symbol("basic_$libnm"), libsymengine)
+    opbang = Symbol(libnm,:!)
     @eval begin
-        function ($op)(b1::Basic, b2::Basic)
-            a = Basic()
+        function ($opbang)(a::Basic, b1::Basic, b2::Basic)
             err_code = ccall($tup, Cuint, (Ref{Basic}, Ref{Basic}, Ref{Basic}), a, b1, b2)
             throw_if_error(err_code, $(string(libnm)))
+            return a
+        end
+        function ($op)(b1::Basic, b2::Basic)
+            a = Basic()
+            ($opbang)(a, b1, b2)
             return a
         end
         ($op)(b1::BasicType, b2::BasicType) = ($op)(Basic(b1), Basic(b2))
@@ -30,15 +35,19 @@ end
 # In contrast to other standard operations such as `+`, `*`, `-`, and `/`,
 # Julia doesn't implement a general fallback of `//` for `Number`s promoting
 # the input arguments. Thus, we implement this here explicitly.
+Base.:(//)(b1::SymbolicType, b2::SymbolicType) = b1 / b2
 Base.:(//)(b1::SymbolicType, b2::Number) = //(promote(b1, b2)...)
 Base.:(//)(b1::Number, b2::SymbolicType) = //(promote(b1, b2)...)
 
 
-function sum(v::CVecBasic)
-    a = Basic()
+function sum!(a::Basic, v::CVecBasic)
     err_code = ccall((:basic_add_vec, libsymengine), Cuint, (Ref{Basic}, Ptr{Cvoid}), a, v.ptr)
     throw_if_error(err_code, "add_vec")
     return a
+end
+function sum(v::CVecBasic)
+    a = Basic()
+    sum!(a, v)
 end
 
 +(b1::Basic, b2::Basic, b3::Basic, bs...) = sum(convert(CVecBasic, [b1, b2, b3, bs...]))
@@ -51,11 +60,14 @@ end
 +(b1, b2, b3::Basic, bs...) = +(Basic(b1), Basic(b2), Basic(b3), bs...)
 
 
-function prod(v::CVecBasic)
-    a = Basic()
+function prod!(a::Basic, v::CVecBasic)
     err_code = ccall((:basic_mul_vec, libsymengine), Cuint, (Ref{Basic}, Ptr{Cvoid}), a, v.ptr)
     throw_if_error(err_code, "mul_vec")
     return a
+end
+function prod(v::CVecBasic)
+    a = Basic()
+    prod!(a, v)
 end
 
 *(b1::Basic, b2::Basic, b3::Basic, bs::Vararg{Number, N}) where {N} = prod(convert(CVecBasic, [b1, b2, b3, bs...]))

@@ -10,20 +10,6 @@
 ##
 ## To control dispatch, one might have `N(b::Basic) = N(BasicType(b))` and then define `N` for types of interest
 
-## Hold a reference to a SymEngine object
-mutable struct Basic  <: Number
-    ptr::Ptr{Cvoid}
-    function Basic()
-        z = new(C_NULL)
-        ccall((:basic_new_stack, libsymengine), Nothing, (Ref{Basic}, ), z)
-        finalizer(basic_free, z)
-        return z
-    end
-    function Basic(v::Ptr{Cvoid})
-        z = new(v)
-        return z
-    end
-end
 
 basic_free(b::Basic) = ccall((:basic_free_stack, libsymengine), Nothing, (Ref{Basic}, ), b)
 
@@ -293,20 +279,32 @@ end
 " Return free symbols in an expression as a `Set`"
 function free_symbols(ex::Basic)
     syms = CSetBasic()
-    ccall((:basic_free_symbols, libsymengine), Nothing, (Ref{Basic}, Ptr{Cvoid}), ex, syms.ptr)
+    free_symbols!(syms, ex)
     convert(Vector, syms)
 end
+function free_symbols!(syms::CSetBasic, ex::Basic)
+    ccall((:basic_free_symbols, libsymengine), Nothing, (Ref{Basic}, Ptr{Cvoid}), ex, syms.ptr)
+    syms
+end
+
 free_symbols(ex::BasicType) = free_symbols(Basic(ex))
+
 _flat(A) = mapreduce(x->isa(x,Array) ? _flat(x) : x, vcat, A, init=Basic[])  # from rosetta code example
+
 free_symbols(exs::Array{T}) where {T<:SymbolicType}  = unique(_flat([free_symbols(ex) for ex in exs]))
 free_symbols(exs::Tuple) =  unique(_flat([free_symbols(ex) for ex in exs]))
 
 "Return function symbols in an expression as a `Set`"
 function function_symbols(ex::Basic)
     syms = CSetBasic()
-    ccall((:basic_function_symbols, libsymengine), Nothing, (Ptr{Cvoid}, Ref{Basic}), syms.ptr, ex)
+    function_symbols!(syms, ex)
     convert(Vector, syms)
 end
+function function_symbols!(syms::CSetBasic, ex::Basic)
+    ccall((:basic_function_symbols, libsymengine), Nothing, (Ptr{Cvoid}, Ref{Basic}), syms.ptr, ex)
+    syms
+end
+
 function_symbols(ex::BasicType) = function_symbols(Basic(ex))
 function_symbols(exs::Array{T}) where {T<:SymbolicType} = unique(_flat([function_symbols(ex) for ex in exs]))
 function_symbols(exs::Tuple) = unique(_flat([function_symbols(ex) for ex in exs]))
@@ -322,8 +320,12 @@ end
 "Return arguments of a function call as a vector of `Basic` objects"
 function get_args(ex::Basic)
     args = CVecBasic()
-    ccall((:basic_get_args, libsymengine), Nothing, (Ref{Basic}, Ptr{Cvoid}), ex, args.ptr)
+    get_args!(args, ex)
     convert(Vector, args)
+end
+
+function get_args!(args::CVecBasic, ex::Basic)
+    ccall((:basic_get_args, libsymengine), Nothing, (Ref{Basic}, Ptr{Cvoid}), ex, args.ptr)
 end
 
 ## so that Dicts will work
@@ -332,13 +334,6 @@ basic_hash(ex::Basic) = ccall((:basic_hash, libsymengine), UInt, (Ref{Basic}, ),
 Base.hash(ex::Basic, h::UInt) = Base.hash_uint(3h - basic_hash(ex))
 Base.hash(ex::BasicType, h::UInt) = hash(Basic(ex), h)
 
-function coeff(b::Basic, x::Basic, n::Basic)
-    c = Basic()
-    ccall((:basic_coeff, libsymengine), Nothing, (Ref{Basic}, Ref{Basic}, Ref{Basic}, Ref{Basic}), c, b, x, n)
-    return c
-end
-
-coeff(b::Basic, x::Basic) = coeff(b, x, one(Basic))
 
 function Serialization.serialize(s::Serialization.AbstractSerializer, m::Basic)
 	Serialization.serialize_type(s, typeof(m))

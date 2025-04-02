@@ -18,16 +18,25 @@ subs(ex, x=>1, y=>1) # ditto
 """
 function subs(ex::T, var::S, val) where {T<:SymbolicType, S<:SymbolicType}
     s = Basic()
+    subs!(s, ex, var, val)
+end
+
+function subs!(s::Basic, ex::T, var::S, val) where {T<:SymbolicType, S<:SymbolicType}
     err_code = ccall((:basic_subs2, libsymengine), Cuint, (Ref{Basic}, Ref{Basic}, Ref{Basic}, Ref{Basic}), s, ex, var, val)
     throw_if_error(err_code, ex)
     return s
 end
+
 function subs(ex::T, d::CMapBasicBasic) where T<:SymbolicType
     s = Basic()
+    subs!(s, ex, d)
+end
+function subs!(s::Basic, ex::T, d::CMapBasicBasic) where T<:SymbolicType
     err_code = ccall((:basic_subs, libsymengine), Cuint, (Ref{Basic}, Ref{Basic}, Ptr{Cvoid}), s, ex, d.ptr)
     throw_if_error(err_code, ex)
     return s
 end
+
 
 subs(ex::T, d::AbstractDict) where {T<:SymbolicType} = subs(ex, CMapBasicBasic(d))
 subs(ex::T, y::Tuple{S, Any}) where {T <: SymbolicType, S<:SymbolicType} = subs(ex, y[1], y[2])

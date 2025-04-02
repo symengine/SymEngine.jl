@@ -131,6 +131,7 @@ end
 ## deprecate N(::BasicType)
 N(b::BasicType{T}) where {T} = N(convert(Basic, b), T)
 
+##  Conversions SymEngine -> Julia
 ## define convert(T, x) methods leveraging N() when needed
 function convert(::Type{Float64}, x::Basic)
     is_a_RealDouble(x) && return _convert(Cdouble, x)
@@ -170,10 +171,13 @@ Base.Real(x::Basic)    = convert(Real, x)
 
 
 ##  Rational --  p/q parts
-function as_numer_denom(x::Basic)
-    a, b = Basic(), Basic()
+function as_numer_denom!(a::Basic, b::Basic, x::Basic)
     ccall((:basic_as_numer_denom, libsymengine), Nothing, (Ref{Basic}, Ref{Basic}, Ref{Basic}), a, b, x)
     return a, b
+end
+function as_numer_denom(x::Basic)
+    a, b = Basic(), Basic()
+    as_numer_denom!(a,b,x)
 end
 
 as_numer_denom(x::BasicType) = as_numer_denom(Basic(x))
