@@ -101,14 +101,22 @@ u,v,w = x(2.1), x(1), x(0)
 
 ## calculus
 x,y = symbols("x y")
+@test diff(log(x)) == 1/x
+@test diff(log(x),x) == 1/x
+@test_throws ArgumentError diff(log(x), x^2)
+
 n = Basic(2)
 ex = sin(x*y)
-@test diff(log(x),x) == 1/x
+@test_throws ArgumentError diff(ex)
 @test diff(ex, x) == y * cos(x*y)
 @test diff(ex, x, 2) == diff(diff(ex,x), x)
 @test diff(ex, x, n) == diff(diff(ex,x), x)
 @test diff(ex, x, y) == diff(diff(ex,x), y)
-@test diff(ex, x, y,x) == diff(diff(diff(ex,x), y), x)
+@test diff(ex, x, y, x) == diff(diff(diff(ex,x), y), x)
+@test diff(ex, x, 2, y, 3) == diff(ex, x,x,y,y,y)
+@test diff(ex, x, n, y, 3) == diff(ex, x,x,y,y,y)
+@test diff(ex, x, 2, y, x) == diff(ex, x,x,x,y)
+
 @test series(sin(x), x, 0, 2) == x
 @test series(sin(x), x, 0, 3) == x - x^3/6
 
@@ -182,7 +190,7 @@ A = [x 2]
 @test lambdify(A)(1) == [1 2]
 @test isa(convert.(Expr, [0 x x+1]), Array{Expr})
 
-## N
+## N, convert, _convert
 for val in samples
     @test N(Basic(val)) == val
 end
@@ -190,6 +198,58 @@ end
 for val in [π, γ, e, φ, catalan]
     @test N(Basic(val)) == val
 end
+
+for a in Basic.((1, big(1)))
+    @test SymEngine.isinteger(a)
+    @test N(a) isa Int
+    @test (@allocated convert(Int, a)) > 0
+    @test (@allocated SymEngine._convert(Int, a)) == 0
+end
+
+for a in Basic.((big(10)^100,))
+    @test SymEngine.isinteger(a)
+    @test N(a) isa BigInt
+    @test (@allocated convert(BigInt, a)) > 0
+    @test (@allocated SymEngine._convert(BigInt, a)) > 0
+
+    a′ = Basic(big(10)^10)
+    _b = BigInt()
+    @test (@allocated SymEngine._convert_bigint!(_b, a′)) == 0
+
+end
+
+
+
+for a in Basic.((1.0, 1.23, Inf))
+    @test N(a) isa Float64
+    @test float(a) == N(a)
+    @test (@allocated convert(Float64, a)) >= 0
+    @test (@allocated SymEngine._convert(Float64, a)) == 0
+end
+
+for a in Basic.((big(1.2)^100,))
+    @test N(a) isa BigFloat
+    @test (@allocated convert(BigFloat, a)) > 0
+    @test (@allocated SymEngine._convert(BigFloat, a)) > 0
+    _b = BigFloat()
+    @test (@allocated SymEngine._convert_bigfloat!(_b, a)) == 0
+end
+
+for a in Basic.((1//2,))
+    @test SymEngine.is_a_Rational(a)
+    @test N(a) isa Rational
+    @test (@allocated convert(Rational{Int}, a)) > 0
+end
+
+for (a,b) in (PI=>π, E=>ℯ,
+              GoldenRatio => Base.MathConstants.golden,
+              Catalan => Base.MathConstants.catalan,
+              oo=>Inf, zoo => complex(Inf, Inf),
+              )
+    @test N(a) == b
+end
+
+@test isnan(N(NAN))
 
 @test !isnan(x)
 @test isnan(Basic(0)/0)
