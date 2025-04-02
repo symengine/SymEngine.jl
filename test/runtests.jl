@@ -4,6 +4,7 @@ using Test
 using Serialization
 import Base: MathConstants.γ, MathConstants.e, MathConstants.φ, MathConstants.catalan
 
+VERSION >= v"1.9" && include("test-SymbolicUtils.jl")
 include("test-dense-matrix.jl")
 
 x = symbols("x")
@@ -18,7 +19,13 @@ let
     @vars w
 end
 @test_throws UndefVarError isdefined(w)
-@test_throws Exception show(Basic())
+@test repr(Basic()) == "<Unitialized Basic value>"
+
+# test @vars constructions
+@vars a, b[0:4], c(), d=>"D"
+@test length(b) == 5
+@test isa(c, SymFunction)
+@test repr(d) == "D"
 
 a = x^2 + x/2 - x*y*5
 b = diff(a, x)
@@ -42,11 +49,23 @@ c = prod(convert(SymEngine.CVecBasic, [x, x, 2]))
 @test 2 * x * 3 == 6 * x
 @test 3 * 2 * x == 6 * x
 
+
 # Issue #146
 @test x + true  == x + 1
 @test x + false == x
 @test x * true  == x
 @test x * false == 0
+
+# https://github.com/symengine/SymEngine.jl/issues/259
+@testset "Issue #259" begin
+    let (a, b, c) = symbols("a b c")
+        @test a * [b, c] == [a * b, a * c]
+        @test a * 1//3 * [b, c] == [a * b / 3, a * c / 3]
+        @test a * 1//3 * 3//4 * [b, c] == [a * b / 4, a * c / 4]
+        @test a * 1//3 * 3//4 * 4//5 * [b, c] == [a * b / 5, a * c / 5]
+    end
+end
+
 
 c = x ^ 5
 @test diff(c, x) == 5 * x ^ 4
@@ -58,10 +77,8 @@ c = Basic(-5)
 @test abs(c) == 5
 @test abs(c) != 4
 
-show(a)
-println()
-show(b)
-println()
+repr("text/plain", a) == (1/2)*x - 5*x*y + x^2
+repr("text/plain", b) == 1/2 + 2*x - 5*y
 
 @test 1 // x == 1 / x
 @test x // 2 == (1//2) * x
@@ -75,16 +92,39 @@ println()
 @test subs(sin(x), x, pi) == 0
 @test sind(Basic(30)) == 1 // 2
 
+## predicates
+@vars x
+u,v,w = x(2.1), x(1), x(0)
+@test isreal(u)
+@test !isinteger(u)
+@test isinteger(v)
+@test isone(v)
+@test iszero(w)
+@test (@allocated isreal(u)) == 0
+@test (@allocated isinteger(v)) == 0
+@test (@allocated isone(x)) == 0
+@test (@allocated iszero(x)) == 0
+@test (@allocated isone(v)) > 0 # checking v==zero(v) value allocates
+@test (@allocated iszero(w)) > 0
+
 ## calculus
 x,y = symbols("x y")
+@test diff(log(x)) == 1/x
+@test diff(log(x),x) == 1/x
+@test_throws ArgumentError diff(log(x), x^2)
+
 n = Basic(2)
 ex = sin(x*y)
-@test diff(log(x),x) == 1/x
+@test_throws ArgumentError diff(ex)
 @test diff(ex, x) == y * cos(x*y)
 @test diff(ex, x, 2) == diff(diff(ex,x), x)
 @test diff(ex, x, n) == diff(diff(ex,x), x)
 @test diff(ex, x, y) == diff(diff(ex,x), y)
-@test diff(ex, x, y,x) == diff(diff(diff(ex,x), y), x)
+@test diff(ex, x, y, x) == diff(diff(diff(ex,x), y), x)
+@test diff(ex, x, 2, y, 3) == diff(ex, x,x,y,y,y)
+@test diff(ex, x, n, y, 3) == diff(ex, x,x,y,y,y)
+@test diff(ex, x, 2, y, x) == diff(ex, x,x,x,y)
+
 @test series(sin(x), x, 0, 2) == x
 @test series(sin(x), x, 0, 3) == x - x^3/6
 
@@ -131,6 +171,7 @@ for val in samples
     @test subs(ex, x => val) == val^2 + y^2
     @test subs(ex, SymEngine.CMapBasicBasic(Dict(x=>val))) == val^2 + y^2
     @test subs(ex, Dict(x=>val)) == val^2 + y^2
+    @test subs(ex) == ex
 end
 # This probably results in a number of redundant tests (operator order).
 for val1 in samples, val2 in samples
@@ -157,7 +198,7 @@ A = [x 2]
 @test lambdify(A)(1) == [1 2]
 @test isa(convert.(Expr, [0 x x+1]), Array{Expr})
 
-## N
+## N, convert, _convert
 for val in samples
     @test N(Basic(val)) == val
 end
@@ -165,6 +206,58 @@ end
 for val in [π, γ, e, φ, catalan]
     @test N(Basic(val)) == val
 end
+
+for a in Basic.((1, big(1)))
+    @test SymEngine.isinteger(a)
+    @test N(a) isa Int
+    @test (@allocated convert(Int, a)) > 0
+    @test (@allocated SymEngine._convert(Int, a)) == 0
+end
+
+for a in Basic.((big(10)^100,))
+    @test SymEngine.isinteger(a)
+    @test N(a) isa BigInt
+    @test (@allocated convert(BigInt, a)) > 0
+    @test (@allocated SymEngine._convert(BigInt, a)) > 0
+
+    a′ = Basic(big(10)^10)
+    _b = BigInt()
+    @test (@allocated SymEngine._convert_bigint!(_b, a′)) == 0
+
+end
+
+
+
+for a in Basic.((1.0, 1.23, Inf))
+    @test N(a) isa Float64
+    @test float(a) == N(a)
+    @test (@allocated convert(Float64, a)) >= 0
+    @test (@allocated SymEngine._convert(Float64, a)) == 0
+end
+
+for a in Basic.((big(1.2)^100,))
+    @test N(a) isa BigFloat
+    @test (@allocated convert(BigFloat, a)) > 0
+    @test (@allocated SymEngine._convert(BigFloat, a)) > 0
+    _b = BigFloat()
+    @test (@allocated SymEngine._convert_bigfloat!(_b, a)) == 0
+end
+
+for a in Basic.((1//2,))
+    @test SymEngine.is_a_Rational(a)
+    @test N(a) isa Rational
+    @test (@allocated convert(Rational{Int}, a)) > 0
+end
+
+for (a,b) in (PI=>π, E=>ℯ,
+              GoldenRatio => Base.MathConstants.golden,
+              Catalan => Base.MathConstants.catalan,
+              oo=>Inf, zoo => complex(Inf, Inf),
+              )
+    @test N(a) == b
+end
+
+@test isnan(N(NAN))
 
 @test !isnan(x)
 @test isnan(Basic(0)/0)
@@ -180,6 +273,27 @@ A = [x 2; x 1]
 x,y,z = symbols("x y z")
 @test length(SymEngine.free_symbols([x*y, y,z])) == 3
 
+# is/has/free symbol(s)
+@vars x y z
+@test SymEngine.is_symbol(x)
+@test (@allocated SymEngine.is_symbol(x)) == 0
+@test !SymEngine.is_symbol(x(2))
+@test !SymEngine.is_symbol(x^2)
+@test SymEngine.has_symbol(x^2, x)
+@test SymEngine.has_symbol(x, x)
+@test @allocated(SymEngine.has_symbol(x, x)) == 0
+@test SymEngine.has_symbol(sin(sin(sin(x))), x)
+@test !SymEngine.has_symbol(x^2, y)
+@test Set(free_symbols(x*y)) == Set([x,y])
+@test Set(free_symbols(x*y^z)) != Set([x,y])
+
+# call without specifying variables
+@vars x y
+z = x(2)
+@test x(2) == 2
+@test (x*y^2)(1,2) == subs(x*y^2, x=>1, y=>2) == (x*y^2)(x=>1, y=>2)
+@test z() == 2
+@test z(1) == 2
 
 ## check that callable symengine expressions can be used as functions for duck-typed functions
 @vars x
@@ -202,6 +316,8 @@ z,flt, rat, ima, cplx = btypes = [Basic(1), Basic(1.23), Basic(3//5), Basic(2im)
 @test convert(Rational{Int}, rat) == 3//5
 @test convert(Complex{Int}, ima) == 2im
 @test convert(Complex{Int}, cplx) == 1 + 2im
+@test isinf(convert(Float64, oo))
+@test isnan(convert(Float64, NAN))
 
 @test_throws InexactError convert(Int, flt)
 @test_throws InexactError convert(Int, rat)
@@ -306,3 +422,5 @@ end
 	close(iobuf)
 	@test deserialized == data
 end
+
+VERSION >= v"1.9.0" && include("test-allocations.jl")

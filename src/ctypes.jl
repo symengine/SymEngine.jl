@@ -1,4 +1,21 @@
 # types from SymEngine to Julia
+
+## Basic
+## Hold a reference to a SymEngine object
+mutable struct Basic  <: Number
+    ptr::Ptr{Cvoid}
+    function Basic()
+        z = new(C_NULL)
+        ccall((:basic_new_stack, libsymengine), Nothing, (Ref{Basic}, ), z)
+        finalizer(basic_free, z)
+        return z
+    end
+    function Basic(v::Ptr{Cvoid})
+        z = new(v)
+        return z
+    end
+end
+
 ## CSetBasic
 mutable struct CSetBasic
     ptr::Ptr{Cvoid}
@@ -86,7 +103,7 @@ function CMapBasicBasic()
     z
 end
 
-function CMapBasicBasic(dict::Dict)
+function CMapBasicBasic(dict::AbstractDict)
     c = CMapBasicBasic()
     for (key, value) in dict
         c[Basic(key)] = Basic(value)
@@ -118,7 +135,7 @@ function Base.setindex!(s::CMapBasicBasic, v::Basic, k::Basic)
     ccall((:mapbasicbasic_insert, libsymengine), Nothing, (Ptr{Cvoid}, Ref{Basic}, Ref{Basic}), s.ptr, k, v)
 end
 
-Base.convert(::Type{CMapBasicBasic}, x::Dict{Any, Any}) = CMapBasicBasic(x)
+Base.convert(::Type{CMapBasicBasic}, x::AbstractDict) = CMapBasicBasic(x)
 
 ## Dense matrix
 
@@ -160,7 +177,7 @@ function CDenseMatrix(x::Array{T, 2}) where T
 end
 
 
-function Base.convert(::Type{Matrix}, x::CDenseMatrix) 
+function Base.convert(::Type{Matrix}, x::CDenseMatrix)
     m,n = Base.size(x)
     [x[i,j] for i in 1:m, j in 1:n]
 end

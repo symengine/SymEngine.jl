@@ -18,31 +18,41 @@ subs(ex, x=>1, y=>1) # ditto
 """
 function subs(ex::T, var::S, val) where {T<:SymbolicType, S<:SymbolicType}
     s = Basic()
+    subs!(s, ex, var, val)
+end
+
+function subs!(s::Basic, ex::T, var::S, val) where {T<:SymbolicType, S<:SymbolicType}
     err_code = ccall((:basic_subs2, libsymengine), Cuint, (Ref{Basic}, Ref{Basic}, Ref{Basic}, Ref{Basic}), s, ex, var, val)
     throw_if_error(err_code, ex)
     return s
 end
+
 function subs(ex::T, d::CMapBasicBasic) where T<:SymbolicType
     s = Basic()
+    subs!(s, ex, d)
+end
+function subs!(s::Basic, ex::T, d::CMapBasicBasic) where T<:SymbolicType
     err_code = ccall((:basic_subs, libsymengine), Cuint, (Ref{Basic}, Ref{Basic}, Ptr{Cvoid}), s, ex, d.ptr)
     throw_if_error(err_code, ex)
     return s
 end
 
-subs(ex::T, d::Dict) where {T<:SymbolicType} = subs(ex, CMapBasicBasic(d))
+
+subs(ex::T, d::AbstractDict) where {T<:SymbolicType} = subs(ex, CMapBasicBasic(d))
 subs(ex::T, y::Tuple{S, Any}) where {T <: SymbolicType, S<:SymbolicType} = subs(ex, y[1], y[2])
 subs(ex::T, y::Tuple{S, Any}, args...) where {T <: SymbolicType, S<:SymbolicType} = subs(subs(ex, y), args...)
 subs(ex::T, d::Pair...) where {T <: SymbolicType} = subs(ex, [(p.first, p.second) for p in d]...)
-
+subs(ex::SymbolicType) = ex
 
 ## Allow an expression to be called, as with ex(2). When there is more than one symbol, one can rely on order of `free_symbols` or
 ## be explicit by passing in pairs : `ex(x=>1, y=>2)` or a dict `ex(Dict(x=>1, y=>2))`.
 function (ex::Basic)(args...)
-  xs = free_symbols(ex)
-  subs(ex, collect(zip(xs, args))...)
+    xs = free_symbols(ex)
+    isempty(xs) && return ex
+    subs(ex, collect(zip(xs, args))...)
 end
-(ex::Basic)(x::Dict) = subs(ex, x)
-(ex::Basic)(x::Pair...) = subs(ex, x...)
+(ex::Basic)(x::AbstractDict) = subs(ex, x)
+(ex::Basic)(x::Pair, xs::Pair...) = subs(ex, x, xs...)
 
 
 ## Lambdify
@@ -61,18 +71,22 @@ fn_map = Dict(
 
 map_fn(key, fn_map) = haskey(fn_map, key) ? fn_map[key] : Symbol(lowercase(string(key)))
 
+const julia_classes = map_fn.(symengine_classes, (fn_map,))
+get_julia_class(x::Basic) = julia_classes[get_type(x) + 1]
+Base.nameof(ex::Basic) = Symbol(toString(ex))
+
 function _convert(::Type{Expr}, ex::Basic)
     fn = get_symengine_class(ex)
 
     if fn == :Symbol
-        return Symbol(toString(ex))
+        return nameof(ex)
     elseif (fn in number_types) || (fn == :Constant)
         return N(ex)
     end
 
     as = get_args(ex)
-
-    Expr(:call, map_fn(fn, fn_map), [_convert(Expr,a) for a in as]...)
+    fn′ = get_julia_class(ex)
+    Expr(:call, fn′, [_convert(Expr,a) for a in as]...)
 end
 
 
@@ -80,7 +94,7 @@ function convert(::Type{Expr}, ex::Basic)
     fn = get_symengine_class(ex)
 
     if fn == :Symbol
-        return Expr(:call, :*, Symbol(toString(ex)), 1)
+        return Expr(:call, :*, nameof(ex), 1)
     elseif (fn in number_types) || (fn == :Constant)
         return Expr(:call, :*, N(ex), 1)
     end

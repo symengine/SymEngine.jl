@@ -5,9 +5,6 @@
 [![Codecov](http://codecov.io/github/symengine/SymEngine.jl/coverage.svg?branch=master)](http://codecov.io/github/symengine/SymEngine.jl?branch=master)
 [![Coveralls](https://coveralls.io/repos/symengine/SymEngine.jl/badge.svg?branch=master&service=github)](https://coveralls.io/github/symengine/SymEngine.jl?branch=master)
 
-[![SymEngine](http://pkg.julialang.org/badges/SymEngine_0.6.svg)](http://pkg.julialang.org/?pkg=SymEngine)
-[![SymEngine](http://pkg.julialang.org/badges/SymEngine_0.7.svg)](http://pkg.julialang.org/?pkg=SymEngine)
-
 Julia Wrappers for [SymEngine](https://github.com/symengine/symengine), a fast symbolic manipulation library, written in C++.
 
 ## Installation
