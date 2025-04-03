@@ -91,6 +91,7 @@ N(::Val{:RealMPFR},   b::Basic) = _convert(BigFloat, b)
 N(::Val{:Complex},    b::Basic) = complex(N(real(b)), N(imag(b)))
 N(::Val{:ComplexMPC}, b::Basic) = complex(N(real(b)), N(imag(b)))
 N(::Val{:ComplexDouble}, b::Basic) = complex(N(real(b)), N(imag(b)))
+N(::Val{:BooleanAtom}, b::Basic) = b == True ? 1 : 0
 
 N(::Val{:NaN},        b::Basic) = NaN
 function N(::Val{:Infty}, b::Basic)
@@ -124,7 +125,12 @@ end
 function N(::Val{<:Any}, b::Basic)
     is_constant(b) ||
         throw(ArgumentError("Object can have no free symbols"))
-    out = evalf(b)
+
+    # replace any True/False with 1/0
+    m = CMapBasicBasic()
+    m[True] = Basic(1); m[False] = Basic(0)
+
+    out = evalf(subs(b, m))
     imag(out) == Basic(0.0) ? N(real(out)) : N(out)
 end
 
