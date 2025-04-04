@@ -10,20 +10,6 @@
 ##
 ## To control dispatch, one might have `N(b::Basic) = N(BasicType(b))` and then define `N` for types of interest
 
-## Hold a reference to a SymEngine object
-mutable struct Basic  <: Number
-    ptr::Ptr{Cvoid}
-    function Basic()
-        z = new(C_NULL)
-        ccall((:basic_new_stack, libsymengine), Nothing, (Ref{Basic}, ), z)
-        finalizer(basic_free, z)
-        return z
-    end
-    function Basic(v::Ptr{Cvoid})
-        z = new(v)
-        return z
-    end
-end
 
 basic_free(b::Basic) = ccall((:basic_free_stack, libsymengine), Nothing, (Ref{Basic}, ), b)
 
@@ -106,8 +92,29 @@ function get_class_from_id(id::UInt)
     str
 end
 
+# use value of `get_type` to index into a vector storing symbols
+function _get_symengine_classes()
+    d = Vector{Symbol}()
+    i = 0
+    while true
+      s = get_class_from_id(UInt(i))
+      if s == ""
+          break
+    end
+      push!(d, Symbol(s))
+      i+=1
+  end
+    return d
+end
+
+const symengine_classes = _get_symengine_classes()
+const symengine_classes_val = [Val(c) for c in SymEngine.symengine_classes]
+const symengine_classes_val_type = [Val{c} for c in SymEngine.symengine_classes]
+
 "Get SymEngine class of an object (e.g. 1=>:Integer, 1//2 =:Rational, sin(x) => :Sin, ..."
-get_symengine_class(s::Basic) = Symbol(get_class_from_id(get_type(s)))
+get_symengine_class(s::Basic) = symengine_classes[get_type(s) + 1]
+get_symengine_class_val(s::Basic) = symengine_classes_val[get_type(s) + 1]
+get_symengine_class_val_type(s::Basic) = symengine_classes_val_type[get_type(s) + 1]
 
 
 ## Construct symbolic objects
@@ -145,28 +152,42 @@ end
 ## Follow, somewhat, the python names: symbols to construct symbols, @vars
 
 """
-Macro to define 1 or more variables in the main workspace.
+    @vars x y[1:5] z()
 
-Symbolic values are defined with `_symbol`. This is a convenience
+Macro to define 1 or more variables or symbolic function
 
 Example
 ```
 @vars x y z
+@vars x[1:4]
+@vars u(), x
 ```
+
 """
-macro vars(x...)
-    q=Expr(:block)
-    if length(x) == 1 && isa(x[1],Expr)
-        @assert x[1].head === :tuple "@syms expected a list of symbols"
-        x = x[1].args
+macro vars(xs...)
+    # If the user separates declaration with commas, the top-level expression is a tuple
+    if length(xs) == 1 && isa(xs[1], Expr) && xs[1].head == :tuple
+        _gensyms(xs[1].args...)
+    elseif length(xs) > 0
+        _gensyms(xs...)
     end
-    for s in x
-        @assert isa(s,Symbol) "@syms expected a list of symbols"
-        push!(q.args, Expr(:(=), esc(s), Expr(:call, :(SymEngine._symbol), Expr(:quote, s))))
-    end
-    push!(q.args, Expr(:tuple, map(esc, x)...))
-    q
 end
+
+function _gensyms(xs...)
+    asstokw(a) = Expr(:kw, esc(a), true)
+
+    # Each declaration is parsed and generates a declaration using `symbols`
+    symdefs = map(xs) do expr
+        decl = parsedecl(expr)
+        symname = sym(decl)
+        symname, gendecl(decl)
+    end
+    syms, defs = collect(zip(symdefs...))
+
+    # The macro returns a tuple of Symbols that were declared
+    Expr(:block, defs..., :(tuple($(map(esc,syms)...))))
+end
+
 
 
 ## We also have a wrapper type that can be used to control dispatch
@@ -180,7 +201,7 @@ end
 ## and then
 ## meth(x::BasicType{Val{:Integer}}) = ... or
 ## meth(x::BasicNumber) = ...
-mutable struct BasicType{T} <: Number
+struct BasicType{T} <: Number
     x::Basic
 end
 
@@ -190,8 +211,9 @@ SymbolicType = Union{Basic, BasicType}
 convert(::Type{Basic}, x::BasicType) = x.x
 Basic(x::BasicType) = x.x
 
-BasicType(val::Basic) =  BasicType{Val{get_symengine_class(val)}}(val)
-convert(::Type{BasicType{T}}, val::Basic) where {T} = BasicType{Val{get_symengine_class(val)}}(val)
+BasicType(val::Basic) =  BasicType{get_symengine_class_val_type(val)}(val)
+convert(::Type{BasicType{T}}, val::Basic) where {T} =
+    BasicType{get_symengine_class_val_type(val)}(val)
 # Needed for julia v0.4.7
 convert(::Type{T}, x::Basic) where {T<:BasicType} = BasicType(x)
 
@@ -232,14 +254,22 @@ BasicTrigFunction =  Union{[SymEngine.BasicType{Val{i}} for i in trig_types]...}
 
 
 ###
-"Is expression a symbol"
-is_symbol(x::Basic) = is_symbol(BasicType(x))
-is_symbol(x::BasicType{Val{:Symbol}}) = true
-is_symbol(x::BasicType) = false
 
+"Is expression constant"
+function is_constant(ex::Basic)
+    syms = CSetBasic()
+    ccall((:basic_free_symbols, libsymengine), Nothing, (Ref{Basic}, Ptr{Cvoid}), ex, syms.ptr)
+    Base.length(syms) == 0
+end
+
+"Is expression a symbol"
+function is_symbol(x::SymbolicType)
+    res = ccall((:is_a_Symbol, libsymengine), Cuint, (Ref{Basic},), x)
+    Bool(convert(Int,res))
+end
 
 "Does expression contain the symbol"
-function has_symbol(ex::Basic, x::Basic)
+function has_symbol(ex::SymbolicType, x::SymbolicType)
     is_symbol(x) || throw(ArgumentError("Not a symbol"))
     res = ccall((:basic_has_symbol, libsymengine), Cuint, (Ref{Basic},Ref{Basic}),  ex, x)
     Bool(convert(Int, res))
@@ -249,20 +279,32 @@ end
 " Return free symbols in an expression as a `Set`"
 function free_symbols(ex::Basic)
     syms = CSetBasic()
-    ccall((:basic_free_symbols, libsymengine), Nothing, (Ref{Basic}, Ptr{Cvoid}), ex, syms.ptr)
+    free_symbols!(syms, ex)
     convert(Vector, syms)
 end
+function free_symbols!(syms::CSetBasic, ex::Basic)
+    ccall((:basic_free_symbols, libsymengine), Nothing, (Ref{Basic}, Ptr{Cvoid}), ex, syms.ptr)
+    syms
+end
+
 free_symbols(ex::BasicType) = free_symbols(Basic(ex))
+
 _flat(A) = mapreduce(x->isa(x,Array) ? _flat(x) : x, vcat, A, init=Basic[])  # from rosetta code example
+
 free_symbols(exs::Array{T}) where {T<:SymbolicType}  = unique(_flat([free_symbols(ex) for ex in exs]))
 free_symbols(exs::Tuple) =  unique(_flat([free_symbols(ex) for ex in exs]))
 
 "Return function symbols in an expression as a `Set`"
 function function_symbols(ex::Basic)
     syms = CSetBasic()
-    ccall((:basic_function_symbols, libsymengine), Nothing, (Ptr{Cvoid}, Ref{Basic}), syms.ptr, ex)
+    function_symbols!(syms, ex)
     convert(Vector, syms)
 end
+function function_symbols!(syms::CSetBasic, ex::Basic)
+    ccall((:basic_function_symbols, libsymengine), Nothing, (Ptr{Cvoid}, Ref{Basic}), syms.ptr, ex)
+    syms
+end
+
 function_symbols(ex::BasicType) = function_symbols(Basic(ex))
 function_symbols(exs::Array{T}) where {T<:SymbolicType} = unique(_flat([function_symbols(ex) for ex in exs]))
 function_symbols(exs::Tuple) = unique(_flat([function_symbols(ex) for ex in exs]))
@@ -278,8 +320,12 @@ end
 "Return arguments of a function call as a vector of `Basic` objects"
 function get_args(ex::Basic)
     args = CVecBasic()
-    ccall((:basic_get_args, libsymengine), Nothing, (Ref{Basic}, Ptr{Cvoid}), ex, args.ptr)
+    get_args!(args, ex)
     convert(Vector, args)
+end
+
+function get_args!(args::CVecBasic, ex::Basic)
+    ccall((:basic_get_args, libsymengine), Nothing, (Ref{Basic}, Ptr{Cvoid}), ex, args.ptr)
 end
 
 ## so that Dicts will work
@@ -288,13 +334,6 @@ basic_hash(ex::Basic) = ccall((:basic_hash, libsymengine), UInt, (Ref{Basic}, ),
 Base.hash(ex::Basic, h::UInt) = Base.hash_uint(3h - basic_hash(ex))
 Base.hash(ex::BasicType, h::UInt) = hash(Basic(ex), h)
 
-function coeff(b::Basic, x::Basic, n::Basic)
-    c = Basic()
-    ccall((:basic_coeff, libsymengine), Nothing, (Ref{Basic}, Ref{Basic}, Ref{Basic}, Ref{Basic}), c, b, x, n)
-    return c
-end
-
-coeff(b::Basic, x::Basic) = coeff(b, x, one(Basic))
 
 function Serialization.serialize(s::Serialization.AbstractSerializer, m::Basic)
 	Serialization.serialize_type(s, typeof(m))

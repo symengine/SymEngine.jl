@@ -1,4 +1,21 @@
 # types from SymEngine to Julia
+
+## Basic
+## Hold a reference to a SymEngine object
+mutable struct Basic  <: Number
+    ptr::Ptr{Cvoid}
+    function Basic()
+        z = new(C_NULL)
+        ccall((:basic_new_stack, libsymengine), Nothing, (Ref{Basic}, ), z)
+        finalizer(basic_free, z)
+        return z
+    end
+    function Basic(v::Ptr{Cvoid})
+        z = new(v)
+        return z
+    end
+end
+
 ## CSetBasic
 mutable struct CSetBasic
     ptr::Ptr{Cvoid}
@@ -160,7 +177,7 @@ function CDenseMatrix(x::Array{T, 2}) where T
 end
 
 
-function Base.convert(::Type{Matrix}, x::CDenseMatrix) 
+function Base.convert(::Type{Matrix}, x::CDenseMatrix)
     m,n = Base.size(x)
     [x[i,j] for i in 1:m, j in 1:n]
 end

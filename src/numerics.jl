@@ -4,7 +4,7 @@ import Base: trunc, ceil, floor, round
 
 
 function evalf(b::Basic, bits::Integer=53, real::Bool=false)
-    !isfinite(b) && return b
+    (b == oo || b == zoo || b == NAN) && return b
     c = Basic()
     bits > 53 && real && (have_mpfr || throw(ArgumentError("libsymengine has to be compiled with MPFR for this feature")))
     bits > 53 && !real && (have_mpc || throw(ArgumentError("libsymengine has to be compiled with MPC for this feature")))
@@ -16,88 +16,41 @@ function evalf(b::Basic, bits::Integer=53, real::Bool=false)
     end
 end
 
-## Conversions from SymEngine -> Julia at the ccall level
-function convert(::Type{BigInt}, b::BasicType{Val{:Integer}})
+## Conversions from SymEngine.Basic -> Julia at the ccall level
+function _convert(::Type{BigInt}, b::Basic)
     a = BigInt()
-    c = Basic(b)
-    ccall((:integer_get_mpz, libsymengine), Nothing, (Ref{BigInt}, Ref{Basic}), a, c)
+    _convert_bigint!(a, b)
     return a
 end
 
+function _convert_bigint!(a::BigInt, b::Basic) # non-allocating (sometimes)
+    is_a_Integer(b) || throw(ArgumentError("Not an integer"))
+    ccall((:integer_get_mpz, libsymengine), Nothing, (Ref{BigInt}, Ref{Basic}), a, b)
+    a
+end
 
-function convert(::Type{BigFloat}, b::BasicType{Val{:RealMPFR}})
-    c = Basic(b)
+function _convert(::Type{Int}, b::Basic)
+    is_a_Integer(b) || throw(ArgumentError("Not an integer"))
+    ccall((:integer_get_si, libsymengine), Int, (Ref{Basic},), b)
+end
+
+function _convert(::Type{BigFloat}, b::Basic)
     a = BigFloat()
-    ccall((:real_mpfr_get, libsymengine), Nothing, (Ref{BigFloat}, Ref{Basic}), a, c)
+    _convert_bigfloat!(a, b)
     return a
 end
 
-function convert(::Type{Cdouble}, b::BasicType{Val{:RealDouble}})
-    c = Basic(b)
-    return ccall((:real_double_get_d, libsymengine), Cdouble, (Ref{Basic},), c)
+function _convert_bigfloat!(a::BigFloat, b::Basic) # non-allocating
+    is_a_RealMPFR(b) || throw("Not a big value")
+    ccall((:real_mpfr_get, libsymengine), Nothing, (Ref{BigFloat}, Ref{Basic}), a, b)
+    a
 end
 
-if SymEngine.libversion >= VersionNumber("0.4.0")
-
-    function real(b::BasicComplexNumber)
-        c = Basic(b)
-        a = Basic()
-        ccall((:complex_base_real_part, libsymengine), Nothing, (Ref{Basic}, Ref{Basic}), a, c)
-        return a
-    end
-
-    function imag(b::BasicComplexNumber)
-        c = Basic(b)
-        a = Basic()
-        ccall((:complex_base_imaginary_part, libsymengine), Nothing, (Ref{Basic}, Ref{Basic}), a, c)
-        return a
-    end
-
-else
-
-    function real(b::BasicType{Val{:ComplexDouble}})
-        c = Basic(b)
-        a = Basic()
-        ccall((:complex_double_real_part, libsymengine), Nothing, (Ref{Basic}, Ref{Basic}), a, c)
-        return a
-    end
-
-    function imag(b::BasicType{Val{:ComplexDouble}})
-        c = Basic(b)
-        a = Basic()
-        ccall((:complex_double_imaginary_part, libsymengine), Nothing, (Ref{Basic}, Ref{Basic}), a, c)
-        return a
-    end
-
-    function real(b::BasicType{Val{:Complex}})
-        c = Basic(b)
-        a = Basic()
-        ccall((:complex_real_part, libsymengine), Nothing, (Ref{Basic}, Ref{Basic}), a, c)
-        return a
-    end
-
-    function imag(b::BasicType{Val{:Complex}})
-        c = Basic(b)
-        a = Basic()
-        ccall((:complex_imaginary_part, libsymengine), Nothing, (Ref{Basic}, Ref{Basic}), a, c)
-        return a
-    end
-
-    function real(b::BasicType{Val{:ComplexMPC}})
-        c = Basic(b)
-        a = Basic()
-        ccall((:complex_mpc_real_part, libsymengine), Nothing, (Ref{Basic}, Ref{Basic}), a, c)
-        return a
-    end
-
-    function imag(b::BasicType{Val{:ComplexMPC}})
-        c = Basic(b)
-        a = Basic()
-        ccall((:complex_mpc_imaginary_part, libsymengine), Nothing, (Ref{Basic}, Ref{Basic}), a, c)
-        return a
-    end
-
+function _convert(::Type{Cdouble}, b::Basic)
+    is_a_RealDouble(b) || throw(ArgumentError("Not a real double"))
+    return ccall((:real_double_get_d, libsymengine), Cdouble, (Ref{Basic},), b)
 end
+
 
 ##################################################
 # N
@@ -109,10 +62,11 @@ Convert a SymEngine numeric value into a Julian number
 N(a::Integer) = a
 N(a::Rational) = a
 N(a::Complex) = a
-N(b::Basic) = N(BasicType(b))
 
-function N(b::BasicType{Val{:Integer}})
-    a = convert(BigInt, b)
+N(b::Basic) = N(get_symengine_class_val(b), b)
+
+function N(::Val{:Integer}, b::Basic)
+    a = _convert(BigInt, b)
     if (a.size > 1 || a.size < -1)
         return a
     elseif (a.size == 0)
@@ -130,47 +84,129 @@ function N(b::BasicType{Val{:Integer}})
     end
 end
 
-N(b::BasicType{Val{:Rational}}) = Rational(N(numerator(b)), N(denominator(b))) # TODO: conditionally wrap rational_get_mpq from cwrapper.h
-N(b::BasicType{Val{:RealDouble}}) = convert(Cdouble, b)
-N(b::BasicType{Val{:RealMPFR}}) = convert(BigFloat, b)
-N(b::BasicType{Val{:NaN}}) = NaN
-function N(b::BasicType{Val{:Infty}})
-    b == oo && return Inf
-    b == -oo && return -Inf
-    b == zoo && return Complex(Inf, Inf)
-end
+# TODO: conditionally wrap rational_get_mpq from cwrapper.h
+N(::Val{:Rational},   b::Basic) = Rational(N(numerator(b)), N(denominator(b)))
+N(::Val{:RealDouble}, b::Basic) = _convert(Cdouble, b)
+N(::Val{:RealMPFR},   b::Basic) = _convert(BigFloat, b)
+N(::Val{:Complex},    b::Basic) = complex(N(real(b)), N(imag(b)))
+N(::Val{:ComplexMPC}, b::Basic) = complex(N(real(b)), N(imag(b)))
+N(::Val{:ComplexDouble}, b::Basic) = complex(N(real(b)), N(imag(b)))
 
-## Mapping of SymEngine Constants into julia values
-constant_map = Dict("pi" => π, "eulergamma" => γ, "exp(1)" => e, "catalan" => catalan,
-                    "goldenratio" => φ)
-
-N(b::BasicType{Val{:Constant}}) = constant_map[toString(b)]
-
-N(b::BasicComplexNumber) = complex(N(real(b)), N(imag(b)))
-function N(b::BasicType)
-    b = convert(Basic, b)
-    fs = free_symbols(b)
-    if length(fs) > 0
-        throw(ArgumentError("Object can have no free symbols"))
+N(::Val{:NaN},        b::Basic) = NaN
+function N(::Val{:Infty}, b::Basic)
+    if b == oo
+        return Inf
+    elseif b == zoo
+        return Complex(Inf,Inf)
+    elseif b == -oo
+        return -Inf
+    else
+        throw(ArgumentError("Unknown infinity symbol"))
     end
-    out = evalf(b)
-    imag(out) == Basic(0.0) ? real(out) : out
 end
 
+function N(::Val{:Constant}, b::Basic)
+    if b == PI
+        return π
+    elseif b == EulerGamma
+        return γ
+    elseif b == E
+        return ℯ
+    elseif b == Catalan
+        return catalan
+    elseif b == GoldenRatio
+        return φ
+    else
+        throw(ArgumentError("Unknown constant"))
+    end
+end
+
+function N(::Val{<:Any}, b::Basic)
+    is_constant(b) ||
+        throw(ArgumentError("Object can have no free symbols"))
+    out = evalf(b)
+    imag(out) == Basic(0.0) ? N(real(out)) : N(out)
+end
+
+## deprecate N(::BasicType)
+N(b::BasicType{T}) where {T} = N(convert(Basic, b), T)
 
 ##  Conversions SymEngine -> Julia
-function as_numer_denom(x::Basic)
-    a, b = Basic(), Basic()
+## define convert(T, x) methods leveraging N() when needed
+function convert(::Type{Float64}, x::Basic)
+    is_a_RealDouble(x) && return _convert(Cdouble, x)
+    convert(Float64, N(evalf(x, 53, true)))
+end
+
+function convert(::Type{BigFloat}, x::Basic)
+    is_a_RealMPFR(x) && return _convert(BigFloat, x)
+    convert(BigFloat, N(evalf(x, precision(BigFloat), true)))
+end
+
+function convert(::Type{Complex{Float64}}, x::Basic)
+    z = is_a_ComplexDouble(x) ? x : evalf(x, 53, false)
+    a,b = _real(z), _imag(z)
+    u,v = _convert(Cdouble, a), _convert(Cdouble, b)
+    return complex(u,v)
+end
+
+function convert(::Type{Complex{BigFloat}}, x::Basic)
+    z =  is_a_ComplexMPC(x) ? x : evalf(x, precision(BigFloat), false)
+    a,b = _real(z), _imag(z)
+    u,v = _convert(BigFloat, a), _convert(BigFloat, b)
+    return complex(u,v)
+end
+
+convert(::Type{Number}, x::Basic)            = x
+convert(::Type{T}, x::Basic) where {T <: Real}      = convert(T, N(x))
+convert(::Type{Complex{T}}, x::Basic) where {T <: Real}    = convert(Complex{T}, N(x))
+
+# Constructors no longer fall back to `convert` methods
+Base.Int64(x::Basic)   = convert(Int64, x)
+Base.Int32(x::Basic)   = convert(Int32, x)
+Base.Float32(x::Basic) = convert(Float32, x)
+Base.Float64(x::Basic) = convert(Float64, x)
+Base.BigInt(x::Basic)  = convert(BigInt, x)
+Base.Real(x::Basic)    = convert(Real, x)
+
+
+##  Rational --  p/q parts
+function as_numer_denom!(a::Basic, b::Basic, x::Basic)
     ccall((:basic_as_numer_denom, libsymengine), Nothing, (Ref{Basic}, Ref{Basic}, Ref{Basic}), a, b, x)
     return a, b
+end
+function as_numer_denom(x::Basic)
+    a, b = Basic(), Basic()
+    as_numer_denom!(a,b,x)
 end
 
 as_numer_denom(x::BasicType) = as_numer_denom(Basic(x))
 denominator(x::SymbolicType) = as_numer_denom(x)[2]
 numerator(x::SymbolicType)   = as_numer_denom(x)[1]
 
-## Complex; real, imag for :Complex defined elsewhere via ccall
-# MethodError if x not a number type.
+## Complex
+# b::Basic -> a::Basic
+function _real(b::Basic)
+    if is_a_RealDouble(b) || is_a_RealMPFR(b) || is_a_Integer(b) || is_a_Rational(b)
+        return b
+    end
+    if !(is_a_Complex(b) || is_a_ComplexDouble(b) || is_a_ComplexMPC(b))
+        throw(ArgumentError("Not a complex number"))
+    end
+    a = Basic()
+    ccall((:complex_base_real_part, libsymengine), Nothing, (Ref{Basic}, Ref{Basic}), a, b)
+    return a
+end
+
+function _imag(b::Basic)
+    if !(is_a_Complex(b) || is_a_ComplexDouble(b) || is_a_ComplexMPC(b))
+        throw(ArgumentError("Not a complex number"))
+    end
+    a = Basic()
+    ccall((:complex_base_imaginary_part, libsymengine), Nothing, (Ref{Basic}, Ref{Basic}), a, b)
+    return a
+end
+
 real(x::Basic) = Basic(real(SymEngine.BasicType(x)))
 real(x::BasicType{Val{:Symbol}}) = x # issue #273 has issue here
 real(x::BasicType{Val{:Integer}}) = x
@@ -202,22 +238,6 @@ conj(x::Basic) = Basic(conj(SymEngine.BasicType(x)))
 # To allow future extension, we define the fallback on `BasicType``.
 conj(x::BasicType) = 2 * real(x.x) - x.x
 
-## define convert(T, x) methods leveraging N()
-convert(::Type{Float64}, x::Basic)           = convert(Float64, N(evalf(x, 53, true)))
-convert(::Type{BigFloat}, x::Basic)          = convert(BigFloat, N(evalf(x, precision(BigFloat), true)))
-convert(::Type{Complex{Float64}}, x::Basic)  = convert(Complex{Float64}, N(evalf(x, 53, false)))
-convert(::Type{Complex{BigFloat}}, x::Basic) = convert(Complex{BigFloat}, N(evalf(x, precision(BigFloat), false)))
-convert(::Type{Number}, x::Basic)            = x
-convert(::Type{T}, x::Basic) where {T <: Real}      = convert(T, N(x))
-convert(::Type{Complex{T}}, x::Basic) where {T <: Real}    = convert(Complex{T}, N(x))
-
-# Constructors no longer fall back to `convert` methods
-Base.Int64(x::Basic) = convert(Int64, x)
-Base.Int32(x::Basic) = convert(Int32, x)
-Base.Float32(x::Basic) = convert(Float32, x)
-Base.Float64(x::Basic) = convert(Float64, x)
-Base.BigInt(x::Basic) = convert(BigInt, x)
-Base.Real(x::Basic) = convert(Real, x)
 
 ## For generic programming in Julia
 float(x::Basic) = float(N(x))
@@ -228,21 +248,62 @@ isnan(x::Basic) = ( x == NAN )
 isinf(x::Basic) = !isnan(x) & !isfinite(x)
 isless(x::Basic, y::Basic) = isless(N(x), N(y))
 
+# is_a_functions
+# could use metaprogramming here
+is_a_Number(x::Basic) =
+    Bool(convert(Int, ccall((:is_a_Number, libsymengine),
+                            Cuint, (Ref{Basic},), x)))
+is_a_Integer(x::Basic) =
+    Bool(convert(Int, ccall((:is_a_Integer, libsymengine),
+                            Cuint, (Ref{Basic},), x)))
+is_a_Rational(x::Basic) =
+    Bool(convert(Int, ccall((:is_a_Rational, libsymengine),
+                            Cuint, (Ref{Basic},), x)))
+is_a_RealDouble(x::Basic) =
+    Bool(convert(Int, ccall((:is_a_RealDouble, libsymengine),
+                            Cuint, (Ref{Basic},), x)))
+is_a_RealMPFR(x::Basic) =
+    Bool(convert(Int, ccall((:is_a_RealMPFR, libsymengine),
+                            Cuint, (Ref{Basic},), x)))
+is_a_Complex(x::Basic) =
+    Bool(convert(Int, ccall((:is_a_Complex, libsymengine),
+                            Cuint, (Ref{Basic},), x)))
+is_a_ComplexDouble(x::Basic) =
+    Bool(convert(Int, ccall((:is_a_ComplexDouble, libsymengine),
+                            Cuint, (Ref{Basic},), x)))
+is_a_ComplexMPC(x::Basic) =
+    Bool(convert(Int, ccall((:is_a_ComplexMPC, libsymengine),
+                            Cuint, (Ref{Basic},), x)))
+
+Base.isinteger(x::Basic) = is_a_Integer(x)
+function Base.isreal(x::Basic)
+    is_a_Number(x) || return false
+    is_a_Integer(x) || is_a_Rational(x) || is_a_RealDouble(x) || is_a_RealMPFR(x)
+end
+
+# may not allocate; seems more idiomatic than default x == zero(x)
+function Base.iszero(x::Basic)
+    is_a_Number(x) || return false
+    x == zero(x)
+end
+
+function Base.isone(x::Basic)
+    is_a_Number(x) || return false
+    x == one(x)
+end
+
+
 
 ## These should have support in symengine-wrapper, but currently don't
 trunc(x::Basic, args...) = Basic(trunc(N(x), args...))
 trunc(::Type{T},x::Basic, args...) where {T <: Integer} = convert(T, trunc(x,args...))
 
-ceil(x::Basic) = Basic(ceil(N(x)))
-ceil(::Type{T},x::Basic) where {T <: Integer} = convert(T, ceil(x))
-
-floor(x::Basic) = Basic(floor(N(x)))
-floor(::Type{T},x::Basic) where {T <: Integer} = convert(T, floor(x))
-
 round(x::Basic; kwargs...) = Basic(round(N(x); kwargs...))
 round(::Type{T},x::Basic; kwargs...) where {T <: Integer} = convert(T, round(x; kwargs...))
 
+prec(x::Basic) = prec(BasicType(x))
 prec(x::BasicType{Val{:RealMPFR}}) = ccall((:real_mpfr_get_prec, libsymengine), Clong, (Ref{Basic},), x)
+prec(::BasicType) = throw(ArgumentError("Method not applicable"))
 
 # eps
 eps(x::Basic) = eps(BasicType(x))
@@ -253,3 +314,26 @@ eps(::Type{BasicType{Val{:RealDouble}}}) = 2^-52
 eps(::Type{BasicType{Val{:ComplexDouble}}}) = 2^-52
 eps(x::BasicType{Val{:RealMPFR}}) = evalf(Basic(2), prec(x), true) ^ (-prec(x)+1)
 eps(x::BasicType{Val{:ComplexMPFR}}) = eps(real(x))
+
+## convert from BasicType
+function convert(::Type{BigInt}, b::BasicType{Val{:Integer}})
+    _convert(BigInt, Basic(b))
+end
+
+function convert(::Type{BigFloat}, b::BasicType{Val{:RealMPFR}})
+    _convert(BigInt, Basic(b))
+end
+
+function convert(::Type{Cdouble}, b::BasicType{Val{:RealDouble}})
+    _convert(Cdouble, Basic(b))
+end
+
+## real/imag for BasicType
+function real(b::BasicComplexNumber)
+    _real(Basic(b))
+end
+
+function imag(b::BasicComplexNumber)
+    _imag(Basic(b))
+end
+## end deprecate
