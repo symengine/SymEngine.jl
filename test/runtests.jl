@@ -386,6 +386,13 @@ expr = x^3 + 3*x^2*y + 3*x*y^2 + y^3 + 1
     end
 end
 
+@testset "Symbolic Booleans" begin
+    @test N(True) == 1
+    @test N(False) == 1
+    v = Basic(1) + True
+    @test N(v) == 1 + true
+end
+
 @test round(Basic(3.14)) == 3.0
 @test round(Basic(3.14); digits=1) == 3.1
 
