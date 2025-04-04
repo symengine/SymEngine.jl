@@ -95,7 +95,7 @@ Base.one(::Type{T}) where {T<:BasicType} = BasicType(Basic(1))
 ## Math constants
 ## no oo!
 
-for op in [:IM, :PI, :E, :EulerGamma, :Catalan, :GoldenRatio, :oo, :zoo, :NAN]
+for op in [:IM, :PI, :E, :EulerGamma, :Catalan, :GoldenRatio, :oo, :zoo, :NAN, :ZERO, :ONE, :MINUSONE]
     @eval begin
         const $op = Basic(C_NULL)
     end
@@ -127,6 +127,9 @@ function init_constants()
     @init_constant oo infinity
     @init_constant zoo complex_infinity
     @init_constant NAN nan
+    @init_constant ZERO zero
+    @init_constant ONE one
+    @init_constant MINUSONE minus_one
     ccall((:bool_set_true, libsymengine), Nothing, (Ref{Basic},), True)
     ccall((:bool_set_false, libsymengine), Nothing, (Ref{Basic},), False)
 end

@@ -12,6 +12,11 @@ function evalf(b::Basic, bits::Integer=53, real::Bool=false)
     if status == 0
         return c
     else
+        # replace any True/False with 1/0
+        m = CMapBasicBasic()
+        m[True] = ONE; m[False] = ZERO
+        b′ = subs(b, m)
+        b′ != b && return evalf(b′, bits, real)
         throw(ArgumentError("symbolic value cannot be evaluated to a numeric value"))
     end
 end
@@ -125,12 +130,7 @@ end
 function N(::Val{<:Any}, b::Basic)
     is_constant(b) ||
         throw(ArgumentError("Object can have no free symbols"))
-
-    # replace any True/False with 1/0
-    m = CMapBasicBasic()
-    m[True] = Basic(1); m[False] = Basic(0)
-
-    out = evalf(subs(b, m))
+    out = evalf(b)
     imag(out) == Basic(0.0) ? N(real(out)) : N(out)
 end
 
