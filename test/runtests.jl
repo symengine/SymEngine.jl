@@ -388,7 +388,7 @@ end
 
 @testset "Symbolic Booleans" begin
     @test N(True) == 1
-    @test N(False) == 1
+    @test N(False) == 0
     v = Basic(1) + True
     @test N(v) == 1 + true
 end
