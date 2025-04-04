@@ -12,10 +12,7 @@ function evalf(b::Basic, bits::Integer=53, real::Bool=false)
     if status == 0
         return c
     else
-        # replace any True/False with 1/0
-        m = CMapBasicBasic()
-        m[True] = ONE; m[False] = ZERO
-        b′ = subs(b, m)
+        b′ = subs(b, TrueFalseMap) # replace any True/False with 1/0
         b′ != b && return evalf(b′, bits, real)
         throw(ArgumentError("symbolic value cannot be evaluated to a numeric value"))
     end
