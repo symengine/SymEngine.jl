@@ -95,15 +95,13 @@ Base.one(::Type{T}) where {T<:BasicType} = BasicType(Basic(1))
 ## Math constants
 ## no oo!
 
-for op in [:IM, :PI, :E, :EulerGamma, :Catalan, :GoldenRatio, :oo, :zoo, :NAN, :ZERO, :ONE, :MINUSONE]
+for op in [:IM, :PI, :E, :EulerGamma, :Catalan, :GoldenRatio, :oo, :zoo,
+    :NEGINFINITY, :NAN, :ZERO, :ONE, :MINUSONE, :True, :False]
     @eval begin
         const $op = Basic(C_NULL)
     end
     eval(Expr(:export, op))
 end
-
-True, False = Basic(C_NULL), Basic(C_NULL);
-export True, False
 
 macro init_constant(op, libnm)
     tup = (Base.Symbol("basic_const_$libnm"), libsymengine)
@@ -126,6 +124,7 @@ function init_constants()
     @init_constant GoldenRatio GoldenRatio
     @init_constant oo infinity
     @init_constant zoo complex_infinity
+    @init_constant NEGINFINITY neginfinity
     @init_constant NAN nan
     @init_constant ZERO zero
     @init_constant ONE one
