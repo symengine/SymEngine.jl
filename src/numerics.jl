@@ -212,30 +212,46 @@ real(x::Basic) = real(get_symengine_class_val(x), x)
 real(::T, x) where {T<:RealNumberType} = x
 real(::T, x) where {T<:ComplexNumberType} = _real(x)
 function real(::Val{:Constant}, x)
-    any(==(x), (PI, E, EulerGamma, Catalan, oo, NAN)) && return Basic(x)
+    any(==(x), RealConstants) && return Basic(x)
+    x == NaN && return x
     x == IM && return zero(x)
     x == zoo && return oo
 end
-real(::Val{<:Any},x) = real(evalf(x))
-real(::Val{:Symbol},x) = throw(ArgumentError("imag only defined on symbolic numbers"))
+#=
+function real(::Val{<:Any},x)
+    if is_constant(x)
+        real(evalf(x))
+    else
+        throw(ArgumentError("The `real` method is only defined for numeric constants"))
+    end
+end
+=#
 
 imag(x::Basic) = imag(get_symengine_class_val(x), x)
-imag(::T, x) where {T<:RealNumberType} = Basic(0)
+imag(::T, x) where {T<:RealNumberType} = Basic(zero(x))
 imag(::T, x) where {T<:ComplexNumberType} = _imag(x)
 function imag(::Val{:Constant}, x)
-    any(==(x), (PI, E, EulerGamma, Catalan, oo, NAN)) && return Basic(x)
+    any(==(x),  RealConstants) && return Basic(x)
+    x == NAN && return x
     x == IM && return zero(x)
     x == zoo && return oo
 end
-imag(::Val{<:Any}, x) = imag(evalf(x))
-imag(::Val{:Symbol},x) = throw(ArgumentError("imag only defined on symbolic numbers"))
-
+#= after deprecation removed
+function imag(::Val{<:Any},x)
+    if is_constant(x)
+        imag(evalf(x))
+    else
+        throw(ArgumentError("The `imag` method is only defined for numeric constants"))
+    end
+end
+=#
 
 conj(x::Basic) = conj(get_symengine_class_val(x), x)
 conj(::T,x) where {T<:RealNumberType} = x
 conj(::T,x) where {T<:ComplexNumberType} = _real(x) - _imag(x)*IM
 function conj(::Val{:Constant}, x)
-    any(==(x), (PI, E, EulerGamma, Catalan, oo, NAN)) && return x
+    any(==(x), RealConstants) && return x
+    x == NAN && return x
     x == IM && return zero(x)
     x == zoo && return oo
 end
