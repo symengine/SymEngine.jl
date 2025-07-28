@@ -95,7 +95,8 @@ Base.one(::Type{T}) where {T<:BasicType} = BasicType(Basic(1))
 ## Math constants
 ## no oo!
 
-for op in [:IM, :PI, :E, :EulerGamma, :Catalan, :GoldenRatio, :oo, :zoo, :NAN]
+for op in [:IM, :PI, :E, :EulerGamma, :Catalan, :GoldenRatio, :oo, :zoo,
+    :NEGINFINITY, :NAN, :ZERO, :ONE, :MINUSONE, :True, :False]
     @eval begin
         const $op = Basic(C_NULL)
     end
@@ -123,15 +124,22 @@ function init_constants()
     @init_constant GoldenRatio GoldenRatio
     @init_constant oo infinity
     @init_constant zoo complex_infinity
+    @init_constant NEGINFINITY neginfinity
     @init_constant NAN nan
+    @init_constant ZERO zero
+    @init_constant ONE one
+    @init_constant MINUSONE minus_one
+    ccall((:bool_set_true, libsymengine), Nothing, (Ref{Basic},), True)
+    ccall((:bool_set_false, libsymengine), Nothing, (Ref{Basic},), False)
 end
 
-## ## Conversions
+## Conversions
 Base.convert(::Type{Basic}, x::Irrational{:π}) = PI
 Base.convert(::Type{Basic}, x::Irrational{:e}) = E
 Base.convert(::Type{Basic}, x::Irrational{:γ}) = EulerGamma
 Base.convert(::Type{Basic}, x::Irrational{:catalan}) = Catalan
 Base.convert(::Type{Basic}, x::Irrational{:φ}) = (1 + Basic(5)^Basic(1//2))/2
+Base.convert(::Type{Basic}, x::Bool) = x ? True : False
 Base.convert(::Type{BasicType}, x::Irrational) = BasicType(convert(Basic, x))
 
 ## Logical operators

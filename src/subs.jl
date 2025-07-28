@@ -80,7 +80,7 @@ function _convert(::Type{Expr}, ex::Basic)
 
     if fn == :Symbol
         return nameof(ex)
-    elseif (fn in number_types) || (fn == :Constant)
+    elseif (fn in number_types) || (fn == :Constant) || (fn == :BooleanAtom)
         return N(ex)
     end
 
