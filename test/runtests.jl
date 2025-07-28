@@ -49,6 +49,13 @@ c = prod(convert(SymEngine.CVecBasic, [x, x, 2]))
 @test 2 * x * 3 == 6 * x
 @test 3 * 2 * x == 6 * x
 
+
+# Issue #146
+@test x + true  == x + 1
+@test x + false == x
+@test x * true  == x
+@test x * false == 0
+
 # https://github.com/symengine/SymEngine.jl/issues/259
 @testset "Issue #259" begin
     let (a, b, c) = symbols("a b c")
@@ -58,6 +65,7 @@ c = prod(convert(SymEngine.CVecBasic, [x, x, 2]))
         @test a * 1//3 * 3//4 * 4//5 * [b, c] == [a * b / 5, a * c / 5]
     end
 end
+
 
 c = x ^ 5
 @test diff(c, x) == 5 * x ^ 4
