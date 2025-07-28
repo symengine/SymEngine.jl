@@ -34,6 +34,7 @@ include("calculus.jl")
 include("recipes.jl")
 include("dense-matrix.jl")
 
+include("deprecated.jl")
 function __init__()
     init_constants()
 end
