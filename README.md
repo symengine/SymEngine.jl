@@ -4,6 +4,7 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/github/symengine/symengine.rb?branch=master&svg=true)](https://ci.appveyor.com/project/isuruf/symengine-jl-pj80f/branch/master)
 [![Codecov](http://codecov.io/github/symengine/SymEngine.jl/coverage.svg?branch=master)](http://codecov.io/github/symengine/SymEngine.jl?branch=master)
 [![Coveralls](https://coveralls.io/repos/symengine/SymEngine.jl/badge.svg?branch=master&service=github)](https://coveralls.io/github/symengine/SymEngine.jl?branch=master)
+[![Documentation](https://img.shields.io/badge/docs-blue.svg)](https://symengine.org/SymEngine.jl)
 
 Julia Wrappers for [SymEngine](https://github.com/symengine/symengine), a fast symbolic manipulation library, written in C++.
 
