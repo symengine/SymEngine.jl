@@ -72,6 +72,8 @@ diff(ex::SymbolicType, bs::Tuple, ns::Tuple) =
 diff(b1::SymbolicType, x::Union{String,Symbol}) = diff(b1, Basic(x))
 
 """
+    series(ex, x, x0=0, n=6)
+
 Series expansion to order `n` about point `x0`
 """
 function series(ex::SymbolicType, x::SymbolicType, x0=0, n::Union{Integer, Basic}=6)

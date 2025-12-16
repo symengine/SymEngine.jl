@@ -1,4 +1,8 @@
-"Helper function to lookup a symbol from libsymengine"
+"""
+    get_symbol(sym)
+
+Helper function to lookup a symbol from libsymengine
+"""
 function get_symbol(sym::Symbol)
     handle = Libdl.dlopen_e(libsymengine)
     if handle == C_NULL
@@ -8,7 +12,11 @@ function get_symbol(sym::Symbol)
     end
 end
 
-"Get libsymengine version"
+"""
+    get_libversion()
+
+Get libsymengine version
+"""
 function get_libversion()
     func = get_symbol(:symengine_version)
     if func != C_NULL
@@ -20,7 +28,11 @@ function get_libversion()
     end
 end
 
-"Check whether libsymengine was compiled with comp"
+"""
+    have_component(comp::String)
+
+Check whether libsymengine was compiled with component `comp`
+"""
 function have_component(comp::String)
     func = get_symbol(:symengine_have_component)
     if func != C_NULL

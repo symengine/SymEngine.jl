@@ -1,4 +1,4 @@
-# SymEngine.jl
+# Basic usage
 
 Julia wrappers for [SymEngine](https://github.com/symengine/symengine), a fast symbolic manipulation library, written in C++.
 
@@ -344,7 +344,7 @@ If `TermInterface` is loaded (below), the `operation` method returns the outermo
 
 The `Basic` type is a Julia type wrapping an underlying symengine object. When a Julia method is called on symbolic objects, the method almost always resolves to some call (via `ccall`) into the `libsymengine` C++ library. The design typically involves mutating a newly constructed `Basic` variable. Some allocations can be saved by calling the mutating version of the operations:
 
-```
+```julia
 @vars x
 a = Basic()
 SymEngine.sin!(a, x)
@@ -394,8 +394,3 @@ replace_head(tan(sin(tan(x))), tan, cos)
 ## `SymEngine.jl` and symengine
 
 This package only wraps those parts of symengine that are exposed through its [C wrapper](https://github.com/symengine/symengine/blob/master/symengine/cwrapper.cpp). The underlying C++ library has more functionality.
-
-
-## License
-
-`SymEngine.jl` is licensed under the MIT open source license.

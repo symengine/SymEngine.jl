@@ -171,7 +171,7 @@ LinearAlgebra.factorize(M::CDenseMatrix) = factorize(convert(Matrix, M))
 """
 LU decomposition for CDenseMatrix, dense matrices of symbolic values
 
-Also: lufact(a, val{:false}) for non-pivoting lu factorization
+Also: `lufact(a, Val{:false})` for non-pivoting lu factorization
 """
 function LinearAlgebra.lu(a::CDenseMatrix)
     l, u = dense_matrix_LU(a)

@@ -1,12 +1,16 @@
 
 
 """
-    subs
+    subs(ex, var, val)
+    subs(ex, d::AbstractDict)
+    subs(ex, y::Tuple)
+    subs(ex)
 
 Substitute values into a symbolic expression.
 
-Examples
-```
+### Examples
+
+```julia
 @vars x y
 ex = x^2 + y^2
 subs(ex, x, 1) # 1 + y^2
@@ -126,8 +130,9 @@ end
 walk_expression(b) = convert(Expr, b)
 
 """
-    lambdify
-evaluates a symbolless expression or returns a function
+    lambdify(ex, vars=[]; cse=false)
+
+Evaluates a symbol-less expression or returns a function
 """
 function lambdify(ex, vars=[])
     if length(vars) == 0
@@ -170,7 +175,7 @@ end
 function _lambdify(ex::Expr, vars)
     try
         fn = eval(Expr(:function,
-                  Expr(:call, gensym(), map(Symbol,vars)...),
+                       Expr(:call, gensym(), map(Symbol,vars)...),
                        ex))
         (args...) -> invokelatest(fn, args...) # https://github.com/JuliaLang/julia/pull/19784
     catch err
