@@ -137,8 +137,9 @@ _symbol(s::Symbol) = _symbol(string(s))
 
 Construct symbolic value.
 
-Examples:
-```
+### Examples
+
+```julia
 a = symbols(:a)
 x = symbols("x")
 x,y = symbols("x y")
@@ -162,7 +163,7 @@ end
 
 Macro to define 1 or more variables or symbolic function
 
-Example
+### Examples
 ```
 @vars x y z
 @vars x[1:4]

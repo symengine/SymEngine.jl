@@ -344,7 +344,7 @@ If `TermInterface` is loaded (below), the `operation` method returns the outermo
 
 The `Basic` type is a Julia type wrapping an underlying symengine object. When a Julia method is called on symbolic objects, the method almost always resolves to some call (via `ccall`) into the `libsymengine` C++ library. The design typically involves mutating a newly constructed `Basic` variable. Some allocations can be saved by calling the mutating version of the operations:
 
-```
+```julia
 @vars x
 a = Basic()
 SymEngine.sin!(a, x)
@@ -359,7 +359,7 @@ There is an extension for `TermInterface` (and `SymbolicUtils`) which should all
 
 
 ```@example symengine
-using SymbolicUtils;
+using SymbolicUtils
 @vars x
 simplify(sin(x)^2 + cos(x)^2)
 ```

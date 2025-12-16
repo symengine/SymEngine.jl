@@ -10,7 +10,7 @@ This site contains the documentation and `julia` language bindings for the [Syme
 ## Installation
 The package and dependencies can be obtained with standard `Pkg` calls.
 
-```julia
+```julia-repl
 julia> Pkg.add("SymEngine")
 ```
 
