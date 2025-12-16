@@ -111,7 +111,12 @@ const symengine_classes = _get_symengine_classes()
 const symengine_classes_val = [Val(c) for c in SymEngine.symengine_classes]
 const symengine_classes_val_type = [Val{c} for c in SymEngine.symengine_classes]
 
-"Get SymEngine class of an object (e.g. 1=>:Integer, 1//2 =:Rational, sin(x) => :Sin, ..."
+"""
+    get_symengine_class(s)
+
+Get SymEngine class of an object `s`.
+(e.g. `1=>:Integer`, `1//2 =>:Rational`, `sin(x) => :Sin`, ...)
+"""
 get_symengine_class(s::Basic) = symengine_classes[get_type(s) + 1]
 get_symengine_class_val(s::Basic) = symengine_classes_val[get_type(s) + 1]
 get_symengine_class_val_type(s::Basic) = symengine_classes_val_type[get_type(s) + 1]
@@ -128,8 +133,9 @@ _symbol(s::Symbol) = _symbol(string(s))
 
 ## use SymPy name here, but no assumptions
 """
+    symbols(::Symbol)
 
-`symbols(::Symbol)` construct symbolic value
+Construct symbolic value.
 
 Examples:
 ```
@@ -255,20 +261,32 @@ BasicTrigFunction =  Union{[SymEngine.BasicType{Val{i}} for i in trig_types]...}
 
 ###
 
-"Is expression constant"
+"""
+    is_constant(ex)
+
+Is expression constant
+"""
 function is_constant(ex::Basic)
     syms = CSetBasic()
     ccall((:basic_free_symbols, libsymengine), Nothing, (Ref{Basic}, Ptr{Cvoid}), ex, syms.ptr)
     Base.length(syms) == 0
 end
 
-"Is expression a symbol"
+"""
+    is_symbol(x::)
+
+Is expression a symbol
+"""
 function is_symbol(x::SymbolicType)
     res = ccall((:is_a_Symbol, libsymengine), Cuint, (Ref{Basic},), x)
     Bool(convert(Int,res))
 end
 
-"Does expression contain the symbol"
+"""
+    has_symbol(ex, x)
+
+Does expression `ex` contain the symbol `x`
+"""
 function has_symbol(ex::SymbolicType, x::SymbolicType)
     is_symbol(x) || throw(ArgumentError("Not a symbol"))
     res = ccall((:basic_has_symbol, libsymengine), Cuint, (Ref{Basic},Ref{Basic}),  ex, x)
@@ -276,7 +294,11 @@ function has_symbol(ex::SymbolicType, x::SymbolicType)
 end
 
 
-" Return free symbols in an expression as a `Set`"
+"""
+    free_symbols(ex)
+
+Return free symbols in an expression `ex` as a `Set`
+"""
 function free_symbols(ex::Basic)
     syms = CSetBasic()
     free_symbols!(syms, ex)
@@ -294,7 +316,11 @@ _flat(A) = mapreduce(x->isa(x,Array) ? _flat(x) : x, vcat, A, init=Basic[])  # f
 free_symbols(exs::Array{T}) where {T<:SymbolicType}  = unique(_flat([free_symbols(ex) for ex in exs]))
 free_symbols(exs::Tuple) =  unique(_flat([free_symbols(ex) for ex in exs]))
 
-"Return function symbols in an expression as a `Set`"
+"""
+    function_symbols(ex)
+
+Return function symbols in an expression `ex` as a `Set`
+"""
 function function_symbols(ex::Basic)
     syms = CSetBasic()
     function_symbols!(syms, ex)
@@ -309,7 +335,11 @@ function_symbols(ex::BasicType) = function_symbols(Basic(ex))
 function_symbols(exs::Array{T}) where {T<:SymbolicType} = unique(_flat([function_symbols(ex) for ex in exs]))
 function_symbols(exs::Tuple) = unique(_flat([function_symbols(ex) for ex in exs]))
 
-"Return name of function symbol"
+"""
+    get_name(ex)
+
+Return name of function symbol
+"""
 function get_name(ex::Basic)
     a = ccall((:function_symbol_get_name, libsymengine), Cstring, (Ref{Basic}, ), ex)
     string = unsafe_string(a)
@@ -317,7 +347,11 @@ function get_name(ex::Basic)
     return string
 end
 
-"Return arguments of a function call as a vector of `Basic` objects"
+"""
+    get_args(ex)
+
+Return arguments of a function call as a vector of `Basic` objects
+"""
 function get_args(ex::Basic)
     args = CVecBasic()
     get_args!(args, ex)

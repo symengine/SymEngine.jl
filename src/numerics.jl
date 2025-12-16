@@ -55,6 +55,8 @@ end
 ##################################################
 # N
 """
+    N(a)
+    N(Val(:Type), b::Basic)
 
 Convert a SymEngine numeric value into a Julian number
 

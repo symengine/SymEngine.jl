@@ -1,7 +1,10 @@
 
 
 """
-    subs
+    subs(ex, var, val)
+    subs(ex, d::AbstractDict)
+    subs(ex, y::Tuple)
+    subs(ex)
 
 Substitute values into a symbolic expression.
 
@@ -126,7 +129,8 @@ end
 walk_expression(b) = convert(Expr, b)
 
 """
-    lambdify
+    lambdify(ex, vars=[]; cse=false)
+
 evaluates a symbolless expression or returns a function
 """
 function lambdify(ex, vars=[])

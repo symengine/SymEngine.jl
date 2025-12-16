@@ -159,7 +159,11 @@ for (meth, libnm) in [(:nextprime,:nextprime)
     eval(Expr(:export, meth))
 end
 
-"Return coefficient of `x^n` term, `x` a symbol"
+"""
+    coeff!(a, b, x, n)
+
+Return coefficient of `x^n` term, `x` a symbol
+"""
 function coeff!(a::Basic, b::Basic, x, n)
     out = ccall((:basic_coeff, libsymengine), Nothing,
                 (Ref{Basic},Ref{Basic},Ref{Basic},Ref{Basic}),
