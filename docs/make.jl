@@ -1,3 +1,9 @@
 using Documenter, SymEngine
 
-makedocs(sitename="Symengine Julia API Docs")
+pages = [
+    "index.md",
+    "basicUsage.md",
+    "apidocs.md",
+]
+
+makedocs(sitename="Symengine Julia API Docs"; pages)

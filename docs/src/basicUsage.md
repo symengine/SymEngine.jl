@@ -1,4 +1,4 @@
-# SymEngine.jl
+# Basic usage
 
 Julia wrappers for [SymEngine](https://github.com/symengine/symengine), a fast symbolic manipulation library, written in C++.
 
