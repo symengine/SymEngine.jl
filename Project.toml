@@ -24,14 +24,14 @@ Compat = "0.63.0, 1, 2, 3, 4"
 RecipesBase = "0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 1.0"
 SpecialFunctions = "0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.10, 1, 2"
 SymEngine_jll = "0.9, 0.10, 0.11, 0.12"
-SymbolicUtils = "3, 4"
+SymbolicUtils = "3"
 TermInterface = "2"
 julia = "1.6"
 
 [extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 SymbolicUtils = "d1185830-fcd6-423d-90d6-eec64667417b"
 TermInterface = "8ea1fca8-c5ef-4a55-8b96-4e9afe9c9a3c"
-Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
 test = ["SymbolicUtils", "TermInterface", "Test"]
