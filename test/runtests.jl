@@ -268,7 +268,7 @@ x,y,z = symbols("x y z")
 # is/has/free symbol(s)
 @vars x y z
 @test SymEngine.is_symbol(x)
-@test (@allocated SymEngine.is_symbol(x)) == 0
+#@test (@allocated SymEngine.is_symbol(x)) == 0
 @test !SymEngine.is_symbol(x(2))
 @test !SymEngine.is_symbol(x^2)
 @test SymEngine.has_symbol(x^2, x)

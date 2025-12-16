@@ -353,18 +353,9 @@ a
 
 Other types that may be useful to minimize allocations are `SymEngine.CSetBasic` and `SymEngine.CVecBasic`.
 
-## Use with `SymbolicUtils` and `TermInterface`
+## Use with `TermInterface`
 
-There is an extension for `TermInterface` (and `SymbolicUtils`) which should allow the symbolic simplification routines from `SymbolicUtils` to be of use.
-
-
-```@example symengine
-using SymbolicUtils;
-@vars x
-simplify(sin(x)^2 + cos(x)^2)
-```
-
-The `TermInterface` package allows general symbolic expression manipulation. This example shows how some of the functionality of `subs` can be programmed using the package's interface.
+There is an extension for `TermInterface`. The `TermInterface` package allows general symbolic expression manipulation. This example shows how some of the functionality of `subs` can be programmed using the package's interface.
 
 ```@example symengine
 using TermInterface
