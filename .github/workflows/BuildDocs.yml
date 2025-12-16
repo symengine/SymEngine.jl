@@ -6,14 +6,18 @@ jobs:
   BuildDocs:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: julia-actions/setup-julia@latest
+      - uses: actions/checkout@v5
+      - uses: julia-actions/setup-julia@v2
         with:
           version: '1.6'
       - name: Install dependencies
-        run: julia --project=docs/ -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd()));                             Pkg.instantiate()'
+        shell: julia --project=docs/ --color=yes {0}
+        run: |
+          using Pkg
+          Pkg.develop(PackageSpec(path=pwd()))
+          Pkg.instantiate()
       - name: Build Docs
-        run: julia --project=docs/ docs/make.jl
+        run: julia --project=docs/ --color=yes docs/make.jl
       - name: Deploy Documentation
         if: ${{ (github.ref == 'refs/heads/main' && github.repository == 'Symengine/symengine.jl') || (github.ref == 'refs/heads/master' && github.repository == 'Symengine/symengine.jl')}}
         uses: peaceiris/actions-gh-pages@v3
