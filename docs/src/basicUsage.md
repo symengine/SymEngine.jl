@@ -403,8 +403,3 @@ replace_head(tan(sin(tan(x))), tan, cos)
 ## `SymEngine.jl` and symengine
 
 This package only wraps those parts of symengine that are exposed through its [C wrapper](https://github.com/symengine/symengine/blob/master/symengine/cwrapper.cpp). The underlying C++ library has more functionality.
-
-
-## License
-
-`SymEngine.jl` is licensed under the MIT open source license.

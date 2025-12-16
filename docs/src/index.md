@@ -13,3 +13,7 @@ The package and dependencies can be obtained with standard `Pkg` calls.
 ```julia
 julia> Pkg.add("SymEngine")
 ```
+
+## License
+
+`SymEngine.jl` is licensed under the MIT open source license.
