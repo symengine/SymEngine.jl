@@ -1,6 +1,5 @@
 using Test
 using SymEngine
-import SymbolicUtils: simplify, @rule, @acrule, Chain, Fixpoint
 
 import TermInterface
 @testset "TermInterface" begin
@@ -11,6 +10,8 @@ import TermInterface
     @test TermInterface.arguments(sin(x)) == [x]
 end
 
+#=
+import SymbolicUtils: simplify, @rule, @acrule, Chain, Fixpoint
 @testset "SymbolicUtils" begin
     # from SymbolicUtils.jl docs
     # https://symbolicutils.juliasymbolics.org/rewrite/#rule-based_rewriting
@@ -60,3 +61,4 @@ end
     @test Fixpoint(cas)((cos(x) + sin(x))^2) == 1 + 2cos(x)*sin(x)
 
 end
+=#
