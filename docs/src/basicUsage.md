@@ -23,7 +23,9 @@ The `@vars` macro can also be used to define collections of variables and symbol
 The `symbols` constructor can be used as well, it takes a symbol or string and returns a symbolic variable with the expected name. A string with spaces is split to allow the specification of multiple variables.
 
 ```@example symengine
-a=symbols(:a); b=symbols(:b)
+a = symbols(:a)
+b = symbols(:b)
+nothing # hide
 ```
 
 ```@example symengine
@@ -145,6 +147,10 @@ A = [im x; 2im x^2]
 transpose(A)
 ```
 
+```@example symengine
+A'
+```
+
 ## Symbolic operations
 
 ### `as_numer_denom`, `coeff`
@@ -183,10 +189,11 @@ The `expand` function is much more performant than that in `Symbolics` -- this f
 
 ```@example symengine
 function expand_test(a,b,c)
-    x = expand(((a+b+c+1)^20));
-    y = expand(((a+b+c+1)^15));
+    x = expand(((a+b+c+1)^20))
+    y = expand(((a+b+c+1)^15))
     z = expand(x*y)
 end
+nothing # hide
 ```
 
 
@@ -266,6 +273,7 @@ function diff_test(D, x)
     end
     expr
 end
+nothing # hide
 ```
 
 
@@ -380,6 +388,7 @@ function replace_head(ex, u, v)
     λ = op == u ? v : op
     ex = maketerm(Basic, λ, args′, nothing)
 end
+nothing # hide
 ```
 
 ```@example symengine
