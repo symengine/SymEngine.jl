@@ -58,7 +58,7 @@ TermInterface.isexpr(x::SymEngine.SymbolicType) = TermInterface.iscall(x)
 ##TermInterface.issym(x::SymEngine.SymbolicType) = SymEngine.get_symengine_class(x) == :Symbol
 
 function TermInterface.operation(x::SymEngine.SymbolicType)
-    TermInterface.iscall(x) || error("$(typeof(x)) doesn't have an operation!")
+    TermInterface.iscall(x) || error("Not a call.")
     return julia_operations[SymEngine.get_type(x) + 1]
 end
 
