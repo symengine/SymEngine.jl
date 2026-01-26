@@ -386,6 +386,24 @@ expr = x^3 + 3*x^2*y + 3*x*y^2 + y^3 + 1
     end
 end
 
+@testset "real/imag/conj" begin
+    @test real(Basic(1.5)) == 1.5
+    @test isa(real(2 + 3IM), Basic)
+    @test real(2 + 3IM) == 2
+
+    @test imag(Basic(1.5)) == 0
+    @test isa(imag(2 + 3IM), Basic)
+    @test imag(2 + 3IM) == Basic(3)
+
+    for a ∈ (1, 1.0, 1//2, 2im, 3.14*im,  1 + im, 1.2 + 3im) # , pi
+        for λ ∈ (real, imag, conj)
+            u,v = Basic(λ(a)), λ(Basic(a))
+            @test abs(u-v) == 0  # avoid Basic(0) ≠ Basic(0.0)
+        end
+    end
+
+end
+
 @test round(Basic(3.14)) == 3.0
 @test round(Basic(3.14); digits=1) == 3.1
 
@@ -415,4 +433,5 @@ end
 	@test deserialized == data
 end
 
+include("test-deprecated.jl")
 VERSION >= v"1.9.0" && include("test-allocations.jl")

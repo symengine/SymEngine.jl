@@ -126,6 +126,8 @@ function init_constants()
     @init_constant NAN nan
 end
 
+RealConstants = (PI, E, EulerGamma, Catalan, GoldenRatio, oo)
+
 ## ## Conversions
 Base.convert(::Type{Basic}, x::Irrational{:π}) = PI
 Base.convert(::Type{Basic}, x::Irrational{:e}) = E

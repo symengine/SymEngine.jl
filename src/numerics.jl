@@ -209,22 +209,56 @@ function _imag(b::Basic)
     return a
 end
 
-real(x::Basic) = Basic(real(SymEngine.BasicType(x)))
-real(x::SymEngine.BasicType) = x
 
-imag(x::Basic) = Basic(imag(SymEngine.BasicType(x)))
-imag(x::BasicType{Val{:Integer}}) = Basic(0)
-imag(x::BasicType{Val{:RealDouble}}) = Basic(0)
-imag(x::BasicType{Val{:RealMPFR}}) = Basic(0)
-imag(x::BasicType{Val{:Rational}}) = Basic(0)
-imag(x::SymEngine.BasicType) = throw(InexactError())
+real(x::Basic) = real(get_symengine_class_val(x), x)
+real(::T, x) where {T<:RealNumberType} = x
+real(::T, x) where {T<:ComplexNumberType} = _real(x)
+function real(::Val{:Constant}, x)
+    any(==(x), RealConstants) && return Basic(x)
+    x == NaN && return x
+    x == IM && return zero(x)
+    x == zoo && return oo
+end
+#=
+function real(::Val{<:Any},x)
+    if is_constant(x)
+        real(evalf(x))
+    else
+        throw(ArgumentError("The `real` method is only defined for numeric constants"))
+    end
+end
+=#
 
-# Because of the definitions above, `real(x) == x` for `x::Basic`
-# such as `x = symbols("x")`. Thus, it is consistent to define the
-conj(x::Basic) = Basic(conj(SymEngine.BasicType(x)))
-# To allow future extension, we define the fallback on `BasicType``.
-conj(x::BasicType) = 2 * real(x.x) - x.x
+imag(x::Basic) = imag(get_symengine_class_val(x), x)
+imag(::T, x) where {T<:RealNumberType} = Basic(zero(x))
+imag(::T, x) where {T<:ComplexNumberType} = _imag(x)
+function imag(::Val{:Constant}, x)
+    any(==(x),  RealConstants) && return Basic(x)
+    x == NAN && return x
+    x == IM && return zero(x)
+    x == zoo && return oo
+end
+#= after deprecation removed
+function imag(::Val{<:Any},x)
+    if is_constant(x)
+        imag(evalf(x))
+    else
+        throw(ArgumentError("The `imag` method is only defined for numeric constants"))
+    end
+end
+=#
 
+conj(x::Basic) = conj(get_symengine_class_val(x), x)
+conj(::T,x) where {T<:RealNumberType} = x
+conj(::T,x) where {T<:ComplexNumberType} = _real(x) - _imag(x)*IM
+function conj(::Val{:Constant}, x)
+    any(==(x), RealConstants) && return x
+    x == NAN && return x
+    x == IM && return zero(x)
+    x == zoo && return oo
+end
+
+conj(::Val{<:Any}, x) = 2*real(x) - x
 
 ## For generic programming in Julia
 float(x::Basic) = float(N(x))
