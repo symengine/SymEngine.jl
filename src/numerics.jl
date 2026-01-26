@@ -12,6 +12,8 @@ function evalf(b::Basic, bits::Integer=53, real::Bool=false)
     if status == 0
         return c
     else
+        b′ = subs(b, TrueFalseMap) # replace any True/False with 1/0
+        b′ != b && return evalf(b′, bits, real)
         throw(ArgumentError("symbolic value cannot be evaluated to a numeric value"))
     end
 end
@@ -93,6 +95,7 @@ N(::Val{:RealMPFR},   b::Basic) = _convert(BigFloat, b)
 N(::Val{:Complex},    b::Basic) = complex(N(real(b)), N(imag(b)))
 N(::Val{:ComplexMPC}, b::Basic) = complex(N(real(b)), N(imag(b)))
 N(::Val{:ComplexDouble}, b::Basic) = complex(N(real(b)), N(imag(b)))
+N(::Val{:BooleanAtom}, b::Basic) = b == True ? 1 : 0
 
 N(::Val{:NaN},        b::Basic) = NaN
 function N(::Val{:Infty}, b::Basic)

@@ -36,6 +36,10 @@ include("dense-matrix.jl")
 
 function __init__()
     init_constants()
+
+    global TrueFalseMap = CMapBasicBasic()
+    TrueFalseMap[True] = ONE
+    TrueFalseMap[False] = ZERO
 end
 
 end
