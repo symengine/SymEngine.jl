@@ -92,12 +92,18 @@ u,v,w = x(2.1), x(1), x(0)
 @test isinteger(v)
 @test isone(v)
 @test iszero(w)
+@test iseven(x) == iseven(u) == iseven(v)
+@test iseven(w)
+@test isodd(x) == isodd(w) == isodd(u)
+@test isodd(v)
 @test (@allocated isreal(u)) == 0
 @test (@allocated isinteger(v)) == 0
 @test (@allocated isone(x)) == 0
 @test (@allocated iszero(x)) == 0
 @test (@allocated isone(v)) > 0 # checking v==zero(v) value allocates
 @test (@allocated iszero(w)) > 0
+@test (@allocated iseven(v)) > 0
+@test (@allocated isodd(v)) > 0
 
 ## calculus
 x,y = symbols("x y")
@@ -189,6 +195,7 @@ A = [x 2]
 @test lambdify(A, [x])(1) == [1 2]
 @test lambdify(A)(1) == [1 2]
 @test isa(convert.(Expr, [0 x x+1]), Array{Expr})
+@test all(x -> isa(x, Union{Number, Symbol, Expr}), SymEngine._convert.(Expr, [0 x x+1]))
 
 ## N, convert, _convert
 for val in samples
