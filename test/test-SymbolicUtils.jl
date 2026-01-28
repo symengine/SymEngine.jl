@@ -3,11 +3,12 @@ using SymEngine
 
 import TermInterface
 @testset "TermInterface" begin
-    @vars x
+    @vars x, ∫()
     @test !TermInterface.iscall(x)
     @test TermInterface.iscall(x^2)
     @test TermInterface.operation(sin(x)) == sin
     @test TermInterface.arguments(sin(x)) == [x]
+    @test nameof(TermInterface.operation(∫(sin(x), x))) == nameof(∫)
 end
 
 #=

@@ -342,6 +342,20 @@ t = BigFloat(1.23)
 @test Basic(:(-y)) == -y
 @test Basic(:(-2*(x-2*y))) == -2*(x-2*y)
 
+# Check that constructing Basic from Irrational works
+for a ∈ (:pi, :ℯ, :e, :φ, :γ,
+         MathConstants.eulergamma,
+         MathConstants.π,
+         MathConstants.catalan,
+         MathConstants.pi,
+         MathConstants.φ,
+         MathConstants.ℯ,
+         MathConstants.e,
+         MathConstants.golden,
+         MathConstants.γ)
+    @test Basic(a) isa Basic
+end
+
 @test Basic(0)/0 == NAN
 @test subs(1/x, x, 0) == Basic(1)/0
 
@@ -352,6 +366,8 @@ d = Dict(x=>y, y=>x)
 @test sin(PI/2-x) == cos(x)
 
 f = SymFunction("f")
+@test nameof(f) == :f
+@test_throws MethodError nameof(f(x))
 @test string(f(x, y)) == "f(x, y)"
 @test string(f([x, y])) == "f(x, y)"
 @test string(f(2*x)) == "f(2*x)"
