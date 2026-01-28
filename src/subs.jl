@@ -77,28 +77,32 @@ map_fn(key, fn_map) = haskey(fn_map, key) ? fn_map[key] : Symbol(lowercase(strin
 
 const julia_classes = map_fn.(symengine_classes, (fn_map,))
 get_julia_class(x::Basic) = julia_classes[get_type(x) + 1]
-Base.nameof(ex::Basic) = Symbol(toString(ex))
+get_julia_class(x::SymFunction) = Symbol(x)
 
+#_convert(::Type{Expr}, ex::SymFunction) = Symbol(ex)
 function _convert(::Type{Expr}, ex::Basic)
     fn = get_symengine_class(ex)
 
-    if fn == :Symbol
-        return nameof(ex)
+    if fn ∈ (:Symbol,)
+        return Symbol(ex)
     elseif (fn in number_types) || (fn == :Constant)
         return N(ex)
     end
+    fn′ = get_julia_class(ex)
+
+    if fn′ === :functionsymbol
+        fn′ = Symbol(get_name(ex))
+    end
 
     as = get_args(ex)
-    fn′ = get_julia_class(ex)
-    Expr(:call, fn′, [_convert(Expr,a) for a in as]...)
+    Expr(:call, fn′, (_convert(Expr,a) for a in as)...)
 end
-
 
 function convert(::Type{Expr}, ex::Basic)
     fn = get_symengine_class(ex)
 
     if fn == :Symbol
-        return Expr(:call, :*, nameof(ex), 1)
+        return Expr(:call, :*, Symbol(ex), 1)
     elseif (fn in number_types) || (fn == :Constant)
         return Expr(:call, :*, N(ex), 1)
     end
