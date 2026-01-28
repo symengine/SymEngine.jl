@@ -190,7 +190,7 @@ end
 
 SymFunction(s::Symbol) = SymFunction(string(s))
 Base.Symbol(s::SymFunction) = Symbol(s.name)
-Base.nameof(s::SymFunction) = Symbol(s)
+Base.nameof(s::SymFunction) = Symbol(s.name)
 
 function (f::SymFunction)(x::CVecBasic)
     a = Basic()
