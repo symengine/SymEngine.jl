@@ -245,18 +245,18 @@ convert(::Type{T}, val::T) where {T<:BasicType} = val
 
 ## some type unions possibly useful for dispatch
 ## Names here match those returned by get_symengine_class()
-real_number_types = [:Integer, :RealDouble, :Rational, :RealMPFR]
-complex_number_types = [:Complex, :ComplexDouble, :ComplexMPC]
-number_types = vcat(real_number_types, complex_number_types)
-BasicNumber = Union{[SymEngine.BasicType{Val{i}} for i in number_types]...}
-BasicRealNumber = Union{[SymEngine.BasicType{Val{i}} for i in real_number_types]...}
-BasicComplexNumber = Union{[SymEngine.BasicType{Val{i}} for i in complex_number_types]...}
+const real_number_types = [:Integer, :RealDouble, :Rational, :RealMPFR]
+const complex_number_types = [:Complex, :ComplexDouble, :ComplexMPC]
+const number_types = vcat(real_number_types, complex_number_types)
+const BasicNumber = Union{[SymEngine.BasicType{Val{i}} for i in number_types]...}
+const BasicRealNumber = Union{[SymEngine.BasicType{Val{i}} for i in real_number_types]...}
+const BasicComplexNumber = Union{[SymEngine.BasicType{Val{i}} for i in complex_number_types]...}
 
-op_types = [:Mul, :Add, :Pow, :Symbol, :Const]
-BasicOp = Union{[SymEngine.BasicType{Val{i}} for i in op_types]...}
+const op_types = [:Mul, :Add, :Pow, :Symbol, :Const]
+const BasicOp = Union{[SymEngine.BasicType{Val{i}} for i in op_types]...}
 
-trig_types = [:Sin, :Cos, :Tan, :Csc, :Sec, :Cot, :ASin, :ACos, :ATan, :ACsc, :ASec, :ACot]
-BasicTrigFunction =  Union{[SymEngine.BasicType{Val{i}} for i in trig_types]...}
+const trig_types = [:Sin, :Cos, :Tan, :Csc, :Sec, :Cot, :ASin, :ACos, :ATan, :ACsc, :ASec, :ACot]
+const BasicTrigFunction =  Union{[SymEngine.BasicType{Val{i}} for i in trig_types]...}
 
 
 

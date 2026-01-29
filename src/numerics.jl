@@ -130,6 +130,8 @@ function N(::Val{<:Any}, b::Basic)
     imag(out) == Basic(0.0) ? N(real(out)) : N(out)
 end
 
+unwrap_const(b) = is_constant(b) ? N(b) : b
+
 ## deprecate N(::BasicType)
 N(b::BasicType{T}) where {T} = N(convert(Basic, b), T)
 
@@ -279,7 +281,9 @@ function Base.isone(x::Basic)
     x == one(x)
 end
 
-
+## julia predicates we can mirror
+Base.iseven(x::Basic) = is_a_Integer(x) && iseven(convert(Integer, x))
+Base.isodd(x::Basic) = is_a_Integer(x) && isodd(convert(Integer, x))
 
 ## These should have support in symengine-wrapper, but currently don't
 trunc(x::Basic, args...) = Basic(trunc(N(x), args...))

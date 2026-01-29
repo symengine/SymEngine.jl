@@ -129,13 +129,14 @@ end
 ## ## Conversions
 Base.convert(::Type{Basic}, x::Irrational{:π}) = PI
 Base.convert(::Type{Basic}, x::Irrational{:e}) = E
+Base.convert(::Type{Basic}, x::Irrational{:ℯ}) = E
 Base.convert(::Type{Basic}, x::Irrational{:γ}) = EulerGamma
 Base.convert(::Type{Basic}, x::Irrational{:catalan}) = Catalan
 Base.convert(::Type{Basic}, x::Irrational{:φ}) = (1 + Basic(5)^Basic(1//2))/2
 Base.convert(::Type{BasicType}, x::Irrational) = BasicType(convert(Basic, x))
 
 ## Logical operators
-Base.:<(x::SymbolicType, y::SymbolicType) = N(x) < N(y)
+Base.:<(x::SymbolicType, y::SymbolicType) = is_constant(x) && is_constant(y) && N(x) < N(y)
 Base.:<(x::SymbolicType, y) = <(promote(x,y)...)
 Base.:<(x, y::SymbolicType) = <(promote(x,y)...)
 
