@@ -282,8 +282,16 @@ function Base.isone(x::Basic)
 end
 
 ## julia predicates we can mirror
-Base.iseven(x::Basic) = is_constant(x) && iseven(N(x))
-Base.isodd(x::Basic) = is_constant(x) && isodd(N(x))
+function Base.iseven(x::Basic)
+    is_constant(x) || throw(ArgumentError("Non constant argument"))
+    iseven(N(x))
+end
+
+function Base.isodd(x::Basic)
+    is_constant(x) || throw(ArgumentError("Non constant argument"))
+    isodd(N(x))
+end
+
 
 ## These should have support in symengine-wrapper, but currently don't
 trunc(x::Basic, args...) = Basic(trunc(N(x), args...))

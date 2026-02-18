@@ -92,10 +92,12 @@ u,v,w = x(2.1), x(1), x(0)
 @test isinteger(v)
 @test isone(v)
 @test iszero(w)
-@test iseven(x) == iseven(u) == iseven(v)
+@test iseven(u) == iseven(v)
 @test iseven(w)
-@test isodd(x) == isodd(w) == isodd(u)
+@test_throws ArgumentError iseven(x)
+@test isodd(w) == isodd(u)
 @test isodd(v)
+@test_throws ArgumentError isodd(x)
 @test (@allocated isreal(u)) == 0
 @test (@allocated isinteger(v)) == 0
 @test (@allocated isone(x)) == 0
