@@ -268,6 +268,7 @@ const BasicTrigFunction =  Union{[SymEngine.BasicType{Val{i}} for i in trig_type
 Is expression constant
 """
 function is_constant(ex::Basic)
+    is_a_Number(ex) && return true
     syms = CSetBasic()
     ccall((:basic_free_symbols, libsymengine), Nothing, (Ref{Basic}, Ptr{Cvoid}), ex, syms.ptr)
     Base.length(syms) == 0
