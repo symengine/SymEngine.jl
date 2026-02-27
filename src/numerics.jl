@@ -265,6 +265,7 @@ is_a_ComplexMPC(x::Basic) =
                             Cuint, (Ref{Basic},), x)))
 
 Base.isinteger(x::Basic) = is_a_Integer(x)
+
 function Base.isreal(x::Basic)
     is_a_Number(x) || return false
     is_a_Integer(x) || is_a_Rational(x) || is_a_RealDouble(x) || is_a_RealMPFR(x)
