@@ -129,6 +129,7 @@ end
 ## ## Conversions
 Base.convert(::Type{Basic}, x::Irrational{:π}) = PI
 Base.convert(::Type{Basic}, x::Irrational{:e}) = E
+Base.convert(::Type{Basic}, x::Irrational{:ℯ}) = E
 Base.convert(::Type{Basic}, x::Irrational{:γ}) = EulerGamma
 Base.convert(::Type{Basic}, x::Irrational{:catalan}) = Catalan
 Base.convert(::Type{Basic}, x::Irrational{:φ}) = (1 + Basic(5)^Basic(1//2))/2

@@ -130,6 +130,8 @@ function N(::Val{<:Any}, b::Basic)
     imag(out) == Basic(0.0) ? N(real(out)) : N(out)
 end
 
+unwrap_const(b) = is_constant(b) ? N(b) : b
+
 ## deprecate N(::BasicType)
 N(b::BasicType{T}) where {T} = N(convert(Basic, b), T)
 
@@ -263,6 +265,7 @@ is_a_ComplexMPC(x::Basic) =
                             Cuint, (Ref{Basic},), x)))
 
 Base.isinteger(x::Basic) = is_a_Integer(x)
+
 function Base.isreal(x::Basic)
     is_a_Number(x) || return false
     is_a_Integer(x) || is_a_Rational(x) || is_a_RealDouble(x) || is_a_RealMPFR(x)
@@ -279,6 +282,16 @@ function Base.isone(x::Basic)
     x == one(x)
 end
 
+## julia predicates we can mirror
+function Base.iseven(x::Basic)
+    is_constant(x) || throw(ArgumentError("Non constant argument"))
+    iseven(N(x))
+end
+
+function Base.isodd(x::Basic)
+    is_constant(x) || throw(ArgumentError("Non constant argument"))
+    isodd(N(x))
+end
 
 
 ## These should have support in symengine-wrapper, but currently don't

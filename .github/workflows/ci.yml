@@ -19,6 +19,7 @@ jobs:
       matrix:
         version:
           - 'min' # minimum version set in Project.toml
+          - 'lts' # long-term support release
           - '1'   # latest 1.x.y
           # - 'nightly'
         os:
